@@ -3,6 +3,7 @@ package com.shodo.android.myprofile
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shodo.android.coreui.navigator.BillingNavigator
 import com.shodo.android.coreui.navigator.PostTransactionNavigator
 import com.shodo.android.domain.repositories.entities.ImageSource
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
@@ -25,7 +26,8 @@ sealed class MyProfileUiState {
 
 class MyProfileViewModel(
     private val myProfileRepository: MyProfileRepository,
-    private val postTransactionNavigator: PostTransactionNavigator
+    private val postTransactionNavigator: PostTransactionNavigator,
+    private val billingNavigator: BillingNavigator
 ): ViewModel() {
 
     private val _uiState: MutableStateFlow<MyProfileUiState> = MutableStateFlow(Loading)
@@ -56,6 +58,9 @@ class MyProfileViewModel(
 
     fun navigateToPostTransaction(context: Context) {
         postTransactionNavigator.navigate(context)
+    }
+    fun navigateToBilling(context: Context) {
+        billingNavigator.navigate(context)
     }
 }
 

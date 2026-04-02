@@ -1,6 +1,7 @@
 package com.shodo.android.pokemaniac
 
 import android.app.Application
+import com.shodo.android.billing.di.billingModule
 import com.shodo.android.dashboard.di.dashboardModule
 import com.shodo.android.dependencyinjection.cleanArchiModules
 import com.shodo.android.di.trackingModule
@@ -34,7 +35,8 @@ class PokeManiacApplication : Application() {
                 searchFriendModule,
                 myFriendsModule,
                 postTransactionModule,
-                myProfileModule
+                myProfileModule,
+                billingModule
             )
         }
     }

@@ -47,4 +47,8 @@
 
     <string name="my_profile_total_votes_none">You haven\'t received any votes yet…\nDon\'t worry, add some friends and show them your latest deals!</string>
     <string name="my_profile_no_activity_yet">You haven\'t posted anything yet.\nGo ahead and share your latest deals with your friends!</string>
+
+    <string name="billing_title">Subscription</string>
+    <string name="billing_error">Error retrieving the subscription</string>
+
 </resources>

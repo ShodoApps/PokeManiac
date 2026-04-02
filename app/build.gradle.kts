@@ -57,6 +57,7 @@ dependencies {
     implementation(project(":feature:myprofile"))
     implementation(project(":feature:posttransaction"))
     implementation(project(":feature:searchfriend"))
+    implementation(project(":feature:billing"))
 
     // Theming
     implementation(libs.material)

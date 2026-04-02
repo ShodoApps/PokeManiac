@@ -48,6 +48,7 @@
     <string name="my_profile_total_votes_none">Tu n\'as pas encore reçu de votes…\nNe désespère pas, ajoute des amis et montre leur tes derniers bon plans !</string>
     <string name="my_profile_no_activity_yet">Tu n\'as pas encore rien posté.\nMontre vite à tes amis tes dernières bon plans !</string>
 
-
+    <string name="billing_title">Abonnement</string>
+    <string name="billing_error">Erreur lors de la récupération de l\'abonnement</string>
 
 </resources>

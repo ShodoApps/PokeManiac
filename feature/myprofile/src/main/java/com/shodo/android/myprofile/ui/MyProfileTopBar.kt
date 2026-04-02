@@ -3,6 +3,7 @@ package com.shodo.android.myprofile.ui
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -15,7 +16,11 @@ import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProfileTopBar(onBackPressed: () -> Unit, onPostTransaction: () -> Unit) {
+fun MyProfileTopBar(
+    onBackPressed: () -> Unit,
+    onBillingPressed: () -> Unit,
+    onPostTransaction: () -> Unit
+) {
     TopAppBar(
         colors = topAppBarColors(
             containerColor = colors.backgroundApp
@@ -38,6 +43,13 @@ fun MyProfileTopBar(onBackPressed: () -> Unit, onPostTransaction: () -> Unit) {
                     contentDescription = "Search Friends"
                 )
             }
+            IconButton(onClick = onBillingPressed) {
+                Icon(
+                    imageVector = Icons.Default.Stars,
+                    contentDescription = "Back",
+                    tint = colors.primaryText
+                )
+            }
         }
     )
 }
@@ -51,6 +63,7 @@ fun PreviewMyFriendListTopBar_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
         MyProfileTopBar(
             onPostTransaction = {},
+            onBillingPressed = {},
             onBackPressed = {}
         )
     }
@@ -63,6 +76,7 @@ fun PreviewMyFriendListTopBar_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
         MyProfileTopBar(
             onPostTransaction = {},
+            onBillingPressed = {},
             onBackPressed = {}
         )
     }

@@ -44,6 +44,7 @@ fun MyProfileView(
     uiState: MyProfileUiState,
     onBackPressed: () -> Unit,
     onPostTransactionPressed: () -> Unit,
+    onBillingPressed: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     Scaffold(
@@ -53,6 +54,7 @@ fun MyProfileView(
         topBar = {
             MyProfileTopBar(
                 onBackPressed = onBackPressed,
+                onBillingPressed = onBillingPressed,
                 onPostTransaction = onPostTransactionPressed
             )
         },
@@ -83,6 +85,7 @@ fun PreviewMyProfileView_Loading_LightTheme() {
             onBackPressed = {},
             uiState = Loading,
             onPostTransactionPressed = {},
+            onBillingPressed = {},
             snackbarHostState = SnackbarHostState(),
         )
     }
@@ -97,6 +100,7 @@ fun PreviewMyFriendsListView_Loading_DarkTheme() {
             onBackPressed = {},
             uiState = Loading,
             onPostTransactionPressed = {},
+            onBillingPressed = {},
             snackbarHostState = SnackbarHostState(),
         )
     }
@@ -115,6 +119,7 @@ fun PreviewMyProfileView_Data_LightTheme() {
                 pokemonCards = previewPokemonCards()
             )),
             onPostTransactionPressed = {},
+            onBillingPressed = {},
             snackbarHostState = SnackbarHostState(),
         )
     }
@@ -133,6 +138,7 @@ fun PreviewMyFriendsListView_Data_DarkTheme() {
                 pokemonCards = previewPokemonCards()
             )),
             onPostTransactionPressed = {},
+            onBillingPressed = {},
             snackbarHostState = SnackbarHostState(),
         )
     }
