@@ -1,0 +1,326 @@
+---
+description: Checklists for common development tasks on PokeManiac. Use before starting implementation.
+alwaysApply: false
+---
+
+# PokeManiac Development Checklists
+
+Use these checklists before starting work to ensure nothing is missed.
+
+---
+
+## ✅ Adding a New Feature Module
+
+### Setup
+- [ ] Read skill: `pokemaniac-new-feature`
+- [ ] Feature name decided (snake_case, e.g., `mynewfeature`)
+- [ ] Feature purpose documented
+
+### Directory Structure
+- [ ] Created `feature/mynewfeature/` directory
+- [ ] Created all subdirectories: `ui/`, `uimodel/`, `di/`, `navigator/`
+- [ ] Created `src/test/java/` for tests
+- [ ] Created `src/main/res/` for resources (if needed)
+
+### Core Files
+- [ ] `MyNewFeatureActivity.kt` - Entry point with PokeManiacTheme
+- [ ] `MyNewFeatureScreen.kt` - Container with state collection
+- [ ] `MyNewFeatureViewModel.kt` - With sealed UiState, StateFlow, SharedFlow
+- [ ] `MyNewFeatureView.kt` - Stateless view with when() on state
+- [ ] `MyNewFeatureContent.kt` - Content sections
+- [ ] `MyNewFeaturePreview.kt` - Preview composables for all states
+- [ ] `uimodel/MyNewFeatureUI.kt` - UI data models
+
+### Navigation
+- [ ] Navigator interface created in `coreui/navigator/`
+- [ ] `MyNewFeatureNavigatorImpl.kt` in feature module
+- [ ] Intent setup with required extras
+- [ ] Registered in Koin module
+
+### Dependency Injection
+- [ ] `di/MyNewFeatureModule.kt` created
+- [ ] `viewModelOf(::MyNewFeatureViewModel)` binding
+- [ ] Navigator bound: `single<MyNewFeatureNavigator> { MyNewFeatureNavigatorImpl() }`
+
+### Gradle Configuration
+- [ ] `feature/mynewfeature/build.gradle.kts` created
+- [ ] Dependencies: `domain`, `coreui`, `tracking`, Compose, Koin
+- [ ] Added to `settings.gradle.kts`
+- [ ] Added dependency to `app/build.gradle.kts`
+
+### Application Integration
+- [ ] Module imported in `PokeManiacApplication.kt`
+- [ ] Added to Koin modules list: `modules(..., myNewFeatureModule)`
+- [ ] Feature Activity reachable from other features
+
+### Imports Verification
+- [ ] ❌ NO imports from `data`, `api`, `database`
+- [ ] ✅ Only imports from `domain`, `coreui`, `tracking`
+
+### Testing
+- [ ] `MyNewFeatureViewModelTest.kt` created
+- [ ] At least one happy path test
+- [ ] Error case test
+- [ ] Preview composables included
+
+### Documentation
+- [ ] Feature purpose documented
+- [ ] Key screens/flows described
+
+---
+
+## ✅ Adding API Endpoint & Data Operations
+
+### Design Phase
+- [ ] Endpoint purpose defined
+- [ ] Request/response DTOs designed
+- [ ] Domain entity model created
+
+### Repository (Domain Layer)
+- [ ] Repository interface created: `domain/repositories/My*Repository.kt`
+- [ ] Methods defined: `get()`, `search()`, `create()`, `update()`, `delete()`
+- [ ] Return types correct: `Flow<>` for reads, `suspend fun` for writes
+- [ ] Domain entity created: `domain/entities/MyEntity.kt`
+
+### Data Layer Implementation
+- [ ] `data/myentity/MyRepositoryImpl.kt` created
+- [ ] Implements domain interface
+- [ ] Uses constructor injection for Request + DataStore
+- [ ] Handles data merging (local + remote)
+
+### API Layer
+- [ ] Retrofit service method added/created
+- [ ] DTO created with @Serializable (Moshi)
+- [ ] `api/myentity/MyRequestImpl.kt` created
+- [ ] Implements `MyRequest` interface
+- [ ] DTOs properly mapped to domain entities
+
+### Database Layer
+- [ ] Room entity created: `database/myentity/MyEntityBase.kt`
+- [ ] DAO created: `database/myentity/MyEntityDao.kt`
+- [ ] Methods: `getAll()`, `getById()`, `insert()`, `update()`, `delete()`
+- [ ] `database/myentity/MyDataStoreImpl.kt` created
+- [ ] Implements `MyDataStore` interface
+- [ ] Entities properly mapped to/from domain models
+
+### Koin Registration
+- [ ] Updated `dependencyinjection/CleanArchiModules.kt`:
+  - [ ] `dataModule`: Add `factory<MyRepository> { MyRepositoryImpl(...) }`
+  - [ ] `apiModule`: Add `factory<MyRequest> { MyRequestImpl(...) }`
+  - [ ] `databaseModule`: Add `single<MyDataStore> { MyDataStoreImpl(...) }`
+- [ ] DAO added to Room database entity list
+
+### ViewModel Integration
+- [ ] ViewModel constructor accepts `MyRepository`
+- [ ] Repository called in suspend functions
+- [ ] Results mapped to UI models
+- [ ] Errors caught and emitted via SharedFlow
+
+### Testing
+- [ ] Repository tests with Mockito mocks
+- [ ] Test local + remote data combining
+- [ ] Test error handling
+- [ ] Test entity mapping
+
+---
+
+## ✅ Adding Unit Tests
+
+### ViewModel Test
+- [ ] Created: `feature/myfeature/src/test/java/.../MyFeatureViewModelTest.kt`
+- [ ] Mocked dependencies: `Repository`, `Navigator`, `TrackingRepository`
+- [ ] Set up `Dispatchers.setMain(UnconfinedTestDispatcher())`
+- [ ] Clean up: `Dispatchers.resetMain()` in @After
+- [ ] Test happy path (state transition)
+- [ ] Test empty state
+- [ ] Test error case
+- [ ] Test user action (navigation, logging)
+- [ ] Using Turbine for Flow testing: `.test { awaitItem() }`
+- [ ] Following Given/When/Then pattern
+
+### Repository Test
+- [ ] Created: `data/src/test/java/.../MyRepositoryTest.kt`
+- [ ] Mocked Request + DataStore
+- [ ] Test reading from local storage
+- [ ] Test combining local + remote
+- [ ] Test error handling
+- [ ] Test write operations (create, update, delete)
+- [ ] Verify repository calls both request and datastore
+
+### Compose Preview Test
+- [ ] Created: `ui/MyFeaturePreview.kt` or in main view file
+- [ ] Preview for Loading state
+- [ ] Preview for Data state (with mock data)
+- [ ] Preview for Empty/Error states
+- [ ] All previews wrapped in `PokeManiacTheme`
+- [ ] Using `PersistentList` for collections
+
+### Test Dependencies
+- [ ] `build.gradle.kts` has: `junit`, `mockito-kotlin`, `coroutines-test`, `turbine`, `koin-test`
+- [ ] Using correct imports
+
+---
+
+## ✅ Architecture Compliance Check
+
+### Dependency Direction
+- [ ] Presentation layer ✓ imports Domain
+- [ ] Presentation layer ✓ does NOT import Data/API/Database
+- [ ] Domain layer ✓ imports nothing from app layers
+- [ ] Data layer ✓ implements Domain interfaces
+
+### State Management
+- [ ] UI state: sealed class with multiple variants
+- [ ] StateFlow: private mutable, public immutable
+- [ ] SharedFlow: for one-shot events (errors)
+- [ ] No boolean flags for state
+- [ ] All data to render in state (complete)
+
+### Screen/View Pattern
+- [ ] Screen: `collectAsState()`, lifecycle, error handling
+- [ ] View: no state collection, pure UI, preview
+- [ ] Screen delegates to View
+- [ ] All data passed as parameters to View
+
+### Lifecycle
+- [ ] `DisposableEffect` + `LifecycleEventObserver` in Screen
+- [ ] Reload on `ON_START` event
+- [ ] Proper cleanup on dispose
+
+### ViewModel Pattern
+- [ ] Constructor injection only
+- [ ] No property initialization code
+- [ ] Use `viewModelScope` for coroutines
+- [ ] StateFlow for mutable state
+- [ ] SharedFlow for events
+
+### Naming Conventions
+- [ ] Sealed state: `*UiState`
+- [ ] ViewModel: `*ViewModel`
+- [ ] Views: `*View`, `*Content`, `*TopBar`, `*Card`
+- [ ] UI Models: `*UI` or `*Ui`
+- [ ] Repository: `*Repository`, `*RepositoryImpl`
+- [ ] Navigator: `*Navigator`, `*NavigatorImpl`
+- [ ] Koin module: `*Module`
+- [ ] Packages: `com.shodo.android.*`
+
+---
+
+## ✅ Code Review Checklist
+
+### Architecture
+- [ ] No circular dependencies
+- [ ] Dependency direction respected (Presentation → Domain → Data)
+- [ ] No direct imports between features
+- [ ] All data layer behind interfaces
+
+### Code Quality
+- [ ] No TODOs or FIXMEs (or documented why)
+- [ ] No magic numbers (use constants)
+- [ ] No dead code
+- [ ] Functions are focused (single responsibility)
+- [ ] Error handling is comprehensive
+
+### Kotlin Standards
+- [ ] Immutability preferred (val, sealed, PersistentList)
+- [ ] Null safety observed (?.let, elvis, no !!)
+- [ ] No println() or Log (use logging framework)
+- [ ] String templates used (not concatenation)
+- [ ] Naming follows conventions
+
+### Compose Standards
+- [ ] Screen/View pattern respected
+- [ ] No recomposition issues (state, remember, keys)
+- [ ] Preview composables for all states
+- [ ] Wrapped in PokeManiacTheme
+- [ ] Proper lambda passing (trailing syntax)
+
+### Coroutines
+- [ ] viewModelScope used (not GlobalScope)
+- [ ] Flow collection proper (collectLatest, collect)
+- [ ] Error handling with try/catch
+- [ ] No blocking operations
+- [ ] Proper dispatcher selection
+
+### Testing
+- [ ] Tests follow Given/When/Then
+- [ ] Mocks used appropriately
+- [ ] Edge cases tested
+- [ ] Error scenarios tested
+- [ ] Tests are deterministic (no flakiness)
+
+### Git/Commits
+- [ ] Commits are atomic and logical
+- [ ] Commit messages are descriptive
+- [ ] No merge conflicts
+- [ ] No credentials in code
+- [ ] No unnecessary files committed
+
+---
+
+## ✅ Before Pushing to Remote
+
+### Build & Compilation
+- [ ] Project builds successfully: `./gradlew build`
+- [ ] No lint warnings (or acceptable)
+- [ ] No compilation errors
+
+### Testing
+- [ ] Unit tests pass: `./gradlew test`
+- [ ] Android tests pass: `./gradlew connectedAndroidTest`
+- [ ] Code coverage acceptable (if measured)
+
+### Code Quality
+- [ ] Code reviewed for issues
+- [ ] No hardcoded values/strings
+- [ ] No debug code left
+- [ ] Proper error messages
+
+### Documentation
+- [ ] README updated (if needed)
+- [ ] Complex logic commented
+- [ ] KDoc for public APIs
+- [ ] Architecture decisions documented
+
+### Git
+- [ ] Commits rebased/cleaned
+- [ ] No merge conflicts
+- [ ] Commit messages follow convention
+- [ ] Branch is up-to-date with main
+
+### Performance
+- [ ] No obvious inefficiencies
+- [ ] Database queries optimized
+- [ ] API calls batched if possible
+- [ ] Memory leaks checked (Compose)
+
+---
+
+## ✅ After Feature Completion
+
+### Cleanup
+- [ ] Removed debug code
+- [ ] Removed unused imports
+- [ ] Removed TODO comments (or created issues)
+
+### Update Documentation
+- [ ] Update feature list if applicable
+- [ ] Update architecture diagrams if changed
+- [ ] Update README if new setup steps
+- [ ] Document any dependencies added
+
+### Knowledge Transfer
+- [ ] Architecture decisions explained
+- [ ] Patterns used documented
+- [ ] Edge cases noted
+- [ ] Future improvements identified
+
+### Metrics
+- [ ] Lines of code (within reason)
+- [ ] Test coverage (baseline or improved)
+- [ ] Performance impact (none or documented)
+- [ ] Accessibility checklist passed
+
+---
+
+**Use these checklists before starting work to ensure completeness and consistency!**

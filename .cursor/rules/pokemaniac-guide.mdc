@@ -1,0 +1,428 @@
+---
+description: Overview of PokeManiac project structure, module organization, and key concepts. Reference guide for navigating the codebase.
+alwaysApply: true
+---
+
+# PokeManiac Project Guide
+
+## Quick Navigation
+
+### I'm Adding a New Feature
+→ Read skill: **pokemaniac-new-feature**
+
+### I'm Modifying Data Layer
+→ Read skill: **pokemaniac-data-layer**
+
+### I'm Writing Tests
+→ Read skill: **pokemaniac-testing**
+
+### I'm Working on UI/Compose
+→ Read rule: **compose-patterns.mdc**
+
+### I'm Creating a ViewModel
+→ Read rule: **viewmodel-patterns.mdc**
+
+### I Need Architecture Guidelines
+→ Read rule: **pokemaniac-architecture.mdc**
+
+### I Need Kotlin Best Practices
+→ Read rule: **kotlin-android-standards.mdc**
+
+---
+
+## Module Architecture at a Glance
+
+```
+Presentation Layer
+├── app (Main entry point, wires features)
+├── feature:dashboard
+├── feature:searchfriend
+├── feature:myfriends
+├── feature:myprofile
+├── feature:posttransaction
+├── feature:billing
+└── coreui (Shared components, theme, navigators)
+
+Domain Layer
+└── domain (Repository interfaces, entities)
+
+Data Access Layer
+├── data (Repository implementations, DataStore interfaces)
+├── api (Retrofit services, API request implementations)
+└── database (Room DAOs, DataStore implementations)
+
+Cross-Cutting Concerns
+├── tracking (Analytics & event tracking)
+└── dependencyinjection (Koin configuration aggregator)
+```
+
+---
+
+## Golden Rule: Dependency Direction
+
+**Presentation → Domain → Data**
+
+```
+Features (app, feature:*)
+    ↓ depends on ↓
+domain (interfaces only)
+    ↓ depends on ↓
+data, api, database (implementations)
+```
+
+**Never violate this:**
+- ❌ Feature modules never import from `data`, `api`, `database`
+- ❌ ViewModel never directly instantiates repository implementations
+- ✅ All dependencies resolved through Koin DI container
+
+---
+
+## File Structure Conventions
+
+### Feature Module
+```
+feature/myfeature/
+├── build.gradle.kts           # Module dependencies
+├── src/main/java/.../myfeature/
+│   ├── MyFeatureActivity.kt    # Entry point
+│   ├── MyFeatureScreen.kt      # State + lifecycle
+│   ├── MyFeatureViewModel.kt   # Logic & state
+│   ├── di/
+│   │   └── MyFeatureModule.kt  # Koin bindings
+│   ├── navigator/
+│   │   └── MyFeatureNavigatorImpl.kt  # Cross-feature nav
+│   ├── ui/
+│   │   ├── MyFeatureView.kt    # Stateless views
+│   │   ├── MyFeatureContent.kt # Content sections
+│   │   ├── MyFeatureCard.kt    # Reusable components
+│   │   └── MyFeaturePreview.kt # Preview composables
+│   ├── uimodel/
+│   │   └── MyFeatureUI.kt      # UI-only data models
+│   └── (no imports from data, api, database)
+└── src/test/java/...
+    └── MyFeatureViewModelTest.kt
+```
+
+### Data Layer
+```
+data/
+├── myentity/
+│   ├── MyRepository.kt          # Consumed by features
+│   └── MyRepositoryImpl.kt       # Implements interface
+
+api/
+├── myentity/
+│   └── MyRequestImpl.kt          # Calls Retrofit service
+└── core/remote/
+    └── MyApiService.kt          # Retrofit interface
+
+database/
+├── myentity/
+│   ├── MyEntityDao.kt           # Room DAO
+│   ├── MyEntityBase.kt          # Room entity
+│   └── MyDataStoreImpl.kt        # Local persistence
+```
+
+---
+
+## State Management Pattern
+
+Every screen follows this state management flow:
+
+```
+User Action
+    ↓
+ViewModel.onAction()
+    ↓
+Repository.operation()
+    ↓
+_uiState.update { newState }  ← Single source of truth
+    ↓
+Screen collects uiState
+    ↓
+View renders new state
+```
+
+### State must be:
+- **Immutable** (use `data class`, `sealed class`, `PersistentList`)
+- **Complete** (all data needed to render is in the state)
+- **Predictable** (same input always produces same state)
+- **Single source** (one StateFlow per screen, not multiple)
+
+---
+
+## Screen Composition Pattern
+
+Every feature screen has 2 layers:
+
+```
+Activity
+  ↓
+Screen (Container Composable)
+  ├─ collectAsState() from ViewModel
+  ├─ collectLatest() for errors/events
+  ├─ DisposableEffect() for lifecycle
+  └─ Delegates to View
+        ↓
+        View (Stateless Composable)
+        ├─ Pure UI rendering
+        ├─ No state collection
+        └─ All data via parameters
+```
+
+### Screen Responsibilities:
+- Inject ViewModel via `koinViewModel()`
+- Collect `StateFlow` → `State`
+- Observe lifecycle events (ON_START to reload)
+- Show error snackbars
+- Delegate rendering to View
+
+### View Responsibilities:
+- Pure UI rendering
+- NO side effects
+- NO state collection
+- Accept all data & callbacks as parameters
+- Include `@Preview` composables
+
+---
+
+## Data Flow: From Repository to UI
+
+```
+ViewModel
+  ↓
+Repository.getItems()  [interface]
+  ↓
+RepositoryImpl.getItems()  [implementation]
+  ├─ requests to API Module
+  │   └─ MyRequestImpl → Retrofit → ApiService → HTTP call
+  │
+  └─ queries local storage
+      └─ MyDataStoreImpl → DAO → Room database
+  ↓
+combine(local, remote)  [if both needed]
+  ↓
+Flow<List<Entity>>  [domain model]
+  ↓
+ViewModel.viewModelScope.collect()
+  ↓
+_uiState.update { Data(items.mapToUI()) }  [UI model]
+  ↓
+Screen.collectAsState()
+  ↓
+View renders UI model
+```
+
+---
+
+## Testing Strategy
+
+### What to Test
+
+| Layer | What | How |
+|-------|------|-----|
+| **ViewModel** | State transitions, error handling | Mockito + Turbine |
+| **Repository** | Data merging, error cases | Mockito + Flow.test() |
+| **API** | Serialization, error mapping | Unit tests |
+| **Database** | Query correctness | In-memory Room |
+| **Compose** | Visual rendering, interaction | Previews + Espresso |
+
+### Test Pattern (Given/When/Then)
+```kotlin
+@Test
+fun `feature displays items when loaded`() = runTest {
+    // Given: mock data is available
+    coEvery { repository.getItems() } returns flow { emit(mockItems) }
+    
+    // When: ViewModel starts
+    viewModel.start()
+    
+    // Then: UI state contains items
+    viewModel.uiState.test {
+        assert(awaitItem() is Loading)
+        assert(awaitItem() is Data)
+    }
+}
+```
+
+---
+
+## Koin Dependency Injection
+
+### Module Registration
+
+**In feature module** (`di/MyFeatureModule.kt`):
+```kotlin
+val myFeatureModule = module {
+    viewModelOf(::MyFeatureViewModel)
+    single<MyFeatureNavigator> { MyFeatureNavigatorImpl(get()) }
+}
+```
+
+**In aggregator** (`dependencyinjection/CleanArchiModules.kt`):
+```kotlin
+val dataModule = module {
+    factory<MyRepository> { MyRepositoryImpl(get(), get()) }
+}
+
+val apiModule = module {
+    factory<MyRequest> { MyRequestImpl(get()) }
+}
+
+val databaseModule = module {
+    single<MyDataStore> { MyDataStoreImpl(get()) }
+}
+```
+
+**In app** (`PokeManiacApplication.kt`):
+```kotlin
+startKoin {
+    androidContext(this@PokeManiacApplication)
+    modules(cleanArchiModules, myFeatureModule, ...)
+}
+```
+
+### Injection in ViewModel
+```kotlin
+class MyFeatureViewModel(
+    private val myRepository: MyRepository,  // Resolved from domain
+    private val navigator: MyNavigator,      // Resolved from coreui
+    private val tracking: TrackingRepository  // Resolved from tracking
+) : ViewModel()
+```
+
+---
+
+## Key Libraries
+
+| Layer | Library | Usage |
+|-------|---------|-------|
+| **UI** | Jetpack Compose | All UI rendering |
+| **State** | Coroutines + Flow | Async operations, state flows |
+| **ViewModel** | androidx.lifecycle | ViewModel, ViewModelScope |
+| **Navigation** | Compose Navigation | Internal feature navigation |
+| **Theme** | Material3 | Components, colors, typography |
+| **DI** | Koin 3 | Dependency injection, viewModelOf() |
+| **Network** | Retrofit + OkHttp3 | HTTP calls |
+| **Serialization** | Moshi + kotlinx-serialization | JSON parsing, typed routes |
+| **Persistence** | Room | Local SQLite database |
+| **Image Loading** | Coil | Remote image handling |
+| **Testing** | Mockito, Turbine | Unit tests, Flow testing |
+
+---
+
+## i18n (Internationalization)
+
+The app supports **French and English**. Strings are in resource files:
+
+```
+res/values/strings.xml      (English - default)
+res/values-fr/strings.xml   (French)
+```
+
+Access strings in Compose:
+```kotlin
+stringResource(id = R.string.app_name)
+```
+
+---
+
+## Dark Mode
+
+Dark mode is **automatic** based on system preference. The app uses Material3 theme:
+
+```kotlin
+PokeManiacTheme {
+    // Automatically adapts to light/dark theme
+}
+```
+
+---
+
+## Tracking & Analytics
+
+Features can log events via `TrackingRepository`:
+
+```kotlin
+class MyFeatureViewModel(
+    ...
+    private val tracking: TrackingRepository
+) {
+    fun onItemClicked(itemId: String) {
+        tracking.logEvent("item_clicked", mapOf("id" to itemId))
+    }
+}
+```
+
+Currently mocked locally; can be connected to Firebase, Segment, etc.
+
+---
+
+## Common Tasks
+
+### Add a New Feature Module
+→ See skill: **pokemaniac-new-feature**
+
+### Add API Endpoint
+→ Create `*Request` interface + `*RequestImpl`
+→ Register in `apiModule` (Koin)
+→ Use in repository
+
+### Add Database Table
+→ Create `*Base` entity (Room)
+→ Create `*Dao` interface
+→ Create `*DataStore` interface + `*DataStoreImpl`
+→ Register in `databaseModule`
+
+### Add Screen Route Navigation
+→ Define `@Serializable data class Route` in feature
+→ Add to `Routes` sealed class
+→ Use `composable<Route> { ... }`
+→ Navigate: `navController.navigate(Route(...))`
+
+### Add Unit Test
+→ Extend `ViewModel` test with `UnconfinedTestDispatcher`
+→ Mock dependencies with `mockk<Interface>()`
+→ Use `viewModel.stateFlow.test { ... }` (Turbine)
+→ Follow Given/When/Then pattern
+
+---
+
+## Troubleshooting
+
+### ViewModel not receiving data
+1. Check `ViewModel.start()` is called in `Screen` lifecycle
+2. Verify Flow is emitting in repository
+3. Confirm `collectAsState()` is active
+
+### Feature module not found
+1. Check `settings.gradle.kts` includes module
+2. Check `app/build.gradle.kts` has implementation dependency
+3. Run Gradle sync
+
+### Koin injection fails
+1. Check module is registered in `PokeManiacApplication.kt`
+2. Verify interface/implementation are declared in right module
+3. Check constructor parameter types match bindings
+
+### Compose preview not showing
+1. Add `@Preview` annotation before `@Composable`
+2. Wrap in `PokeManiacTheme { ... }`
+3. Check imports are correct
+
+---
+
+## Next Steps for KMP Migration
+
+Currently preparing for future Kotlin Multiplatform (KMP) migration:
+
+- ✅ Clean architecture separation (ready for sharing)
+- ✅ Domain layer pure Kotlin (no Android imports)
+- ✅ Data layer abstracted via interfaces
+- ❌ UI layer Compose-based (Android-specific)
+
+When moving to KMP:
+1. Migrate domain + data to `:shared` module
+2. Keep `:android` for UI/Compose
+3. Create `:ios` module using SwiftUI
+4. Share business logic, state management

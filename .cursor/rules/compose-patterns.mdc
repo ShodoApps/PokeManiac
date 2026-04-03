@@ -1,0 +1,351 @@
+---
+description: PokeManiac Compose patterns - Screen vs View split, state collection, previews. Apply when working with Compose files.
+globs: "**/*.kt"
+alwaysApply: false
+---
+
+# PokeManiac Compose Patterns
+
+## Screen vs View Pattern
+
+### Screen (Container Composable)
+**Location:** Feature module root, file name: `*Screen.kt`
+
+**Responsibilities:**
+- Collect `StateFlow` and convert to `State` with `collectAsState()`
+- Observe lifecycle events
+- Handle error flows with `LaunchedEffect`
+- Show snackbars
+- Inject ViewModel via `koinViewModel()`
+
+```kotlin
+@Composable
+fun MyFeatureScreen(
+    modifier: Modifier = Modifier,
+    viewModel: MyFeatureViewModel = koinViewModel(),
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Error handling
+    LaunchedEffect(Unit) {
+        viewModel.error.collectLatest { error ->
+            snackbarHostState.showSnackbar(error.message.toString())
+        }
+    }
+    
+    // State collection
+    val uiState by viewModel.uiState.collectAsState()
+    
+    // Lifecycle callback to reload on resume
+    DisposableEffect(lifecycleOwner) {
+        val lifecycleObserver = LifecycleEventObserver { _, event ->
+            if (event == ON_START) {
+                viewModel.start()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
+        }
+    }
+    
+    // Delegate to stateless View
+    MyFeatureView(
+        modifier = modifier,
+        uiState = uiState,
+        snackbarHostState = snackbarHostState,
+        onAction = viewModel::onAction,
+        onNavigate = { viewModel.navigator.navigate() }
+    )
+}
+```
+
+### View (Stateless Composable)
+**Location:** Feature module `ui/` folder, file name: `*View.kt`
+
+**Responsibilities:**
+- Pure UI rendering
+- NO state collection
+- NO side effects
+- Accept all data and callbacks as parameters
+- Include `@Preview` composables
+
+```kotlin
+@Composable
+fun MyFeatureView(
+    modifier: Modifier = Modifier,
+    uiState: MyFeatureUiState,
+    snackbarHostState: SnackbarHostState,
+    onAction: (action: UserAction) -> Unit = {},
+    onNavigate: (destination: String) -> Unit = {}
+) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            MyFeatureTopBar(
+                onNavigateBack = { onNavigate("back") }
+            )
+        }
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            when (uiState) {
+                MyFeatureUiState.Loading -> GenericLoader()
+                is MyFeatureUiState.Data -> {
+                    MyFeatureContent(
+                        items = uiState.items,
+                        onAction = onAction
+                    )
+                }
+                MyFeatureUiState.EmptyResult -> {
+                    GenericEmptyScreen()
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+## Composable Organization
+
+### Feature Structure
+```
+feature/myfeature/src/main/java/com/shodo/android/myfeature/
+├── MyFeatureActivity.kt          # Entry point
+├── MyFeatureScreen.kt            # Container (state management)
+├── MyFeatureViewModel.kt
+├── ui/
+│   ├── MyFeatureView.kt          # Main stateless view
+│   ├── MyFeatureContent.kt       # Content sections
+│   ├── MyFeatureTopBar.kt        # AppBar
+│   ├── MyFeatureCard.kt          # Reusable card component
+│   └── MyFeaturePreview.kt       # Preview composables
+├── uimodel/
+│   ├── MyFeatureUI.kt            # UI data models
+│   └── UserActionUI.kt           # User action types
+├── di/
+│   └── MyFeatureModule.kt        # Koin bindings
+└── navigator/
+    └── MyFeatureNavigatorImpl.kt  # Cross-feature navigation
+```
+
+### Composable Naming
+- `*View` - Main stateless views
+- `*Content` - Content sections within a view
+- `*TopBar` - App bar composables
+- `*Card` - Card components
+- `*Button` - Custom button variants
+- `*Preview` - Preview composables (often in separate file)
+- `*Item` - List item composables
+
+---
+
+## Theme & Styling
+
+### Always Wrap in PokeManiacTheme
+In Activity:
+```kotlin
+class MyFeatureActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            PokeManiacTheme {
+                MyFeatureScreen()
+            }
+        }
+    }
+}
+```
+
+### Use Material3 Components
+```kotlin
+// ✅ GOOD
+Button(onClick = {}) {
+    Text("Click me")
+}
+
+FilledTonalButton(onClick = {}) {
+    Text("Tonal")
+}
+
+// ❌ AVOID custom button wrappers unless truly necessary
+```
+
+### SharedCompose Colors & Spacing
+Access via `PokeManiacTheme`:
+```kotlin
+Text(
+    text = "Title",
+    color = MaterialTheme.colorScheme.onBackground,
+    fontSize = MaterialTheme.typography.headlineSmall.fontSize
+)
+```
+
+---
+
+## State Collection Best Practices
+
+### ✅ Use collectAsState() for StateFlow
+```kotlin
+val uiState by viewModel.uiState.collectAsState()
+```
+
+### ✅ Use collectLatest with LaunchedEffect for SharedFlow
+```kotlin
+LaunchedEffect(Unit) {
+    viewModel.error.collectLatest { error ->
+        snackbarHostState.showSnackbar(error.message.toString())
+    }
+}
+```
+
+### ❌ Don't collect in top-level composables repeatedly
+```kotlin
+// BAD - collects multiple times
+val item by viewModel.item.collectAsState()
+val items by viewModel.items.collectAsState()
+val loading by viewModel.loading.collectAsState()
+
+// GOOD - single sealed state
+val uiState by viewModel.uiState.collectAsState()
+```
+
+---
+
+## Preview Pattern
+
+### Include Previews in *View.kt or *Preview.kt
+
+```kotlin
+@Preview
+@Composable
+fun MyFeatureViewPreview() {
+    PokeManiacTheme {
+        MyFeatureView(
+            uiState = MyFeatureUiState.Data(
+                items = persistentListOf(
+                    mockItemUI1,
+                    mockItemUI2
+                )
+            ),
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun MyFeatureViewLoadingPreview() {
+    PokeManiacTheme {
+        MyFeatureView(
+            uiState = MyFeatureUiState.Loading,
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun MyFeatureViewEmptyPreview() {
+    PokeManiacTheme {
+        MyFeatureView(
+            uiState = MyFeatureUiState.EmptyResult,
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+```
+
+---
+
+## Common Patterns
+
+### Loading State with Infinite Loader
+```kotlin
+is MyFeatureUiState.Data -> {
+    LazyColumn {
+        items(uiState.items.size) { index ->
+            MyItemCard(item = uiState.items[index])
+        }
+        item {
+            GenericLoader()  // From coreui
+        }
+    }
+}
+```
+
+### Empty State
+```kotlin
+MyFeatureUiState.EmptyResult -> {
+    GenericEmptyScreen()  // From coreui
+}
+```
+
+### Error Snackbar
+```kotlin
+LaunchedEffect(Unit) {
+    viewModel.error.collectLatest { error ->
+        snackbarHostState.showSnackbar(
+            message = error.message ?: "Unknown error",
+            duration = SnackbarDuration.Short
+        )
+    }
+}
+```
+
+### Pull-to-Refresh
+```kotlin
+var isRefreshing by remember { mutableStateOf(false) }
+
+LaunchedEffect(isRefreshing) {
+    if (isRefreshing) {
+        viewModel.refresh()
+        isRefreshing = false
+    }
+}
+
+PullRefreshIndicator(
+    refreshing = isRefreshing,
+    onRefresh = { isRefreshing = true },
+    modifier = Modifier.align(Alignment.TopCenter)
+)
+```
+
+---
+
+## Type-Safe Navigation with Serialization
+
+In features that need internal navigation:
+
+```kotlin
+sealed class Routes {
+    @Serializable
+    data object List : Routes()
+    
+    @Serializable
+    data class Detail(val id: String, val name: String) : Routes()
+}
+
+@Composable
+fun MyFeatureNavHost(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = Routes.List
+    ) {
+        composable<Routes.List> {
+            MyListScreen(
+                onItemClick = { id, name ->
+                    navController.navigate(Routes.Detail(id, name))
+                }
+            )
+        }
+        composable<Routes.Detail> { backStackEntry ->
+            val args: Routes.Detail = backStackEntry.toRoute()
+            MyDetailScreen(id = args.id, name = args.name)
+        }
+    }
+}
+```

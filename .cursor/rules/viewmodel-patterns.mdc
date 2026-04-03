@@ -1,0 +1,249 @@
+---
+description: PokeManiac ViewModel patterns - state management, error handling, lifecycle. Apply when working with ViewModels.
+globs: "**/*ViewModel.kt"
+alwaysApply: false
+---
+
+# PokeManiac ViewModel Patterns
+
+## Structure Template
+
+Every ViewModel follows this structure:
+
+```kotlin
+class MyFeatureViewModel(
+    private val repository: MyRepository,
+    private val navigator: MyNavigator,
+    private val tracking: TrackingRepository
+) : ViewModel() {
+    
+    // ============ UI STATE ============
+    sealed class MyFeatureUiState {
+        data object Loading : MyFeatureUiState()
+        data class Data(val items: PersistentList<ItemUI>) : MyFeatureUiState()
+        data object EmptyResult : MyFeatureUiState()
+        // Add error states as needed
+    }
+    
+    private val _uiState: MutableStateFlow<MyFeatureUiState> = MutableStateFlow(Loading)
+    val uiState: StateFlow<MyFeatureUiState> = _uiState.asStateFlow()
+    
+    // ============ EVENTS / ERRORS ============
+    private val _error = MutableSharedFlow<Exception>()
+    val error = _error.asSharedFlow()
+    
+    // ============ PUBLIC ACTIONS ============
+    fun start() {
+        viewModelScope.launch {
+            // Load initial data
+        }
+    }
+    
+    fun onItemClicked(id: String) {
+        tracking.logEvent("item_clicked")
+        navigator.navigateToDetail(id)
+    }
+    
+    // ============ PRIVATE IMPLEMENTATION ============
+    private suspend fun loadData() {
+        try {
+            _uiState.update { Loading }
+            val items = repository.fetchItems()
+            _uiState.update { MyFeatureUiState.Data(items.toPersistentList()) }
+        } catch (e: Exception) {
+            _error.emit(e)
+            _uiState.update { MyFeatureUiState.EmptyResult }
+        }
+    }
+}
+```
+
+---
+
+## State Management Rules
+
+### ✅ Use Sealed Classes for UI State
+Always represent UI state as a sealed class with specific cases:
+```kotlin
+sealed class UiState {
+    data object Loading : UiState()
+    data class Data(val items: List<Item>) : UiState()
+    data object EmptyResult : UiState()
+}
+```
+
+### ✅ Use PersistentList for Immutable Collections
+```kotlin
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toPersistentList
+
+data class Data(val items: PersistentList<ItemUI>) : UiState()
+```
+
+### ✅ Separate Error Flow
+Keep errors in a separate `SharedFlow`:
+```kotlin
+private val _error = MutableSharedFlow<Exception>()
+val error = _error.asSharedFlow()
+```
+
+Screen collects errors in `LaunchedEffect` for snackbars.
+
+### ❌ Don't use Boolean flags
+```kotlin
+// BAD
+var isLoading: Boolean = false
+var hasError: Boolean = false
+
+// GOOD
+sealed class UiState {
+    data object Loading : UiState()
+    data object Error : UiState()
+    data class Data(val items: List<Item>) : UiState()
+}
+```
+
+---
+
+## Lifecycle Handling in ViewModel
+
+### Use ON_START callback
+Always reload data in ViewModel when screen resumes:
+```kotlin
+// In Screen
+DisposableEffect(lifecycleOwner) {
+    val lifecycleObserver = LifecycleEventObserver { _, event ->
+        if (event == ON_START) {
+            viewModel.start()
+        }
+    }
+    lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+    onDispose {
+        lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
+    }
+}
+```
+
+---
+
+## Data Mapping
+
+### Map Domain Entities to UI Models at Bottom of ViewModel
+
+```kotlin
+// GOOD: Keep mapping at bottom
+private fun User.mapToUI() = UserUI(
+    id = this.id,
+    name = this.name
+)
+
+private fun List<User>.mapToUI() = this.map { it.mapToUI() }.toPersistentList()
+```
+
+### ❌ Don't expose domain models in UI State
+```kotlin
+// BAD
+data class Data(val users: List<User>) : UiState()
+
+// GOOD
+data class Data(val users: PersistentList<UserUI>) : UiState()
+```
+
+---
+
+## Coroutine Handling
+
+### Always Use viewModelScope
+```kotlin
+fun loadData() {
+    viewModelScope.launch {
+        try {
+            val data = repository.fetchData()
+            _uiState.update { MyFeatureUiState.Data(data) }
+        } catch (e: Exception) {
+            _error.emit(e)
+        }
+    }
+}
+```
+
+### Use collectLatest for Flows
+```kotlin
+viewModelScope.launch {
+    repository.items.collectLatest { items ->
+        _uiState.update { MyFeatureUiState.Data(items.mapToUI()) }
+    }
+}
+```
+
+---
+
+## Dependency Injection
+
+### Koin Binding Pattern
+In `di/YourFeatureModule.kt`:
+```kotlin
+val myFeatureModule = module {
+    viewModelOf(::MyFeatureViewModel)
+    single<MyNavigator> { MyNavigatorImpl() }
+}
+```
+
+### ViewModel Constructor
+All dependencies are resolved via Koin:
+```kotlin
+class MyFeatureViewModel(
+    private val repository: MyRepository,  // From domain
+    private val navigator: MyNavigator,     // From coreui
+    private val tracking: TrackingRepository // From tracking
+) : ViewModel()
+```
+
+---
+
+## Testing ViewModels
+
+### Test Template
+```kotlin
+class MyFeatureViewModelTest {
+    private val repository = mockk<MyRepository>()
+    private val navigator = mockk<MyNavigator>()
+    private val tracking = mockk<TrackingRepository>()
+    
+    private lateinit var viewModel: MyFeatureViewModel
+    
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+        viewModel = MyFeatureViewModel(repository, navigator, tracking)
+    }
+    
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+    
+    @Test
+    fun `loadData emits Data state with items`() = runTest {
+        // Given
+        coEvery { repository.fetchItems() } returns listOf(mockItem1, mockItem2)
+        
+        // When
+        viewModel.start()
+        
+        // Then
+        viewModel.uiState.test {
+            assert(awaitItem() == Loading)
+            assert(awaitItem() is MyFeatureUiState.Data)
+        }
+    }
+}
+```
+
+Use **Turbine** for Flow testing:
+```kotlin
+viewModel.uiState.test {
+    assertEquals(Loading, awaitItem())
+    assertEquals(Data(...), awaitItem())
+}
+```
