@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.shodo.android.datastore"
+    namespace = "com.shodo.android.database"
     compileSdk = 35
 
     defaultConfig {

@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.shodo.android.pokemaniac.welcome.WelcomeScreen
 import com.shodo.android.coreui.theme.PokeManiacTheme
 import org.koin.androidx.compose.koinViewModel

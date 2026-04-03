@@ -58,8 +58,4 @@ val apiModule = module {
     factory<FriendsRequest> { FriendsRequestImpl(get()) }
 }
 
-val domainModule = module {
-    // usecases
-}
-
-val cleanArchiModules = listOf(databaseModule, domainModule, dataModule, apiModule)
+val cleanArchiModules = listOf(databaseModule, dataModule, apiModule)
