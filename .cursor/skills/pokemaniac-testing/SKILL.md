@@ -7,18 +7,14 @@ description: Write tests for PokeManiac ViewModels, repositories, and composable
 
 ## Testing Setup
 
-### Dependencies (already in build.gradle.kts)
+### Dependencies (add to the feature module's build.gradle.kts)
 
 ```gradle
-testImplementation(libs.junit)
-testImplementation(libs.mockito.kotlin)
-testImplementation(libs.coroutines.test)
+// Testing
+testImplementation(libs.kotlinx.coroutines.test)
+testImplementation(libs.mockito.core)
+testImplementation(libs.kotlin.test)
 testImplementation(libs.turbine)
-testImplementation(libs.koin.test)
-
-androidTestImplementation(libs.espresso.core)
-androidTestImplementation(libs.androidx.test.runner)
-androidTestImplementation(libs.androidx.compose.ui.test)
 ```
 
 ---
@@ -32,16 +28,12 @@ androidTestImplementation(libs.androidx.compose.ui.test)
 ```kotlin
 package com.shodo.android.myfeature
 
-import com.shodo.android.domain.entities.Item
+import app.cash.turbine.test
 import com.shodo.android.domain.repositories.MyRepository
-import com.shodo.android.myfeature.navigator.MyFeatureNavigator
-import com.shodo.android.tracking.TrackingRepository
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -49,20 +41,27 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import app.cash.turbine.test
+import org.mockito.Mock
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
+@ExperimentalCoroutinesApi
 class MyFeatureViewModelTest {
 
-    private val myRepository = mockk<MyRepository>()
-    private val navigator = mockk<MyFeatureNavigator>(relaxed = true)
-    private val tracking = mockk<TrackingRepository>(relaxed = true)
+    private lateinit var dispatcher: TestDispatcher
+
+    @Mock private lateinit var myRepository: MyRepository
 
     private lateinit var viewModel: MyFeatureViewModel
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
-        viewModel = MyFeatureViewModel(myRepository, navigator, tracking)
+        MockitoAnnotations.openMocks(this)
+        dispatcher = UnconfinedTestDispatcher()
+        Dispatchers.setMain(dispatcher)
+        viewModel = MyFeatureViewModel(myRepository)
     }
 
     @After
@@ -70,89 +69,110 @@ class MyFeatureViewModelTest {
         Dispatchers.resetMain()
     }
 
-    // ============ STATE TESTS ============
-
     @Test
-    fun `start emits Loading then Data state`() = runTest {
+    fun `start emits Loading then Data when repository returns items`() = runTest {
         // Given
-        val mockItems = listOf(
-            Item(id = "1", name = "Item 1"),
-            Item(id = "2", name = "Item 2")
+        `when`(myRepository.getAll()).thenReturn(
+            flow { emit(listOf(defaultItem)) }
         )
-        coEvery { myRepository.getAll() } returns flow { emit(mockItems) }
 
-        // When
-        viewModel.start()
-
-        // Then
         viewModel.uiState.test {
+            // When
+            viewModel.start()
+
+            // Then
             assertEquals(MyFeatureUiState.Loading, awaitItem())
-            
-            val dataState = awaitItem() as MyFeatureUiState.Data
-            assertEquals(2, dataState.items.size)
-            assertEquals("Item 1", dataState.items[0].name)
+            val state = awaitItem()
+            assertTrue(state is MyFeatureUiState.Data)
+            assertEquals(1, state.items.size)
         }
     }
 
     @Test
-    fun `start with empty data emits EmptyResult`() = runTest {
+    fun `start emits Loading then EmptyResult when repository returns empty list`() = runTest {
         // Given
-        coEvery { myRepository.getAll() } returns flow { emit(emptyList()) }
+        `when`(myRepository.getAll()).thenReturn(flow { emit(emptyList()) })
 
-        // When
-        viewModel.start()
-
-        // Then
         viewModel.uiState.test {
+            // When
+            viewModel.start()
+
+            // Then
             assertEquals(MyFeatureUiState.Loading, awaitItem())
             assertEquals(MyFeatureUiState.EmptyResult, awaitItem())
         }
     }
 
     @Test
-    fun `start with error emits error and EmptyResult`() = runTest {
+    fun `start emits UiError when repository throws`() = runTest {
         // Given
-        val testException = Exception("Network error")
-        coEvery { myRepository.getAll() } throws testException
+        `when`(myRepository.getAll()).thenThrow(RuntimeException("Network error"))
 
         // When
         viewModel.start()
 
-        // Then
+        // Then — error flow emits UiError (not raw Exception)
         viewModel.error.test {
-            assertEquals(testException, awaitItem())
+            assertEquals("Network error", awaitItem().message)
         }
-
-        viewModel.uiState.test {
-            assertEquals(MyFeatureUiState.Loading, awaitItem())
-            assertEquals(MyFeatureUiState.EmptyResult, awaitItem())
-        }
-    }
-
-    // ============ ACTION TESTS ============
-
-    @Test
-    fun `onItemClicked navigates to detail and logs event`() {
-        // When
-        viewModel.onItemClicked("item-123")
-
-        // Then
-        coVerify { navigator.navigateToDetail("item-123") }
-        coVerify { tracking.logEvent("myfeature_item_clicked", any()) }
-    }
-
-    @Test
-    fun `onRefresh reloads data`() = runTest {
-        // Given
-        coEvery { myRepository.getAll() } returns flow { emit(listOf(mockItem)) }
-
-        // When
-        viewModel.onRefresh()
-
-        // Then
-        coVerify(exactly = 1) { myRepository.getAll() }
     }
 }
+```
+
+### Key rules
+
+- Use `UnconfinedTestDispatcher` — coroutines execute eagerly, `delay()` is skipped automatically
+- Use `Dispatchers.setMain` / `resetMain` in `@Before` / `@After`
+- Use `@Mock` + `MockitoAnnotations.openMocks(this)` for all dependencies
+- Error flows emit `UiError`, not raw `Exception` — assert on `error.message`, not the exception itself
+- Use **Turbine** (`viewModel.uiState.test {}`) for Flow assertions
+- Use `skipItems(n)` to skip known intermediate states
+- Use `persistentListOf()` (not `listOf()`) in fixtures for `PersistentList<>` fields
+
+### Critical: subscribe to SharedFlow BEFORE triggering the action
+
+`error` is a `SharedFlow` with `replay = 0`. If the action is triggered BEFORE subscribing, the event is lost.
+
+**Always put the trigger INSIDE the `.test {}` block:**
+
+```kotlin
+// ✅ Correct — subscription is active when emit happens
+viewModel.error.test {
+    viewModel.start()
+    assertEquals("Network error", awaitItem().message)
+}
+
+// ❌ Wrong — error already emitted before test{} subscribes
+viewModel.start()
+viewModel.error.test {
+    awaitItem() // TurbineTimeoutCancellationException!
+}
+```
+
+### StateFlow emits its current value on subscription
+
+When testing `uiState` (a `StateFlow`), Turbine immediately receives the current value. Always consume the initial state with `awaitItem()` before asserting no further changes:
+
+```kotlin
+viewModel.uiState.test {
+    assertTrue(awaitItem() is MyUiState.EmptySearch) // initial value
+    viewModel.someNoOpAction()
+    ensureAllEventsConsumed() // now safe
+}
+```
+
+### Android types in JVM tests
+
+`android.net.Uri` (and other Android framework classes) crash in plain JVM tests.
+
+**Never use `Uri.parse(...)` in companion object or field initializers** — use `Mockito.mock(Uri::class.java)` instead:
+
+```kotlin
+// ✅ Safe — Mockito creates a proxy without calling any Android code
+private val mockUri: Uri = mock(Uri::class.java)
+
+// ❌ Crashes in JVM tests
+private val uri = Uri.parse("content://media/photo.jpg")
 ```
 
 ---
@@ -161,92 +181,67 @@ class MyFeatureViewModelTest {
 
 ### Repository Test Template
 
-**File:** `data/src/test/java/.../MyRepositoryTest.kt`
+**File:** `data/src/test/java/.../MyRepositoryImplTest.kt`
 
 ```kotlin
 package com.shodo.android.data.myentity
 
-import com.shodo.android.domain.entities.Item
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
-import junit.framework.TestCase.assertEquals
+import app.cash.turbine.test
+import com.shodo.android.domain.repositories.entities.Item
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import app.cash.turbine.test
+import org.mockito.Mock
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
+import kotlin.test.assertEquals
 
-class MyRepositoryTest {
+class MyRepositoryImplTest {
 
-    private val request = mockk<MyRequest>()
-    private val dataStore = mockk<MyDataStore>()
+    @Mock private lateinit var request: MyRequest
+    @Mock private lateinit var dataStore: MyDataStore
+
     private lateinit var repository: MyRepositoryImpl
 
     @Before
     fun setUp() {
+        MockitoAnnotations.openMocks(this)
+        Dispatchers.setMain(UnconfinedTestDispatcher())
         repository = MyRepositoryImpl(request, dataStore)
     }
 
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
     @Test
-    fun `getAll returns data from dataStore`() = runTest {
+    fun `getAll returns flow from dataStore`() = runTest {
         // Given
-        val mockItems = listOf(Item(id = "1", name = "Item 1"))
-        coEvery { dataStore.getAll() } returns flow { emit(mockItems) }
+        `when`(dataStore.getAll()).thenReturn(flow { emit(listOf(defaultItem)) })
 
         // When
         repository.getAll().test {
             // Then
-            assertEquals(mockItems, awaitItem())
+            assertEquals(listOf(defaultItem), awaitItem())
         }
     }
 
     @Test
-    fun `search combines local and remote data`() = runTest {
-        // Given
-        val localItems = listOf(Item(id = "1", name = "Local Item"))
-        val remoteItems = listOf(Item(id = "2", name = "Remote Item"))
-        
-        coEvery { dataStore.getAll() } returns flow { emit(localItems) }
-        coEvery { request.search("test") } returns remoteItems
-
+    fun `save delegates to dataStore`() = runTest {
         // When
-        repository.search("test").test {
-            // Then - remote takes priority
-            val result = awaitItem()
-            assertEquals(remoteItems, result)
-        }
-    }
-
-    @Test
-    fun `create persists to both remote and local`() = runTest {
-        // Given
-        val newItem = Item(id = "new", name = "New Item")
-        coEvery { request.create(newItem) } returns newItem
-        coEvery { dataStore.insert(newItem) } returns Unit
-
-        // When
-        val result = repository.create(newItem)
+        repository.save(defaultItem)
 
         // Then
-        assert(result.isSuccess)
-        coVerify { request.create(newItem) }
-        coVerify { dataStore.insert(newItem) }
-    }
-
-    @Test
-    fun `create returns failure on exception`() = runTest {
-        // Given
-        val newItem = Item(id = "new", name = "New Item")
-        val exception = Exception("Network error")
-        coEvery { request.create(newItem) } throws exception
-
-        // When
-        val result = repository.create(newItem)
-
-        // Then
-        assert(result.isFailure)
-        assertEquals(exception, result.exceptionOrNull())
+        verify(dataStore).insert(defaultItem)
     }
 }
 ```
@@ -263,10 +258,11 @@ class MyRepositoryTest {
 package com.shodo.android.myfeature.ui
 
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import com.shodo.android.coreui.theme.PokeManiacTheme
-import com.shodo.android.myfeature.MyNewFeatureUiState
+import com.shodo.android.myfeature.MyFeatureUiState
 import kotlinx.collections.immutable.persistentListOf
 
 @Preview(name = "Loading State")
@@ -288,8 +284,7 @@ fun MyFeatureViewDataPreview() {
             uiState = MyFeatureUiState.Data(
                 items = persistentListOf(
                     ItemUI(id = "1", name = "Item 1"),
-                    ItemUI(id = "2", name = "Item 2"),
-                    ItemUI(id = "3", name = "Item 3")
+                    ItemUI(id = "2", name = "Item 2")
                 )
             ),
             snackbarHostState = remember { SnackbarHostState() }
@@ -307,170 +302,6 @@ fun MyFeatureViewEmptyPreview() {
         )
     }
 }
-
-@Preview
-@Composable
-fun MyFeatureCardPreview() {
-    PokeManiacTheme {
-        MyFeatureCard(
-            item = ItemUI(id = "1", name = "Sample Item"),
-            onClick = {}
-        )
-    }
-}
-```
-
----
-
-## Koin Test Setup
-
-### Test Module Setup
-
-```kotlin
-@Before
-fun setUp() {
-    startKoin {
-        modules(
-            dataModule,
-            apiModule,
-            databaseModule,
-            myFeatureModule
-        )
-    }
-}
-
-@After
-fun tearDown() {
-    stopKoin()
-}
-```
-
-### Koin Mocking
-
-```kotlin
-@Test
-fun `inject mocked repository`() {
-    val mockRepository = mockk<MyRepository>()
-    
-    startKoin {
-        modules(
-            module {
-                factory<MyRepository> { mockRepository }
-                viewModelOf(::MyFeatureViewModel)
-            }
-        )
-    }
-
-    val viewModel = koinViewModel<MyFeatureViewModel>()
-    assertEquals(mockRepository, viewModel.myRepository)
-}
-```
-
----
-
-## Common Test Patterns
-
-### Test with Given/When/Then Comments
-
-```kotlin
-@Test
-fun `feature displays items when loaded`() = runTest {
-    // Given: repository returns items
-    coEvery { repository.getAll() } returns flow {
-        emit(listOf(mockItem1, mockItem2))
-    }
-
-    // When: viewModel starts
-    viewModel.start()
-
-    // Then: UI state contains items
-    viewModel.uiState.test {
-        assert(awaitItem() is MyFeatureUiState.Loading)
-        val data = awaitItem() as MyFeatureUiState.Data
-        assertEquals(2, data.items.size)
-    }
-}
-```
-
-### Test Error Handling
-
-```kotlin
-@Test
-fun `error is emitted on repository failure`() = runTest {
-    // Given
-    val error = Exception("API error")
-    coEvery { repository.getAll() } throws error
-
-    // When
-    viewModel.start()
-
-    // Then
-    viewModel.error.test {
-        assertEquals(error, awaitItem())
-    }
-}
-```
-
-### Test Flow Cancellation
-
-```kotlin
-@Test
-fun `viewModel cleanup on cancel`() = runTest {
-    coEvery { repository.getAll() } returns flow {
-        delay(10000) // Long running operation
-        emit(listOf(mockItem))
-    }
-
-    val job = launch {
-        viewModel.start()
-    }
-
-    advanceTimeBy(100)
-    job.cancel()
-
-    // Verify no state was emitted
-    viewModel.uiState.test {
-        assertEquals(MyFeatureUiState.Loading, awaitItem())
-    }
-}
-```
-
----
-
-## Instrumentation Testing (UI)
-
-### Espresso Test Example
-
-```kotlin
-@RunWith(AndroidJUnit4::class)
-class MyFeatureActivityTest {
-
-    @get:Rule
-    val composeTestRule = createComposeRule()
-
-    @Before
-    fun setUp() {
-        composeTestRule.setContent {
-            PokeManiacTheme {
-                MyFeatureScreen()
-            }
-        }
-    }
-
-    @Test
-    fun `displays loading initially`() {
-        composeTestRule
-            .onNodeWithTag("loader")
-            .assertIsDisplayed()
-    }
-
-    @Test
-    fun `displays items when loaded`() {
-        composeTestRule
-            .onNodeWithText("Item 1")
-            .assertIsDisplayed()
-    }
-}
 ```
 
 ---
@@ -479,17 +310,22 @@ class MyFeatureActivityTest {
 
 ✅ **DO:**
 - Use `runTest` for coroutine tests
-- Use `Turbine` for Flow assertions
-- Mock external dependencies
-- Test state transitions
+- Use **Turbine** for Flow assertions
+- Use **Mockito** (`mockito-core`) to mock interfaces and classes
+- Test state transitions (Loading → Data, Loading → EmptyResult, Loading → error)
 - Include Given/When/Then comments
-- Create Preview composables for all states
-- Use `UnconfinedTestDispatcher` for ViewModel tests
+- Assert `error.message` for `UiError` (not the exception type)
+- Use `persistentListOf()` in fixtures when the field type is `PersistentList<>`
+- Use `Mockito.mock(Uri::class.java)` for Android types needed in JVM tests
+- Use `UnconfinedTestDispatcher` — no need for `advanceUntilIdle()` or `advanceTimeBy()`
+- Subscribe to SharedFlow **inside** `error.test {}` before calling the trigger
 
 ❌ **DON'T:**
 - Use `Thread.sleep()` in tests
-- Test implementation details
-- Create overly complex mocks
-- Skip error case testing
-- Test Compose rendering internals
-- Forget to reset Dispatchers
+- Use MockK (`io.mockk`) — the project uses Mockito
+- Assert raw `Exception` from error flows — assert `UiError.message` instead
+- Use `Uri.parse(...)` in companion objects or field initializers — it crashes on JVM
+- Test implementation details (mapper internals, exact tracking event strings)
+- Forget to `resetMain()` in `@After`
+- Use `listOf()` where `PersistentList<>` is expected in fixture data
+- Assert `viewModel.uiState.value` directly after actions that call `withContext(Dispatchers.Default)` — the mapping runs on a real thread; use Turbine's `awaitItem()` instead

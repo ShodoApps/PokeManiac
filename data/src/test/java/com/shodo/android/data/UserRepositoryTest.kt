@@ -4,12 +4,6 @@ import com.shodo.android.data.myfriends.FriendsDataStore
 import com.shodo.android.data.myfriends.FriendsRequest
 import com.shodo.android.data.myfriends.UserRepositoryImpl
 import com.shodo.android.domain.repositories.entities.User
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.MockitoAnnotations
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -19,6 +13,13 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.mockito.Mock
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -90,6 +91,44 @@ class UserRepositoryTest {
 
         // THEN
         assertEquals(expected = listOf(defaultUserSubscribed, defaultUser2NotSubscribed), actual = result)
+    }
+
+    @Test
+    fun `searchUsers marks result as subscribed when id is in subscribed set`() = runTest {
+        // GIVEN — server returns user NOT subscribed, but local store has them subscribed
+        val userFromServer = defaultUser2NotSubscribed.copy(id = "friendId") // same id as subscribed
+        `when`(friendsDataStore.getSubscribedFriends()).thenReturn(
+            flow { emit(listOf(defaultUserSubscribed)) }
+        )
+        `when`(friendsRequest.searchUsers("friendName")).thenReturn(listOf(userFromServer))
+
+        // WHEN
+        val result = userRepository.searchUsers("friendName").first()
+
+        // THEN — isSubscribed is set to true because the id is in the subscribed set
+        assertEquals(1, result.size)
+        assertEquals(true, result[0].isSubscribed)
+    }
+
+    @Test
+    fun `subscribeUser delegates to dataStore with isSubscribed forced to true`() = runTest {
+        // GIVEN — user with isSubscribed = false
+        val notSubscribedUser = defaultUserSubscribed.copy(isSubscribed = false)
+
+        // WHEN
+        userRepository.subscribeUser(notSubscribedUser)
+
+        // THEN — dataStore receives user with isSubscribed = true
+        verify(friendsDataStore).subscribeFriend(defaultUserSubscribed)
+    }
+
+    @Test
+    fun `unsubscribeUser delegates to dataStore with the given userId`() = runTest {
+        // WHEN
+        userRepository.unsubscribeUser("friendId")
+
+        // THEN
+        verify(friendsDataStore).unsubscribeFriend("friendId")
     }
 
     companion object {

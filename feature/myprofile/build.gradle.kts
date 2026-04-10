@@ -53,4 +53,10 @@ dependencies {
 
     // Previews
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // Testing
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.turbine)
 }
