@@ -145,6 +145,111 @@ GlobalScope.launch {
 }
 ```
 
+### Dispatcher Rules
+
+Each dispatcher has a strict purpose — never mix them up:
+
+| Dispatcher | Purpose | Examples |
+|---|---|---|
+| `Dispatchers.Main` | UI updates only, single thread | `_uiState.update { }`, navigation |
+| `Dispatchers.IO` | I/O operations, large thread pool | network calls, DB reads/writes, file I/O |
+| `Dispatchers.Default` | CPU-bound work, shared thread pool | sorting, mapping large lists, JSON parsing |
+
+```kotlin
+// ✅ GOOD - explicit dispatcher for each type of work
+viewModelScope.launch {                                      // Main (default for viewModelScope)
+    _uiState.update { Loading }                              // UI update → stays on Main
+
+    val raw = withContext(Dispatchers.IO) {                  // IO for network/DB
+        repository.fetchData()
+    }
+
+    val uiItems = withContext(Dispatchers.Default) {         // Default for CPU mapping
+        raw.map { it.mapToUI() }.toPersistentList()
+    }
+
+    _uiState.update { Data(uiItems) }                        // UI update → back on Main
+}
+
+// ✅ GOOD - flowOn in repository to declare the natural context of a Flow
+fun searchUsers(name: String): Flow<List<User>> =
+    flow { emit(api.search(name)) }
+        .combine(localDb.getAll()) { remote, local -> merge(remote, local) }
+        .flowOn(Dispatchers.IO)       // entire upstream runs on IO
+
+fun getNewsFeed(): Flow<List<Activity>> =
+    db.flow1.combine(db.flow2) { a, b -> a + b }
+        .map { it.sortedByDescending { item -> item.date } }
+        .flowOn(Dispatchers.Default)  // CPU combine+sort runs on Default
+
+// ❌ BAD - I/O on Main thread
+viewModelScope.launch {
+    val data = repository.fetchData()   // network call on Main!
+    _uiState.update { Data(data) }
+}
+
+// ❌ BAD - heavy CPU work on Main thread
+viewModelScope.launch {
+    repository.getAll().collect { list ->
+        _uiState.update { Data(list.sortedByDescending { it.date }.map { it.mapToUI() }) }
+        // ↑ sort + map on Main for every emission
+    }
+}
+```
+
+### No Orphan Coroutines
+
+Every coroutine must be tied to a structured parent scope. Never fire-and-forget from non-suspend contexts.
+
+```kotlin
+// ✅ GOOD - error emission from inside a coroutine
+viewModelScope.launch {
+    try { ... }
+    catch (e: CancellationException) { throw e }
+    catch (e: Exception) { _error.emit(e) }   // suspend emit, properly in-scope
+}
+
+// ✅ GOOD - error emission from non-suspend code (use buffered SharedFlow + tryEmit)
+private val _error = MutableSharedFlow<Exception>(extraBufferCapacity = 1)
+fun doSomethingSync(): Result? {
+    return try { ... }
+    catch (e: Exception) {
+        _error.tryEmit(e)   // non-blocking, no orphan launch needed
+        null
+    }
+}
+
+// ❌ BAD - orphan launch in a catch block of a non-suspend function
+fun doSomethingSync(): Result? {
+    return try { ... }
+    catch (e: Exception) {
+        viewModelScope.launch { _error.emit(e) }  // detached coroutine — orphan!
+        null
+    }
+}
+
+// ❌ BAD - GlobalScope always creates orphans
+GlobalScope.launch { ... }
+
+// ❌ BAD - manual CoroutineScope creates orphans
+CoroutineScope(Dispatchers.IO).launch { ... }
+```
+
+### Preventing Overlapping Coroutines
+
+When a user action can trigger the same coroutine multiple times, always cancel the previous one:
+
+```kotlin
+private var loadJob: Job? = null
+
+fun loadData(query: String) {
+    loadJob?.cancel()                    // cancel previous before launching new
+    loadJob = viewModelScope.launch {
+        repository.search(query).collectLatest { ... }
+    }
+}
+```
+
 ---
 
 ## Sealed Classes & Enums

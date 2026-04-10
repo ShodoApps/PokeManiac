@@ -21,6 +21,8 @@ import com.shodo.android.searchfriend.uimodel.SubscriptionState.UpdatingSubscrib
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -28,6 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed class SearchFriendUiState {
     data object EmptySearch : SearchFriendUiState()
@@ -47,22 +50,30 @@ class SearchFriendViewModel(
     private val _error = MutableSharedFlow<Exception>()
     val error = _error.asSharedFlow()
 
+    private var searchJob: Job? = null
+
     init {
         viewModelScope.launch {
-            trackingRepository.sendEventScreen(TrackingEventScreen(TRACKING_SEARCH_SCREEN))
+            withContext(Dispatchers.IO) {
+                trackingRepository.sendEventScreen(TrackingEventScreen(TRACKING_SEARCH_SCREEN))
+            }
         }
     }
 
     fun searchFriend(friendName: String) {
-        viewModelScope.launch {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
             if (friendName.isEmpty() || friendName.isBlank()) {
                 _uiState.update { EmptySearch }
             } else {
                 _uiState.update { Loading }
                 try {
                     userRepository.searchUsers(friendName).collectLatest { friends ->
-                        if (friends.isNotEmpty()) {
-                            _uiState.update { Data(people = friends.map { it.mapToUI() }.toPersistentList()) }
+                        val uiPeople = withContext(Dispatchers.Default) {
+                            friends.map { it.mapToUI() }.toPersistentList()
+                        }
+                        if (uiPeople.isNotEmpty()) {
+                            _uiState.update { Data(people = uiPeople) }
                         } else {
                             _uiState.update { EmptyResult(friendName) }
                         }
@@ -90,13 +101,15 @@ class SearchFriendViewModel(
                 }.toPersistentList())
             }
             try {
-                // 2. Perform suspend operations OUTSIDE update{}
-                if (subscribe) {
-                    trackingRepository.sendEventClick(TrackingEventClick(TRACKING_SUBSCRIBE_CLICK))
-                    userRepository.subscribeUser(friend.mapToModel())
-                } else {
-                    trackingRepository.sendEventClick(TrackingEventClick(TRACKING_UNSUBSCRIBE_CLICK))
-                    userRepository.unsubscribeUser(friendId)
+                // 2. Perform suspend operations OUTSIDE update{}, on IO dispatcher
+                withContext(Dispatchers.IO) {
+                    if (subscribe) {
+                        trackingRepository.sendEventClick(TrackingEventClick(TRACKING_SUBSCRIBE_CLICK))
+                        userRepository.subscribeUser(friend.mapToModel())
+                    } else {
+                        trackingRepository.sendEventClick(TrackingEventClick(TRACKING_UNSUBSCRIBE_CLICK))
+                        userRepository.unsubscribeUser(friendId)
+                    }
                 }
                 // 3. Update state with final subscription state
                 _uiState.update { currentState ->

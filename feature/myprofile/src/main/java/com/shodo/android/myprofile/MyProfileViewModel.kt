@@ -13,6 +13,7 @@ import com.shodo.android.myprofile.uimodel.MyProfilePokemonCardUI
 import com.shodo.android.myprofile.uimodel.MyProfileUI
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed class MyProfileUiState {
     data object Loading: MyProfileUiState()
@@ -45,14 +47,20 @@ class MyProfileViewModel(
         activitiesJob = viewModelScope.launch {
             _uiState.update { Loading }
             try {
-                myProfileRepository.getMyActivities().collect { myActivies ->
+                myProfileRepository.getMyActivities().collect { myActivities ->
+                    val sortedCards = withContext(Dispatchers.Default) {
+                        myActivities.sortedByDescending { it.date }
+                            .mapNotNull { it.pokemonCard.mapToUI() }
+                            .toPersistentList()
+                    }
                     _uiState.update {
                         MyProfileUiState.Data(
                             profile = MyProfileUI(
                                 name = null,
                                 imageUrl = null,
-                                pokemonCards = myActivies.sortedByDescending { it.date }.mapNotNull { it.pokemonCard.mapToUI() }.toPersistentList()
-                            ))
+                                pokemonCards = sortedCards
+                            )
+                        )
                     }
                 }
             } catch (e: CancellationException) {

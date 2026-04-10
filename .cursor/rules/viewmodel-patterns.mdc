@@ -169,11 +169,57 @@ fun loadData() {
 }
 ```
 
+### Dispatcher Rules in ViewModels
+
+`viewModelScope.launch` defaults to `Dispatchers.Main`. Always be explicit about the context for each operation:
+
+```kotlin
+fun loadData() {
+    viewModelScope.launch {                              // Main (UI coordination)
+        _uiState.update { Loading }                     // UI update → Main ✅
+
+        val raw = withContext(Dispatchers.IO) {          // network/DB call → IO ✅
+            repository.fetchData()
+        }
+
+        val uiItems = withContext(Dispatchers.Default) { // CPU mapping → Default ✅
+            raw.map { it.mapToUI() }.toPersistentList()
+        }
+
+        _uiState.update { Data(uiItems) }               // UI update → back on Main ✅
+    }
+}
+```
+
+Rules:
+- **`Dispatchers.Main`** — only for `_uiState.update {}`, navigation calls, and other UI-facing operations
+- **`Dispatchers.IO`** — wrap every suspend call that does network, database, or file I/O with `withContext(Dispatchers.IO) { }`
+- **`Dispatchers.Default`** — wrap every CPU-bound transform (sorting, mapping large lists, parsing) with `withContext(Dispatchers.Default) { }`
+
+### Prevent Overlapping Coroutines
+
+For any operation that can be triggered multiple times (search, refresh, start), use a `Job?` to cancel the previous run:
+
+```kotlin
+private var loadJob: Job? = null
+
+fun start() {
+    loadJob?.cancel()
+    loadJob = viewModelScope.launch {
+        repository.stream().collect { data ->
+            val uiItems = withContext(Dispatchers.Default) { data.map { it.mapToUI() } }
+            _uiState.update { Data(uiItems) }
+        }
+    }
+}
+```
+
 ### Use collectLatest for Flows
 ```kotlin
 viewModelScope.launch {
     repository.items.collectLatest { items ->
-        _uiState.update { MyFeatureUiState.Data(items.mapToUI()) }
+        val uiItems = withContext(Dispatchers.Default) { items.map { it.mapToUI() } }
+        _uiState.update { MyFeatureUiState.Data(uiItems) }
     }
 }
 ```

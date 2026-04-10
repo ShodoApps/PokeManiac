@@ -8,8 +8,10 @@ import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
 import java.time.LocalDateTime
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 
 // This one is mocked, sorry !
 class NewsFeedRepositoryImpl(
@@ -136,7 +138,7 @@ class NewsFeedRepositoryImpl(
                 addAll(myActivities)
                 addAll(friendsActivities)
             }.sortedByDescending { it.date }.toList()
-        }
+        }.flowOn(Dispatchers.Default)
     }
 
     override suspend fun saveNewActivity(newActivity: NewActivity) {

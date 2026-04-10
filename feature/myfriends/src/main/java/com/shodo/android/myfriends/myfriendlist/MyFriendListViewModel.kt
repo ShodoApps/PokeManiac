@@ -13,6 +13,7 @@ import com.shodo.android.myfriends.uimodel.mapToUI
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed class MyFriendListUiState {
     data object Loading: MyFriendListUiState()
@@ -47,7 +49,10 @@ class MyFriendListViewModel(
             try {
                 userRepository.getSubscribedUsers().collect { friends ->
                     if (friends.isNotEmpty()) {
-                        _uiState.update { Data(friends = friends.map { it.mapToUI() }.toPersistentList()) }
+                        val uiFriends = withContext(Dispatchers.Default) {
+                            friends.map { it.mapToUI() }.toPersistentList()
+                        }
+                        _uiState.update { Data(friends = uiFriends) }
                     } else {
                         _uiState.update { Empty }
                     }
@@ -63,7 +68,7 @@ class MyFriendListViewModel(
     fun unsubscribeFriend(friendId: String) {
         viewModelScope.launch {
             try {
-                userRepository.unsubscribeUser(friendId)
+                withContext(Dispatchers.IO) { userRepository.unsubscribeUser(friendId) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

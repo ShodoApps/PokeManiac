@@ -18,7 +18,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed class PostTransactionStep2UiState {
     data object Filling : PostTransactionStep2UiState()
@@ -42,22 +44,24 @@ class PostTransactionStep2ViewModel(
         viewModelScope.launch {
             _uiState.update { Loading }
             try {
-                newsFeedRepository.saveNewActivity(
-                    NewActivity(
-                        userName = "Super Collectionneur",
-                        userImageUrl = null,
-                        date = LocalDateTime.now(),
-                        pokemonCard = UserPokemonCard(
-                            pokemonId = pokemonNumber,
-                            name = pokemonName,
-                            imageSource = FileSource(uri),
-                            totalVotes = 0,
-                            hasMyVote = false
-                        ),
-                        activityType = transactionType,
-                        price = transactionPrice
+                withContext(Dispatchers.IO) {
+                    newsFeedRepository.saveNewActivity(
+                        NewActivity(
+                            userName = "Super Collectionneur",
+                            userImageUrl = null,
+                            date = LocalDateTime.now(),
+                            pokemonCard = UserPokemonCard(
+                                pokemonId = pokemonNumber,
+                                name = pokemonName,
+                                imageSource = FileSource(uri),
+                                totalVotes = 0,
+                                hasMyVote = false
+                            ),
+                            activityType = transactionType,
+                            price = transactionPrice
+                        )
                     )
-                )
+                }
                 _success.emit(true)
             } catch (e: CancellationException) {
                 throw e

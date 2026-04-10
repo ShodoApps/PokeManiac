@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed class DashboardUiState {
     data class Data(val news: PersistentList<NewActivityUI>) : DashboardUiState()
@@ -93,7 +95,10 @@ class DashboardViewModel(
         try {
             newsFeedRepository.getNewActivities().collect { result ->
                 if (result.isNotEmpty()) {
-                    _uiState.update { DashboardUiState.Data(result.map { it.mapToUI() }.toPersistentList()) }
+                    val uiItems = withContext(Dispatchers.Default) {
+                        result.map { it.mapToUI() }.toPersistentList()
+                    }
+                    _uiState.update { DashboardUiState.Data(uiItems) }
                 } else {
                     _uiState.update { EmptyResult }
                 }
