@@ -20,6 +20,7 @@ import com.shodo.android.searchfriend.uimodel.SubscriptionState.Subscribed
 import com.shodo.android.searchfriend.uimodel.SubscriptionState.UpdatingSubscribe
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -66,6 +67,8 @@ class SearchFriendViewModel(
                             _uiState.update { EmptyResult(friendName) }
                         }
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     _error.emit(e)
                 }
@@ -104,6 +107,8 @@ class SearchFriendViewModel(
                         }.toPersistentList()
                     ) ?: currentState
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 // Revert to previous subscription state on failure
                 _uiState.update { currentState ->

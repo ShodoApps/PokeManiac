@@ -153,13 +153,15 @@ data class Data(val users: PersistentList<UserUI>) : UiState()
 
 ## Coroutine Handling
 
-### Always Use viewModelScope
+### Always Use viewModelScope + Always Rethrow CancellationException
 ```kotlin
 fun loadData() {
     viewModelScope.launch {
         try {
             val data = repository.fetchData()
             _uiState.update { MyFeatureUiState.Data(data) }
+        } catch (e: CancellationException) {
+            throw e  // Never swallow — coroutine cancellation must propagate
         } catch (e: Exception) {
             _error.emit(e)
         }

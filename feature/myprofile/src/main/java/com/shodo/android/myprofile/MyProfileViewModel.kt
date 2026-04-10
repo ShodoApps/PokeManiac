@@ -12,6 +12,7 @@ import com.shodo.android.myprofile.MyProfileUiState.Loading
 import com.shodo.android.myprofile.uimodel.MyProfilePokemonCardUI
 import com.shodo.android.myprofile.uimodel.MyProfileUI
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +55,8 @@ class MyProfileViewModel(
                             ))
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _error.emit(e)
             }

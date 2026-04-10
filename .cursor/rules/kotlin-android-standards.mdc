@@ -97,14 +97,25 @@ CoroutineScope(Dispatchers.Main).launch { }
 
 ### Error Handling in Coroutines
 ```kotlin
-// ✅ GOOD - try/catch in coroutine
+// ✅ GOOD - always rethrow CancellationException
 viewModelScope.launch {
     try {
         val data = repository.fetchData()
         _state.value = Data(data)
+    } catch (e: CancellationException) {
+        throw e  // Must rethrow — never swallow coroutine cancellation
     } catch (e: Exception) {
         _error.emit(e)
         _state.value = Error
+    }
+}
+
+// ❌ BAD - catches CancellationException, breaking coroutine cancellation
+viewModelScope.launch {
+    try {
+        val data = repository.fetchData()
+    } catch (e: Exception) {  // CancellationException is a subclass of Exception!
+        _error.emit(e)
     }
 }
 

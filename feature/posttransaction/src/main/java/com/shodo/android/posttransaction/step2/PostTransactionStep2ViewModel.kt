@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 sealed class PostTransactionStep2UiState {
@@ -58,6 +59,8 @@ class PostTransactionStep2ViewModel(
                     )
                 )
                 _success.emit(true)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _uiState.update { Filling }
                 _error.emit(e)

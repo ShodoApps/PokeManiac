@@ -12,6 +12,7 @@ import com.shodo.android.myfriends.uimodel.MyFriendUI
 import com.shodo.android.myfriends.uimodel.mapToUI
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +52,8 @@ class MyFriendListViewModel(
                         _uiState.update { Empty }
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _error.emit(e)
             }
@@ -61,6 +64,8 @@ class MyFriendListViewModel(
         viewModelScope.launch {
             try {
                 userRepository.unsubscribeUser(friendId)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _error.emit(e)
             }

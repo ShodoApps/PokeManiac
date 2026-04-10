@@ -20,6 +20,7 @@ import com.shodo.android.domain.repositories.news.NewsFeedRepository
 import java.time.format.DateTimeFormatter
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -67,6 +68,8 @@ class DashboardViewModel(
             try {
                 delay(2000) // Mock Delay to show the loading state
                 fetchNewActivities()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _error.emit(e)
             }
@@ -95,6 +98,8 @@ class DashboardViewModel(
                     _uiState.update { EmptyResult }
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             _error.emit(e)
             _uiState.update { EmptyResult }

@@ -7,6 +7,7 @@ import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailUiState.Data
 import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailUiState.Loading
 import com.shodo.android.myfriends.uimodel.MyFriendUI
 import com.shodo.android.myfriends.uimodel.mapToUI
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,6 +47,8 @@ class MyFriendDetailViewModel(
                         _uiState.update { Data(user.mapToUI()) }
                     } ?: _unsubscribed.emit(true)
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _error.emit(e)
             }
@@ -56,6 +59,8 @@ class MyFriendDetailViewModel(
         viewModelScope.launch {
             try {
                 userRepository.unsubscribeUser(friendId)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _error.emit(e)
             }
