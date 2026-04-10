@@ -1,6 +1,5 @@
 package com.shodo.android.myprofile
 
-import android.net.Uri
 import app.cash.turbine.test
 import com.shodo.android.coreui.navigator.BillingNavigator
 import com.shodo.android.coreui.navigator.PostTransactionNavigator
@@ -21,7 +20,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import java.time.LocalDateTime
@@ -38,10 +36,6 @@ class MyProfileViewModelTest {
     @Mock private lateinit var billingNavigator: BillingNavigator
 
     private lateinit var viewModel: MyProfileViewModel
-
-    // Mocked Uri instances — avoids Android stub crash in JVM tests
-    private val mockUri1: Uri = mock(Uri::class.java)
-    private val mockUri2: Uri = mock(Uri::class.java)
 
     @Before
     fun setUp() {
@@ -62,7 +56,7 @@ class MyProfileViewModelTest {
     fun `start emits Loading then Data with mapped FileSource cards`() = runTest {
         // Given — activity with FileSource card (kept by the mapper)
         `when`(myProfileRepository.getMyActivities()).thenReturn(
-            flow { emit(listOf(activityWithFileSource(mockUri1, "Pikachu", LocalDateTime.of(2024, 6, 10, 12, 0)))) }
+            flow { emit(listOf(activityWithFileSource("content://media/pikachu.jpg", "Pikachu", LocalDateTime.of(2024, 6, 10, 12, 0)))) }
         )
 
         viewModel.uiState.test {
@@ -100,8 +94,8 @@ class MyProfileViewModelTest {
     @Test
     fun `start emits cards sorted by most recent date first`() = runTest {
         // Given — two activities with different dates (older Pikachu, newer Charizard)
-        val older = activityWithFileSource(mockUri1, "Pikachu", LocalDateTime.of(2024, 1, 1, 10, 0))
-        val newer = activityWithFileSource(mockUri2, "Charizard", LocalDateTime.of(2024, 12, 31, 23, 59))
+        val older = activityWithFileSource("content://media/pikachu.jpg", "Pikachu", LocalDateTime.of(2024, 1, 1, 10, 0))
+        val newer = activityWithFileSource("content://media/charizard.jpg", "Charizard", LocalDateTime.of(2024, 12, 31, 23, 59))
 
         `when`(myProfileRepository.getMyActivities()).thenReturn(
             flow { emit(listOf(older, newer)) }
@@ -136,14 +130,14 @@ class MyProfileViewModelTest {
 
     // ===== Helpers =====
 
-    private fun activityWithFileSource(uri: Uri, cardName: String, date: LocalDateTime) = NewActivity(
+    private fun activityWithFileSource(fileUri: String, cardName: String, date: LocalDateTime) = NewActivity(
         userName = "Ash",
         userImageUrl = null,
         date = date,
         pokemonCard = UserPokemonCard(
             pokemonId = 25,
             name = cardName,
-            imageSource = ImageSource.FileSource(uri),
+            imageSource = ImageSource.FileSource(fileUri),
             totalVotes = 5,
             hasMyVote = true
         ),

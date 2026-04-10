@@ -56,7 +56,7 @@ class PostTransactionStep2ViewModel(
                             pokemonCard = UserPokemonCard(
                                 pokemonId = pokemonNumber,
                                 name = pokemonName,
-                                imageSource = FileSource(uri),
+                                imageSource = FileSource(uri.toString()),
                                 totalVotes = 0,
                                 hasMyVote = false
                             ),

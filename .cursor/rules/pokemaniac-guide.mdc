@@ -443,11 +443,49 @@ Currently preparing for future Kotlin Multiplatform (KMP) migration:
 
 - ✅ Clean architecture separation (ready for sharing)
 - ✅ Domain layer pure Kotlin (no Android imports)
+- ✅ `ImageSource.FileSource(val localIdentifier: String)` — opaque string, no Android type in domain
 - ✅ Data layer abstracted via interfaces
 - ❌ UI layer Compose-based (Android-specific)
+- ❌ `NewActivity.kt` uses `java.time.LocalDateTime` — must be replaced with `kotlinx-datetime` before sharing
 
 When moving to KMP:
 1. Migrate domain + data to `:shared` module
 2. Keep `:android` for UI/Compose
 3. Create `:ios` module using SwiftUI
 4. Share business logic, state management
+
+### Platform-specific capability: Local image capture (`FileSource`)
+
+`ImageSource.FileSource(val localIdentifier: String)` intentionally stores a **platform-opaque string**.
+
+- **Android today**: the string is a `content://` URI produced by `FileProvider`. This is Android-specific and that's fine — it lives only in the Android feature modules.
+- **iOS tomorrow**: the string will be whatever iOS provides (PHAsset local identifier, sandbox file URL, etc.). iOS feature modules resolve it with their own image loading.
+
+**The right KMP pattern for this feature** is `expect/actual` on the image capture capability, not on the domain entity:
+
+```kotlin
+// shared KMP module
+expect class LocalImageCapture {
+    fun createImageFile(): String        // returns the platform-specific localIdentifier
+}
+
+// androidMain — existing code, unchanged
+actual class LocalImageCapture(private val context: Context) {
+    actual fun createImageFile(): String {
+        val file = File.createTempFile("PokeManiac_", ".jpg", context.filesDir)
+        return FileProvider.getUriForFile(context, "${context.packageName}.provider", file).toString()
+    }
+}
+
+// iosMain — new implementation
+actual class LocalImageCapture {
+    actual fun createImageFile(): String {
+        // PHPicker / UIImagePickerController flow
+        // returns PHAsset localIdentifier or file sandbox URL string
+    }
+}
+```
+
+The domain entity `FileSource(localIdentifier)`, the Room database, and all persistence code remain **unchanged**. The `expect/actual` boundary sits in the feature module (PostTransaction Step 1), not in the domain.
+
+> **Do NOT change the Android implementation** when doing the KMP migration. Wrap it behind the `actual`, and let iOS provide its own `actual`.

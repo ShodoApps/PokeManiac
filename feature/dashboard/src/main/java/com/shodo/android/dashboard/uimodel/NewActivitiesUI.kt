@@ -3,6 +3,7 @@ package com.shodo.android.dashboard.uimodel
 import android.net.Uri
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.core.net.toUri
 import com.shodo.android.domain.repositories.entities.ImageSource
 import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
@@ -48,7 +49,7 @@ fun NewActivity.mapToUI(): NewActivityUI = NewActivityUI(
         name = pokemonCard.name,
         imageSource = when (val source = pokemonCard.imageSource) {
             is ImageSource.UrlSource -> ImageSourceUI.UrlSource(source.imageUrl)
-            is ImageSource.FileSource -> ImageSourceUI.FileSource(source.fileUri)
+            is ImageSource.FileSource -> ImageSourceUI.FileSource(source.fileUri.toUri())
         }
     ),
     price = price

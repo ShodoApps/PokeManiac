@@ -1,6 +1,5 @@
 package com.shodo.android.database.myactivities
 
-import androidx.core.net.toUri
 import com.shodo.android.data.myprofile.MyActivitiesDataStore
 import com.shodo.android.database.PokeManiacDatabase
 import com.shodo.android.database.myactivities.MyActivityBase.NewActivityTypeBase
@@ -32,7 +31,7 @@ private fun NewActivity.mapToBase() = MyActivityBase(
     pokemonCard = MyActivityBase.MyPokemonCardBase(
         id = pokemonCard.pokemonId,
         name = pokemonCard.name,
-        fileUri = (pokemonCard.imageSource as ImageSource.FileSource).fileUri.toString(),
+        fileUri = (pokemonCard.imageSource as ImageSource.FileSource).fileUri,
         hasMyVote = pokemonCard.hasMyVote,
         totalVotes = pokemonCard.totalVotes
     )
@@ -49,7 +48,7 @@ private fun MyActivityBase.mapToModel() = NewActivity(
     },
     pokemonCard = UserPokemonCard(
         pokemonId = pokemonCard.id,
-        imageSource = ImageSource.FileSource(pokemonCard.fileUri.toUri()),
+        imageSource = ImageSource.FileSource(pokemonCard.fileUri),
         totalVotes = pokemonCard.totalVotes,
         hasMyVote = pokemonCard.hasMyVote,
         name = pokemonCard.name

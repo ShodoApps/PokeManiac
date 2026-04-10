@@ -27,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
@@ -277,9 +276,9 @@ private fun previewProfileNoPosts() = MyProfileUI(
 )
 
 private fun previewPokemonCards(): PersistentList<MyProfilePokemonCardUI> = persistentListOf(
-    MyProfilePokemonCardUI(id = "1", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png".toUri(), totalVotes = 10, name = "pokemonName1"),
-    MyProfilePokemonCardUI(id = "2", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png".toUri(), totalVotes = 5, name = "pokemonName4"),
-    MyProfilePokemonCardUI(id = "3", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png".toUri(), totalVotes = 2, name = "pokemonName2")
+    MyProfilePokemonCardUI(id = "1", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png", totalVotes = 10, name = "pokemonName1"),
+    MyProfilePokemonCardUI(id = "2", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png", totalVotes = 5, name = "pokemonName4"),
+    MyProfilePokemonCardUI(id = "3", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png", totalVotes = 2, name = "pokemonName2")
 )
 
 //endregion Preview Data Helpers

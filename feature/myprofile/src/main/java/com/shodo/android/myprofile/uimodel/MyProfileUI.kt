@@ -1,6 +1,5 @@
 package com.shodo.android.myprofile.uimodel
 
-import android.net.Uri
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.shodo.android.domain.repositories.entities.ImageSource
@@ -20,7 +19,7 @@ data class MyProfileUI(
 data class MyProfilePokemonCardUI(
     val id: String,
     val name: String,
-    val imageUri: Uri,
+    val imageUri: String,
     val totalVotes: Int
 )
 

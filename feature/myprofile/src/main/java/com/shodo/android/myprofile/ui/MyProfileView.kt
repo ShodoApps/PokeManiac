@@ -11,7 +11,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.net.toUri
 import com.shodo.android.coreui.theme.PokeManiacTheme
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.ui.GenericLoader
@@ -145,9 +144,9 @@ fun PreviewMyFriendsListView_Data_DarkTheme() {
 }
 
 private fun previewPokemonCards(): PersistentList<MyProfilePokemonCardUI> = persistentListOf(
-    MyProfilePokemonCardUI(id = "1", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png".toUri(), totalVotes = 10, name = "pokemonName1"),
-    MyProfilePokemonCardUI(id = "2", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png".toUri(), totalVotes = 5, name = "pokemonName4"),
-    MyProfilePokemonCardUI(id = "3", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png".toUri(), totalVotes = 2, name = "pokemonName2")
+    MyProfilePokemonCardUI(id = "1", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png", totalVotes = 10, name = "pokemonName1"),
+    MyProfilePokemonCardUI(id = "2", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png", totalVotes = 5, name = "pokemonName4"),
+    MyProfilePokemonCardUI(id = "3", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png", totalVotes = 2, name = "pokemonName2")
 )
 
 //endregion Previews
