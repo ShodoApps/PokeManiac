@@ -25,11 +25,11 @@ Use these checklists before starting work to ensure nothing is missed.
 ### Core Files
 - [ ] `MyNewFeatureActivity.kt` - Entry point with PokeManiacTheme
 - [ ] `MyNewFeatureScreen.kt` - Container with state collection
-- [ ] `MyNewFeatureViewModel.kt` - With sealed UiState, StateFlow, SharedFlow
+- [ ] `MyNewFeatureViewModel.kt` - With sealed UiState, `MutableSharedFlow<UiError>`, no mappers
 - [ ] `MyNewFeatureView.kt` - Stateless view with when() on state
 - [ ] `MyNewFeatureContent.kt` - Content sections
 - [ ] `MyNewFeaturePreview.kt` - Preview composables for all states
-- [ ] `uimodel/MyNewFeatureUI.kt` - UI data models
+- [ ] `uimodel/MyNewFeatureUI.kt` - UI data models **+ their domain→UI mappers** (extension functions)
 
 ### Navigation
 - [ ] Navigator interface created in `coreui/navigator/`
@@ -230,6 +230,8 @@ Use these checklists before starting work to ensure nothing is missed.
 
 ### Compose Standards
 - [ ] Screen/View pattern respected
+- [ ] Error flow uses `UiError` (not raw `Exception`), `error.message` in snackbar (not `.toString()`)
+- [ ] Lifecycle triggers use `OnLifecycleEventEffect` (not raw `DisposableEffect + LifecycleEventObserver`)
 - [ ] Recomposition — Tier 1 (always apply, negligible complexity cost):
   - [ ] All `UiState` sealed classes annotated with `@Immutable`
   - [ ] All UI model `data class` annotated with `@Immutable` (or `@Stable` if they contain `Uri` or other non-annotated-but-reliable types)
@@ -254,7 +256,7 @@ Use these checklists before starting work to ensure nothing is missed.
 ### Coroutines
 - [ ] viewModelScope used (not GlobalScope)
 - [ ] Flow collection proper (collectLatest, collect)
-- [ ] Error handling with try/catch
+- [ ] Error handling with try/catch — `CancellationException` always rethrown, others emit `UiError.from(e)`
 - [ ] No blocking operations
 - [ ] Proper dispatcher selection
 

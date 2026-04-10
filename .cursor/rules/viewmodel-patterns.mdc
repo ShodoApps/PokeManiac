@@ -14,7 +14,7 @@ Every ViewModel follows this structure:
 class MyFeatureViewModel(
     private val repository: MyRepository,
     private val navigator: MyNavigator,
-    private val tracking: TrackingRepository
+    private val trackingRepository: TrackingRepository
 ) : ViewModel() {
     
     // ============ UI STATE ============
@@ -23,14 +23,13 @@ class MyFeatureViewModel(
         data object Loading : MyFeatureUiState()
         data class Data(val items: PersistentList<ItemUI>) : MyFeatureUiState()
         data object EmptyResult : MyFeatureUiState()
-        // Add error states as needed
     }
     
     private val _uiState: MutableStateFlow<MyFeatureUiState> = MutableStateFlow(Loading)
     val uiState: StateFlow<MyFeatureUiState> = _uiState.asStateFlow()
     
     // ============ EVENTS / ERRORS ============
-    private val _error = MutableSharedFlow<Exception>()
+    private val _error = MutableSharedFlow<UiError>()
     val error = _error.asSharedFlow()
     
     // ============ PUBLIC ACTIONS ============
@@ -40,19 +39,16 @@ class MyFeatureViewModel(
         }
     }
     
-    fun onItemClicked(id: String) {
-        tracking.logEvent("item_clicked")
-        navigator.navigateToDetail(id)
-    }
-    
     // ============ PRIVATE IMPLEMENTATION ============
     private suspend fun loadData() {
         try {
             _uiState.update { Loading }
             val items = repository.fetchItems()
             _uiState.update { MyFeatureUiState.Data(items.toPersistentList()) }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            _error.emit(e)
+            _error.emit(UiError.from(e))
             _uiState.update { MyFeatureUiState.EmptyResult }
         }
     }
@@ -112,14 +108,30 @@ import kotlinx.collections.immutable.toPersistentList
 data class Data(val items: PersistentList<ItemUI>) : UiState()
 ```
 
-### ✅ Separate Error Flow
-Keep errors in a separate `SharedFlow`:
+### ✅ Typed Error Flow — Use `UiError`
+
+Always use `UiError` (from `coreui`) instead of raw `Exception`. This guarantees a non-null, user-facing message and prevents `"null"` showing in snackbars.
+
 ```kotlin
-private val _error = MutableSharedFlow<Exception>()
+import com.shodo.android.coreui.UiError
+
+private val _error = MutableSharedFlow<UiError>()
 val error = _error.asSharedFlow()
+
+// In catch blocks:
+catch (e: Exception) {
+    _error.emit(UiError.from(e))
+}
 ```
 
-Screen collects errors in `LaunchedEffect` for snackbars.
+`UiError.from(e)` returns `UiError(message = e.message ?: "Something went wrong")`.
+
+Screen collects errors in `observeWithLifecycle` for snackbars:
+```kotlin
+viewModel.error.observeWithLifecycle(lifecycleOwner) { error ->
+    snackbarHostState.showSnackbar(error.message)  // Never .toString()
+}
+```
 
 ### ❌ Don't use Boolean flags
 ```kotlin
@@ -139,38 +151,49 @@ sealed class UiState {
 
 ## Lifecycle Handling in ViewModel
 
-### Use ON_START callback
-Always reload data in ViewModel when screen resumes:
+### Use `OnLifecycleEventEffect` Instead of Raw `DisposableEffect`
+
+Use the `OnLifecycleEventEffect` helper from `coreui.extensions` instead of the boilerplate `DisposableEffect + LifecycleEventObserver` pattern. It wraps the callback in `rememberUpdatedState` to prevent stale lambdas.
+
 ```kotlin
-// In Screen
-DisposableEffect(lifecycleOwner) {
-    val lifecycleObserver = LifecycleEventObserver { _, event ->
-        if (event == ON_START) {
-            viewModel.start()
-        }
-    }
-    lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
-    onDispose {
-        lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
-    }
-}
+import com.shodo.android.coreui.extensions.OnLifecycleEventEffect
+
+// ON_START: reload when screen is first shown (after Activity.start())
+OnLifecycleEventEffect(Lifecycle.Event.ON_START, lifecycleOwner) { viewModel.start() }
+
+// ON_RESUME: reload every time screen comes back to foreground (e.g., after camera)
+OnLifecycleEventEffect(Lifecycle.Event.ON_RESUME, lifecycleOwner) { viewModel.start() }
 ```
+
+Use `ON_RESUME` when data can change while the user is in another Activity (e.g., a camera flow). Use `ON_START` for all other cases.
 
 ---
 
 ## Data Mapping
 
-### Map Domain Entities to UI Models at Bottom of ViewModel
+### ✅ Put Mappers in the `uimodel` Package — Not in the ViewModel
+
+Extension functions that convert domain entities → UI models belong in the `uimodel/` package alongside the UI data classes (e.g., `MyFeatureUI.kt`). This follows the same pattern as `MyFriendUI.kt`.
 
 ```kotlin
-// GOOD: Keep mapping at bottom
-private fun User.mapToUI() = UserUI(
-    id = this.id,
-    name = this.name
+// ✅ GOOD: Mapper in uimodel/MyFeatureUI.kt
+fun User.mapToMyFeatureUI() = MyFeatureUI(
+    id = id,
+    name = name
 )
 
-private fun List<User>.mapToUI() = this.map { it.mapToUI() }.toPersistentList()
+// ✅ GOOD: ViewModel just calls it
+val uiItems = withContext(Dispatchers.Default) {
+    users.map { it.mapToMyFeatureUI() }.toPersistentList()
+}
 ```
+
+```kotlin
+// ❌ BAD: private mapper defined at the bottom of the ViewModel file
+private fun User.mapToUI() = MyFeatureUI(...)
+```
+
+Rationale: keeps ViewModels focused on state management, mappers are independently testable, and the location is consistent across all features.
 
 ### ❌ Don't expose domain models in UI State
 ```kotlin
@@ -269,15 +292,26 @@ val myFeatureModule = module {
 }
 ```
 
+Domain use cases are registered once in `domainModule` (`dependencyinjection/CleanArchiModules.kt`) and resolved automatically by `viewModelOf`.
+
 ### ViewModel Constructor
-All dependencies are resolved via Koin:
+ViewModels inject repositories directly. Only introduce a use case when it genuinely earns its place:
+
 ```kotlin
 class MyFeatureViewModel(
-    private val repository: MyRepository,  // From domain
-    private val navigator: MyNavigator,     // From coreui
-    private val tracking: TrackingRepository // From tracking
+    private val repository: MyRepository,              // From domain
+    private val trackingRepository: TrackingRepository, // From tracking
+    private val navigator: MyNavigator                 // From coreui
 ) : ViewModel()
 ```
+
+**A use case is justified when:**
+- The same logic is reused across **multiple ViewModels / features**
+- It encapsulates a meaningful, named business operation with several coordinated steps
+
+**Do NOT create a use case for:**
+- A single repository call (pure boilerplate, no added value)
+- Logic used only in one ViewModel (keep it there)
 
 ---
 

@@ -37,7 +37,7 @@ fun PostTransactionStep2Screen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     viewModel.error.observeWithLifecycle { error ->
-        snackbarHostState.showSnackbar(error.message.toString())
+        snackbarHostState.showSnackbar(error.message)
     }
 
     val currentOnActivitySaved by rememberUpdatedState(onActivitySaved)

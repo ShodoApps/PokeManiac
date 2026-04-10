@@ -31,24 +31,15 @@ fun MyFeatureScreen(
 
     // Error handling — lifecycle-aware: pauses when app is in background
     viewModel.error.observeWithLifecycle(lifecycleOwner) { error ->
-        snackbarHostState.showSnackbar(error.message.toString())
+        snackbarHostState.showSnackbar(error.message)  // UiError.message is always non-null
     }
     
     // State collection — lifecycle-aware: pauses when app is in background
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    // Lifecycle callback to reload on resume
-    DisposableEffect(lifecycleOwner) {
-        val lifecycleObserver = LifecycleEventObserver { _, event ->
-            if (event == ON_START) {
-                viewModel.start()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
-        }
-    }
+    // Lifecycle callback to reload on start
+    // Use ON_RESUME instead if data can change from another Activity (e.g. after camera flow)
+    OnLifecycleEventEffect(Lifecycle.Event.ON_START, lifecycleOwner) { viewModel.start() }
     
     // Stable lambda — only wrap in remember() if this screen contains a LazyList/LazyGrid/animation
     val context = LocalContext.current

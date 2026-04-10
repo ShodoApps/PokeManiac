@@ -3,6 +3,7 @@ package com.shodo.android.myfriends.myfrienddetail
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shodo.android.coreui.UiError
 import com.shodo.android.domain.repositories.friends.UserRepository
 import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailUiState.Data
 import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailUiState.Loading
@@ -30,7 +31,7 @@ class MyFriendDetailViewModel(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _error = MutableSharedFlow<Exception>()
+    private val _error = MutableSharedFlow<UiError>()
     val error = _error.asSharedFlow()
 
     private val _unsubscribed = MutableSharedFlow<Boolean>()
@@ -54,7 +55,7 @@ class MyFriendDetailViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _error.emit(e)
+                _error.emit(UiError.from(e))
             }
         }
     }
@@ -66,7 +67,7 @@ class MyFriendDetailViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _error.emit(e)
+                _error.emit(UiError.from(e))
             }
         }
     }

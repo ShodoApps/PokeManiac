@@ -3,6 +3,10 @@ package com.shodo.android.dashboard.uimodel
 import android.net.Uri
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import com.shodo.android.domain.repositories.entities.ImageSource
+import com.shodo.android.domain.repositories.entities.NewActivity
+import com.shodo.android.domain.repositories.entities.NewActivityType
+import java.time.format.DateTimeFormatter
 
 @Stable
 data class NewActivityUI(
@@ -30,4 +34,27 @@ sealed class ImageSourceUI {
     data class UrlSource(val imageUrl: String) : ImageSourceUI()
     @Stable
     data class FileSource(val fileUri: Uri) : ImageSourceUI()
+}
+
+private val DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+
+fun NewActivity.mapToUI(): NewActivityUI = NewActivityUI(
+    id = userName + pokemonCard.name + date,
+    friendName = userName,
+    friendImageUrl = userImageUrl,
+    date = date.format(DATE_FORMATTER),
+    activityType = activityType.mapToUI(),
+    pokemonCard = PokemonCardUI(
+        name = pokemonCard.name,
+        imageSource = when (val source = pokemonCard.imageSource) {
+            is ImageSource.UrlSource -> ImageSourceUI.UrlSource(source.imageUrl)
+            is ImageSource.FileSource -> ImageSourceUI.FileSource(source.fileUri)
+        }
+    ),
+    price = price
+)
+
+private fun NewActivityType.mapToUI() = when (this) {
+    NewActivityType.Purchase -> NewActivityTypeUI.Purchase
+    NewActivityType.Sale -> NewActivityTypeUI.Sale
 }

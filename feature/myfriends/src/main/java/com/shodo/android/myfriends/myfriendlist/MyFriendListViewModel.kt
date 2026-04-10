@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shodo.android.coreui.UiError
 import com.shodo.android.coreui.navigator.SearchFriendNavigator
 import com.shodo.android.domain.repositories.friends.UserRepository
 import com.shodo.android.myfriends.myfriendlist.MyFriendListUiState.Data
@@ -39,7 +40,7 @@ class MyFriendListViewModel(
     private val _uiState: MutableStateFlow<MyFriendListUiState> = MutableStateFlow(Loading)
     val uiState = _uiState.asStateFlow()
 
-    private val _error = MutableSharedFlow<Exception>()
+    private val _error = MutableSharedFlow<UiError>()
     val error = _error.asSharedFlow()
 
     private var friendsJob: Job? = null
@@ -62,7 +63,7 @@ class MyFriendListViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _error.emit(e)
+                _error.emit(UiError.from(e))
             }
         }
     }
@@ -74,7 +75,7 @@ class MyFriendListViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _error.emit(e)
+                _error.emit(UiError.from(e))
             }
         }
     }

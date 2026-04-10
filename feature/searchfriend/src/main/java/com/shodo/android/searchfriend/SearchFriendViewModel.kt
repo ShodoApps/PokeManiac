@@ -3,9 +3,7 @@ package com.shodo.android.searchfriend
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shodo.android.domain.repositories.entities.ImageSource
-import com.shodo.android.domain.repositories.entities.User
-import com.shodo.android.domain.repositories.entities.UserPokemonCard
+import com.shodo.android.coreui.UiError
 import com.shodo.android.domain.repositories.friends.UserRepository
 import com.shodo.android.domain.repositories.tracking.TrackingEventClick
 import com.shodo.android.domain.repositories.tracking.TrackingEventScreen
@@ -14,11 +12,12 @@ import com.shodo.android.searchfriend.SearchFriendUiState.Data
 import com.shodo.android.searchfriend.SearchFriendUiState.EmptyResult
 import com.shodo.android.searchfriend.SearchFriendUiState.EmptySearch
 import com.shodo.android.searchfriend.SearchFriendUiState.Loading
-import com.shodo.android.searchfriend.uimodel.SearchFriendPokemonCardUI
 import com.shodo.android.searchfriend.uimodel.SearchFriendUI
 import com.shodo.android.searchfriend.uimodel.SubscriptionState.NotSubscribed
 import com.shodo.android.searchfriend.uimodel.SubscriptionState.Subscribed
 import com.shodo.android.searchfriend.uimodel.SubscriptionState.UpdatingSubscribe
+import com.shodo.android.searchfriend.uimodel.mapToSearchFriendUI
+import com.shodo.android.searchfriend.uimodel.mapToUser
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CancellationException
@@ -49,7 +48,7 @@ class SearchFriendViewModel(
     private val _uiState: MutableStateFlow<SearchFriendUiState> = MutableStateFlow(EmptySearch)
     val uiState = _uiState.asStateFlow()
 
-    private val _error = MutableSharedFlow<Exception>()
+    private val _error = MutableSharedFlow<UiError>()
     val error = _error.asSharedFlow()
 
     private var searchJob: Job? = null
@@ -72,7 +71,7 @@ class SearchFriendViewModel(
                 try {
                     userRepository.searchUsers(friendName).collectLatest { friends ->
                         val uiPeople = withContext(Dispatchers.Default) {
-                            friends.map { it.mapToUI() }.toPersistentList()
+                            friends.map { it.mapToSearchFriendUI() }.toPersistentList()
                         }
                         if (uiPeople.isNotEmpty()) {
                             _uiState.update { Data(people = uiPeople) }
@@ -83,7 +82,7 @@ class SearchFriendViewModel(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    _error.emit(e)
+                    _error.emit(UiError.from(e))
                 }
             }
         }
@@ -107,7 +106,7 @@ class SearchFriendViewModel(
                 withContext(Dispatchers.IO) {
                     if (subscribe) {
                         trackingRepository.sendEventClick(TrackingEventClick(TRACKING_SUBSCRIBE_CLICK))
-                        userRepository.subscribeUser(friend.mapToModel())
+                        userRepository.subscribeUser(friend.mapToUser())
                     } else {
                         trackingRepository.sendEventClick(TrackingEventClick(TRACKING_UNSUBSCRIBE_CLICK))
                         userRepository.unsubscribeUser(friendId)
@@ -134,7 +133,7 @@ class SearchFriendViewModel(
                         }.toPersistentList()
                     ) ?: currentState
                 }
-                _error.emit(e)
+                _error.emit(UiError.from(e))
             }
         }
     }
@@ -145,40 +144,3 @@ class SearchFriendViewModel(
         private const val TRACKING_UNSUBSCRIBE_CLICK = "TRACKING_UNSUBSCRIBE_CLICK"
     }
 }
-
-private fun User.mapToUI() = SearchFriendUI(
-    id = id,
-    name = name,
-    imageUrl = imageUrl,
-    description = description,
-    subscriptionState = if (isSubscribed) Subscribed else NotSubscribed,
-    pokemonCards = pokemonCards.map { it.maptoUI() }.toPersistentList()
-)
-
-private fun UserPokemonCard.maptoUI() = SearchFriendPokemonCardUI(
-    pokemonId = pokemonId,
-    totalVotes = totalVotes,
-    hasMyVote = hasMyVote,
-    name = name,
-    imageUrl = (imageSource as? ImageSource.UrlSource)?.imageUrl ?: ""
-)
-
-private fun SearchFriendUI.mapToModel() = User(
-    id = id,
-    name = name,
-    imageUrl = imageUrl,
-    description = description,
-    isSubscribed = when (subscriptionState) {
-        Subscribed -> true
-        else -> false
-    },
-    pokemonCards = pokemonCards.map { it.mapToModel() }
-)
-
-private fun SearchFriendPokemonCardUI.mapToModel() = UserPokemonCard(
-    pokemonId = pokemonId,
-    totalVotes = totalVotes,
-    hasMyVote = hasMyVote,
-    name = name,
-    imageSource = ImageSource.UrlSource(imageUrl)
-)

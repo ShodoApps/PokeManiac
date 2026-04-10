@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
+import com.shodo.android.coreui.UiError
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 class PostTransactionStep1ViewModel() : ViewModel() {
 
     // extraBufferCapacity=1 allows tryEmit() from non-suspend callers without orphan launches
-    private val _error = MutableSharedFlow<Exception>(extraBufferCapacity = 1)
+    private val _error = MutableSharedFlow<UiError>(extraBufferCapacity = 1)
     val error = _error.asSharedFlow()
 
     // Note: these functions are called from Compose remember{} which requires a synchronous return.
@@ -25,7 +26,7 @@ class PostTransactionStep1ViewModel() : ViewModel() {
             val storageDir = context.filesDir
             File.createTempFile("${FILE_PREFIX}_${timeStamp}", FILE_FORMAT, storageDir)
         } catch (e: Exception) {
-            _error.tryEmit(e)
+            _error.tryEmit(UiError.from(e))
             null
         }
     }
@@ -40,7 +41,7 @@ class PostTransactionStep1ViewModel() : ViewModel() {
                )
            }
        } catch (e: Exception) {
-           _error.tryEmit(e)
+           _error.tryEmit(UiError.from(e))
            null
        }
     }

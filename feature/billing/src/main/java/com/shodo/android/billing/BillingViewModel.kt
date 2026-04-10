@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shodo.android.billing.BillingUiState.Loading
+import com.shodo.android.coreui.UiError
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,7 @@ sealed class BillingUiState {
 
 class BillingViewModel() : ViewModel() {
 
-    private val _error = MutableSharedFlow<Exception>()
+    private val _error = MutableSharedFlow<UiError>()
     val error = _error.asSharedFlow()
 
     private val _uiState: MutableStateFlow<BillingUiState> = MutableStateFlow(Loading)

@@ -9,6 +9,7 @@ import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
+import com.shodo.android.coreui.UiError
 import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Filling
 import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Loading
 import java.time.LocalDateTime
@@ -33,7 +34,7 @@ class PostTransactionStep2ViewModel(
     private val newsFeedRepository: NewsFeedRepository
 ) : ViewModel() {
 
-    private val _error = MutableSharedFlow<Exception>()
+    private val _error = MutableSharedFlow<UiError>()
     val error = _error.asSharedFlow()
 
     private val _success = MutableSharedFlow<Boolean>()
@@ -69,7 +70,7 @@ class PostTransactionStep2ViewModel(
                 throw e
             } catch (e: Exception) {
                 _uiState.update { Filling }
-                _error.emit(e)
+                _error.emit(UiError.from(e))
             }
         }
     }

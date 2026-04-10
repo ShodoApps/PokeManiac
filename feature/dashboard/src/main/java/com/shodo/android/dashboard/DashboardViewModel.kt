@@ -1,24 +1,19 @@
 package com.shodo.android.dashboard
 
 import android.content.Context
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shodo.android.coreui.UiError
 import com.shodo.android.coreui.navigator.MyFriendsNavigator
 import com.shodo.android.coreui.navigator.MyProfileNavigator
 import com.shodo.android.coreui.navigator.PostTransactionNavigator
 import com.shodo.android.coreui.navigator.SearchFriendNavigator
-import androidx.compose.runtime.Immutable
 import com.shodo.android.dashboard.DashboardUiState.EmptyResult
 import com.shodo.android.dashboard.DashboardUiState.Loading
-import com.shodo.android.dashboard.uimodel.ImageSourceUI
-import com.shodo.android.dashboard.uimodel.NewActivityTypeUI
 import com.shodo.android.dashboard.uimodel.NewActivityUI
-import com.shodo.android.dashboard.uimodel.PokemonCardUI
-import com.shodo.android.domain.repositories.entities.ImageSource
-import com.shodo.android.domain.repositories.entities.NewActivity
-import com.shodo.android.domain.repositories.entities.NewActivityType
+import com.shodo.android.dashboard.uimodel.mapToUI
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
-import java.time.format.DateTimeFormatter
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CancellationException
@@ -49,7 +44,7 @@ class DashboardViewModel(
     private val postTransactionNavigator: PostTransactionNavigator
 ) : ViewModel() {
 
-    private val _error = MutableSharedFlow<Exception>()
+    private val _error = MutableSharedFlow<UiError>()
     val error = _error.asSharedFlow()
 
     private val _uiState: MutableStateFlow<DashboardUiState> = MutableStateFlow(Loading)
@@ -75,7 +70,7 @@ class DashboardViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _error.emit(e)
+                _error.emit(UiError.from(e))
             }
         }
     }
@@ -108,33 +103,8 @@ class DashboardViewModel(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            _error.emit(e)
+            _error.emit(UiError.from(e))
             _uiState.update { EmptyResult }
         }
     }
-}
-
-private val DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-
-private fun NewActivity.mapToUI(): NewActivityUI {
-    return NewActivityUI(
-        id = userName + pokemonCard.name + date,
-        friendName = userName,
-        friendImageUrl = userImageUrl,
-        date = date.format(DATE_FORMATTER),
-        activityType = activityType.mapToUI(),
-        pokemonCard = PokemonCardUI(
-            name = pokemonCard.name,
-            imageSource = when (val source = pokemonCard.imageSource) {
-                is ImageSource.UrlSource -> ImageSourceUI.UrlSource(source.imageUrl)
-                is ImageSource.FileSource -> ImageSourceUI.FileSource(source.fileUri)
-            }
-        ),
-        price = price
-    )
-}
-
-private fun NewActivityType.mapToUI() = when (this) {
-    NewActivityType.Purchase -> NewActivityTypeUI.Purchase
-    NewActivityType.Sale -> NewActivityTypeUI.Sale
 }

@@ -37,7 +37,7 @@ fun PostTransactionStep1Screen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     viewModel.error.observeWithLifecycle { error ->
-        snackbarHostState.showSnackbar(error.message.toString())
+        snackbarHostState.showSnackbar(error.message)
     }
 
     val cameraPermissionDeniedText = stringResource(R.string.camera_permission_denied)

@@ -4,15 +4,13 @@ import android.content.Context
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shodo.android.coreui.UiError
 import com.shodo.android.coreui.navigator.BillingNavigator
 import com.shodo.android.coreui.navigator.PostTransactionNavigator
-import com.shodo.android.domain.repositories.entities.ImageSource
-import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import com.shodo.android.domain.repositories.myprofile.MyProfileRepository
 import com.shodo.android.myprofile.MyProfileUiState.Loading
-import com.shodo.android.myprofile.uimodel.MyProfilePokemonCardUI
 import com.shodo.android.myprofile.uimodel.MyProfileUI
-import kotlinx.collections.immutable.toPersistentList
+import com.shodo.android.myprofile.uimodel.mapToMyProfileUI
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -39,7 +37,7 @@ class MyProfileViewModel(
     private val _uiState: MutableStateFlow<MyProfileUiState> = MutableStateFlow(Loading)
     val uiState = _uiState.asStateFlow()
 
-    private val _error = MutableSharedFlow<Exception>()
+    private val _error = MutableSharedFlow<UiError>()
     val error = _error.asSharedFlow()
 
     private var activitiesJob: Job? = null
@@ -50,25 +48,15 @@ class MyProfileViewModel(
             _uiState.update { Loading }
             try {
                 myProfileRepository.getMyActivities().collect { myActivities ->
-                    val sortedCards = withContext(Dispatchers.Default) {
-                        myActivities.sortedByDescending { it.date }
-                            .mapNotNull { it.pokemonCard.mapToUI() }
-                            .toPersistentList()
+                    val profile = withContext(Dispatchers.Default) {
+                        myActivities.mapToMyProfileUI()
                     }
-                    _uiState.update {
-                        MyProfileUiState.Data(
-                            profile = MyProfileUI(
-                                name = null,
-                                imageUrl = null,
-                                pokemonCards = sortedCards
-                            )
-                        )
-                    }
+                    _uiState.update { MyProfileUiState.Data(profile = profile) }
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _error.emit(e)
+                _error.emit(UiError.from(e))
             }
         }
     }
@@ -79,14 +67,4 @@ class MyProfileViewModel(
     fun navigateToBilling(context: Context) {
         billingNavigator.navigate(context)
     }
-}
-
-private fun UserPokemonCard.mapToUI(): MyProfilePokemonCardUI? {
-    val fileSource = imageSource as? ImageSource.FileSource ?: return null
-    return MyProfilePokemonCardUI(
-        id = name + fileSource.fileUri,
-        totalVotes = totalVotes,
-        name = name,
-        imageUri = fileSource.fileUri
-    )
 }
