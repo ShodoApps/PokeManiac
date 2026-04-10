@@ -1,5 +1,5 @@
 ---
-description: PokeManiac Compose patterns - Screen vs View split, state collection, previews. Apply when working with Compose files.
+description: PokeManiac Compose patterns - Screen vs View split, lifecycle-aware state collection, previews. Apply when working with Compose files.
 globs: "**/*.kt"
 alwaysApply: false
 ---
@@ -12,7 +12,7 @@ alwaysApply: false
 **Location:** Feature module root, file name: `*Screen.kt`
 
 **Responsibilities:**
-- Collect `StateFlow` and convert to `State` with `collectAsState()`
+- Collect `StateFlow` with lifecycle awareness using `collectAsStateWithLifecycle()`
 - Observe lifecycle events
 - Handle error flows with `LaunchedEffect`
 - Show snackbars
@@ -34,8 +34,8 @@ fun MyFeatureScreen(
         }
     }
     
-    // State collection
-    val uiState by viewModel.uiState.collectAsState()
+    // State collection — lifecycle-aware: pauses when app is in background
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     // Lifecycle callback to reload on resume
     DisposableEffect(lifecycleOwner) {
@@ -188,12 +188,25 @@ Text(
 
 ## State Collection Best Practices
 
-### ✅ Use collectAsState() for StateFlow
+### ✅ Always use collectAsStateWithLifecycle() for StateFlow
+`collectAsStateWithLifecycle()` automatically pauses collection when the app goes to background (lifecycle < STARTED) and resumes when it comes back. This prevents unnecessary work and resource leaks.
 ```kotlin
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+// ✅ GOOD — stops collecting in background
+val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+// ❌ BAD — keeps collecting even when app is in background
 val uiState by viewModel.uiState.collectAsState()
 ```
 
+Required dependency in each feature module's `build.gradle.kts`:
+```kotlin
+implementation(libs.androidx.lifecycle.runtime.compose)
+```
+
 ### ✅ Use collectLatest with LaunchedEffect for SharedFlow
+One-shot events (errors, navigation signals) use `SharedFlow` collected via `LaunchedEffect` — this is unaffected by lifecycle since it already stops when the composable leaves composition.
 ```kotlin
 LaunchedEffect(Unit) {
     viewModel.error.collectLatest { error ->
@@ -205,12 +218,12 @@ LaunchedEffect(Unit) {
 ### ❌ Don't collect in top-level composables repeatedly
 ```kotlin
 // BAD - collects multiple times
-val item by viewModel.item.collectAsState()
-val items by viewModel.items.collectAsState()
-val loading by viewModel.loading.collectAsState()
+val item by viewModel.item.collectAsStateWithLifecycle()
+val items by viewModel.items.collectAsStateWithLifecycle()
+val loading by viewModel.loading.collectAsStateWithLifecycle()
 
 // GOOD - single sealed state
-val uiState by viewModel.uiState.collectAsState()
+val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 ```
 
 ---

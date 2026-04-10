@@ -48,6 +48,7 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose" }
 
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
