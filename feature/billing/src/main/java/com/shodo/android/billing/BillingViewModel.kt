@@ -1,5 +1,6 @@
 package com.shodo.android.billing
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shodo.android.billing.BillingUiState.Loading
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
+@Immutable
 sealed class BillingUiState {
     data class Data(val state: Int) : BillingUiState()
     data object Error : BillingUiState()

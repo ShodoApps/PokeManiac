@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,12 +45,13 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun MyProfileContent(profile: MyProfileUI, modifier: Modifier = Modifier) {
+    val totalVotes = remember(profile.pokemonCards) { profile.pokemonCards.sumOf { it.totalVotes } }
     Column(
         modifier = modifier.fillMaxSize().background(colors.backgroundApp),
         horizontalAlignment = CenterHorizontally
     ) {
         MyProfileImage(profile.imageUrl, profile.name)
-        MyProfileDescription(profile.pokemonCards, profile.name)
+        MyProfileDescription(totalVotes, profile.name)
         MyProfileCardsContent(profile.pokemonCards)
     }
 }
@@ -82,7 +84,7 @@ private fun ColumnScope.MyProfileImage(imageUrl: String?, name: String?) {
 }
 
 @Composable
-private fun ColumnScope.MyProfileDescription(pokemonCards: PersistentList<MyProfilePokemonCardUI>, name: String?) {
+private fun ColumnScope.MyProfileDescription(totalVotes: Int, name: String?) {
     Text(
         modifier = Modifier.padding(
             top = dimens.small,
@@ -102,7 +104,7 @@ private fun ColumnScope.MyProfileDescription(pokemonCards: PersistentList<MyProf
         ).align(CenterHorizontally),
         color = colors.primaryText,
         style = typography.t5,
-        text = pokemonCards.sumOf { it.totalVotes }.takeIf { it > 0 }?.let {
+        text = totalVotes.takeIf { it > 0 }?.let {
             stringResource(R.string.my_profile_total_votes, it)
         } ?: stringResource(R.string.my_profile_total_votes_none),
     )
@@ -194,7 +196,7 @@ private fun PreviewMyProfileContent_NoPosts_LightTheme() {
 @Composable
 private fun PreviewMyProfileDescription_WithName_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
-        Column(Modifier.background(colors.backgroundApp)) { MyProfileDescription(pokemonCards = previewPokemonCards(), name = "Ash") }
+        Column(Modifier.background(colors.backgroundApp)) { MyProfileDescription(totalVotes = 17, name = "Ash") }
     }
 }
 
@@ -202,7 +204,7 @@ private fun PreviewMyProfileDescription_WithName_DarkTheme() {
 @Composable
 private fun PreviewMyProfileDescription_WithName_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
-        Column(Modifier.background(colors.backgroundApp)) { MyProfileDescription(pokemonCards = previewPokemonCards(), name = "Ash") }
+        Column(Modifier.background(colors.backgroundApp)) { MyProfileDescription(totalVotes = 17, name = "Ash") }
     }
 }
 
@@ -210,7 +212,7 @@ private fun PreviewMyProfileDescription_WithName_LightTheme() {
 @Composable
 private fun PreviewMyProfileDescription_NoName_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
-        Column(Modifier.background(colors.backgroundApp)) { MyProfileDescription(pokemonCards = previewPokemonCards(), name = null) }
+        Column(Modifier.background(colors.backgroundApp)) { MyProfileDescription(totalVotes = 0, name = null) }
     }
 }
 
@@ -218,7 +220,7 @@ private fun PreviewMyProfileDescription_NoName_DarkTheme() {
 @Composable
 private fun PreviewMyProfileDescription_NoName_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
-        Column(Modifier.background(colors.backgroundApp)) { MyProfileDescription(pokemonCards = previewPokemonCards(), name = null) }
+        Column(Modifier.background(colors.backgroundApp)) { MyProfileDescription(totalVotes = 0, name = null) }
     }
 }
 

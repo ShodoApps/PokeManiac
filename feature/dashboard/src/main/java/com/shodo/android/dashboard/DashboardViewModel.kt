@@ -7,6 +7,7 @@ import com.shodo.android.coreui.navigator.MyFriendsNavigator
 import com.shodo.android.coreui.navigator.MyProfileNavigator
 import com.shodo.android.coreui.navigator.PostTransactionNavigator
 import com.shodo.android.coreui.navigator.SearchFriendNavigator
+import androidx.compose.runtime.Immutable
 import com.shodo.android.dashboard.DashboardUiState.EmptyResult
 import com.shodo.android.dashboard.DashboardUiState.Loading
 import com.shodo.android.dashboard.uimodel.ImageSourceUI
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Immutable
 sealed class DashboardUiState {
     data class Data(val news: PersistentList<NewActivityUI>) : DashboardUiState()
     data object EmptyResult : DashboardUiState()

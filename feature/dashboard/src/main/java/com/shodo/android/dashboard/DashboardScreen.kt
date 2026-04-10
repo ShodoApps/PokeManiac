@@ -4,7 +4,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -14,8 +13,8 @@ import androidx.lifecycle.Lifecycle.Event.ON_START
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.shodo.android.coreui.extensions.observeWithLifecycle
 import com.shodo.android.dashboard.ui.DashboardView
-import kotlinx.coroutines.flow.collectLatest
 
 /**
  * DashboardScreen is a container composable responsible for:
@@ -36,10 +35,8 @@ fun DashboardScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(Unit) {
-        viewModel.error.collectLatest { error ->
-            snackbarHostState.showSnackbar(error.message.toString())
-        }
+    viewModel.error.observeWithLifecycle(lifecycleOwner) { error ->
+        snackbarHostState.showSnackbar(error.message.toString())
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -57,15 +54,19 @@ fun DashboardScreen(
     }
 
     val context = LocalContext.current
+    val onFriendsPressed = remember(viewModel, context) { { viewModel.navigateToMyFriends(context) } }
+    val onProfilePressed = remember(viewModel, context) { { viewModel.navigateToMyProfile(context) } }
+    val onSearchFriendsPressed = remember(viewModel, context) { { viewModel.navigateToSearchFriends(context) } }
+    val onPostTransactionPressed = remember(viewModel, context) { { viewModel.navigateToPostTransaction(context) } }
 
     DashboardView(
         modifier = modifier,
         uiState = uiState,
         onRefresh = viewModel::refreshNewsFeed,
-        onFriendsPressed = { viewModel.navigateToMyFriends(context) },
-        onProfilePressed = { viewModel.navigateToMyProfile(context) },
-        onSearchFriendsPressed = { viewModel.navigateToSearchFriends(context) },
-        onPostTransactionPressed = { viewModel.navigateToPostTransaction(context) },
+        onFriendsPressed = onFriendsPressed,
+        onProfilePressed = onProfilePressed,
+        onSearchFriendsPressed = onSearchFriendsPressed,
+        onPostTransactionPressed = onPostTransactionPressed,
         snackbarHostState = snackbarHostState
     )
 }

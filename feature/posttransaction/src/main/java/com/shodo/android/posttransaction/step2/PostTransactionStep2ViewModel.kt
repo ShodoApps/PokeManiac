@@ -1,6 +1,7 @@
 package com.shodo.android.posttransaction.step2
 
 import android.net.Uri
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shodo.android.domain.repositories.entities.ImageSource.FileSource
@@ -22,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Immutable
 sealed class PostTransactionStep2UiState {
     data object Filling : PostTransactionStep2UiState()
     data object Loading : PostTransactionStep2UiState()

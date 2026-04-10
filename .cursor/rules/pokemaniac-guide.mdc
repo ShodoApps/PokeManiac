@@ -5,6 +5,31 @@ alwaysApply: true
 
 # PokeManiac Project Guide
 
+## Engineering Philosophy
+
+These two principles take priority over any specific rule in any other file.
+
+### 1. Pragmatism over perfection — don't over-engineer
+
+Apply a pattern or optimization **only when it solves a real, visible problem** in this codebase. Every added abstraction, annotation, or wrapper has a complexity cost. That cost must be justified by a concrete benefit.
+
+- If an optimization makes the code harder to read for no visible gain → don't apply it
+- If a pattern is theoretically correct but adds 3 layers of indirection to a 10-line screen → don't apply it
+- When in doubt between two solutions, prefer the simpler one
+
+The recomposition tiers in `compose-patterns.mdc` are a concrete example of this principle in practice: Tier 1 optimizations are always applied because they're near-zero cost; Tier 2 only where performance problems are actually visible.
+
+### 2. Code must be understandable by a senior Android developer
+
+Write code as if a **competent senior Android developer who does not know this codebase** will read it tomorrow. They know Kotlin, Jetpack Compose, coroutines, and MVVM — but they don't know our project-specific patterns.
+
+- Avoid clever tricks that require deep context to understand
+- Prefer explicit over implicit (named parameters, clear lambda names, etc.)
+- When a non-obvious pattern is used (e.g. `LazyGridScope` extensions, `remember` with keys), the code structure itself should make the intent readable — not require a comment to explain it
+- Complexity that would prompt a code review question is a signal to simplify
+
+---
+
 ## Quick Navigation
 
 ### I'm Adding a New Feature

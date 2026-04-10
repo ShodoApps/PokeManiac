@@ -47,7 +47,7 @@ import kotlinx.collections.immutable.persistentListOf
 fun MyFriendListView(
     modifier: Modifier = Modifier,
     uiState: MyFriendListUiState,
-    onFriendPressed: (MyFriendUI) -> Unit,
+    onFriendPressed: (id: String) -> Unit,
     onSearchFriendsPressed: () -> Unit,
     onUnsubscribePressed: (String) -> Unit,
     onBackPressed: () -> Unit,

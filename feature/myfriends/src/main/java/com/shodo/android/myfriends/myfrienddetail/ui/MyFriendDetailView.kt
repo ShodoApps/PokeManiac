@@ -30,7 +30,6 @@ import kotlinx.collections.immutable.persistentListOf
  *                           - `Loading`: Displays a loading indicator.
  *                           - `Data`: Displays MyFriendDetail data.
  *
- * @param friendName            The friend's name, used in the Toolbar title.
  * @param onUnsubscribePressed  Callback triggered when a user clicks "unsubscribe" on a friend.
  * @param onBackPressed         Callback to navigate back.
  * @param snackbarHostState     State of the `SnackbarHost` to display temporary messages.
@@ -40,11 +39,12 @@ import kotlinx.collections.immutable.persistentListOf
 fun MyFriendDetailView(
     modifier: Modifier = Modifier,
     uiState: MyFriendDetailUiState,
-    friendName: String,
     onUnsubscribePressed: (String) -> Unit,
     onBackPressed: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
+    val friendName = if (uiState is Data) uiState.friend.name else ""
+
     Scaffold(
         modifier = modifier
             .background(color = colors.backgroundApp)
@@ -84,7 +84,6 @@ fun PreviewMyFriendDetailView_Loading_LightTheme() {
             uiState = Loading,
             onUnsubscribePressed = {},
             onBackPressed = {},
-            friendName = "friendName",
             snackbarHostState = SnackbarHostState()
         )
     }
@@ -99,7 +98,6 @@ fun PreviewMyFriendDetailView_Loading_DarkTheme() {
             uiState = Loading,
             onUnsubscribePressed = {},
             onBackPressed = {},
-            friendName = "friendName",
             snackbarHostState = SnackbarHostState()
         )
     }
@@ -120,7 +118,6 @@ fun PreviewMyFriendDetailView_Data_LightTheme() {
             )),
             onUnsubscribePressed = {},
             onBackPressed = {},
-            friendName = "friendName",
             snackbarHostState = SnackbarHostState()
         )
     }
@@ -141,7 +138,6 @@ fun PreviewMyFriendDetailView_Data_DarkTheme() {
             )),
             onUnsubscribePressed = {},
             onBackPressed = {},
-            friendName = "friendName",
             snackbarHostState = SnackbarHostState()
         )
     }

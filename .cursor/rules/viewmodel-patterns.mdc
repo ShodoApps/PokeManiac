@@ -18,6 +18,7 @@ class MyFeatureViewModel(
 ) : ViewModel() {
     
     // ============ UI STATE ============
+    @Immutable  // Always annotate — Compose cannot infer stability of sealed classes
     sealed class MyFeatureUiState {
         data object Loading : MyFeatureUiState()
         data class Data(val items: PersistentList<ItemUI>) : MyFeatureUiState()
@@ -62,14 +63,43 @@ class MyFeatureViewModel(
 
 ## State Management Rules
 
-### ✅ Use Sealed Classes for UI State
-Always represent UI state as a sealed class with specific cases:
+### ✅ Use Sealed Classes for UI State — Always Annotate @Immutable
+
+Always represent UI state as a sealed class with specific cases, and always annotate with `@Immutable`. Without it, the Compose compiler treats sealed classes as **unstable** and recomposes defensively even when the state hasn't changed.
+
 ```kotlin
+import androidx.compose.runtime.Immutable
+
+@Immutable  // Required — Compose cannot infer stability of sealed classes
 sealed class UiState {
     data object Loading : UiState()
-    data class Data(val items: List<Item>) : UiState()
+    data class Data(val items: PersistentList<ItemUI>) : UiState()
     data object EmptyResult : UiState()
 }
+```
+
+### ✅ Annotate UI Models with @Immutable or @Stable
+
+UI model data classes passed to Composables must be annotated so the Compose compiler can skip recomposition when they haven't changed.
+
+```kotlin
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+
+// @Immutable — all fields are stable (String, Int, enum, PersistentList)
+@Immutable
+data class ItemUI(
+    val id: String,
+    val name: String,
+    val count: Int
+)
+
+// @Stable — when a field type has correct equals() but is not @Immutable (e.g. Uri)
+@Stable
+data class CardUI(
+    val id: String,
+    val imageUri: Uri  // Uri: behaviorally immutable, not annotated by framework
+)
 ```
 
 ### ✅ Use PersistentList for Immutable Collections
@@ -77,6 +107,8 @@ sealed class UiState {
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 
+// All collection fields in UI models and UiState must use PersistentList.
+// Plain List<T> is treated as unstable by Compose (MutableList implements it).
 data class Data(val items: PersistentList<ItemUI>) : UiState()
 ```
 

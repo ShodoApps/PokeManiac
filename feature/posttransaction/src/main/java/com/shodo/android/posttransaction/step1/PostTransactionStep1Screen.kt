@@ -4,14 +4,13 @@ import android.net.Uri
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.shodo.android.coreui.R
+import com.shodo.android.coreui.extensions.observeWithLifecycle
 import com.shodo.android.posttransaction.step1.ui.PostTransactionStep1View
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
@@ -37,10 +36,8 @@ fun PostTransactionStep1Screen(
     val coroutineScope = rememberCoroutineScope()
 
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(Unit) {
-        viewModel.error.collectLatest { error ->
-            snackbarHostState.showSnackbar(error.message.toString())
-        }
+    viewModel.error.observeWithLifecycle { error ->
+        snackbarHostState.showSnackbar(error.message.toString())
     }
 
     val cameraPermissionDeniedText = stringResource(R.string.camera_permission_denied)

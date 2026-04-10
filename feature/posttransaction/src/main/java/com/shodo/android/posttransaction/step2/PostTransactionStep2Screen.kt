@@ -4,13 +4,13 @@ import android.net.Uri
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import com.shodo.android.coreui.extensions.observeWithLifecycle
 import com.shodo.android.posttransaction.step2.ui.PostTransactionStep2View
-import kotlinx.coroutines.flow.collectLatest
 
 /**
  * PostTransactionStep2Screen is a container composable responsible for:
@@ -36,15 +36,12 @@ fun PostTransactionStep2Screen(
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(Unit) {
-        viewModel.error.collectLatest { error ->
-            snackbarHostState.showSnackbar(error.message.toString())
-        }
+    viewModel.error.observeWithLifecycle { error ->
+        snackbarHostState.showSnackbar(error.message.toString())
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.success.collectLatest { onActivitySaved() }
-    }
+    val currentOnActivitySaved by rememberUpdatedState(onActivitySaved)
+    viewModel.success.observeWithLifecycle { currentOnActivitySaved() }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 

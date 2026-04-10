@@ -29,14 +29,14 @@ import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
 import com.shodo.android.coreui.theme.PokeManiacTheme.typography
 import com.shodo.android.coreui.ui.SecondaryButton
-import com.shodo.android.myfriends.uimodel.MyFriendUI
-import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun MyFriendCard(
-    friend: MyFriendUI,
-    onFriendPressed: (MyFriendUI) -> Unit,
-    onUnsubscribePressed: (String) -> Unit
+    id: String,
+    name: String,
+    imageUrl: String,
+    onFriendPressed: () -> Unit,
+    onUnsubscribePressed: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -44,7 +44,7 @@ fun MyFriendCard(
             .padding(horizontal = dimens.xSmall),
         shape = RoundedCornerShape(dimens.xSmall),
         colors = CardDefaults.cardColors(containerColor = colors.backgroundCell),
-        onClick = { onFriendPressed(friend) }
+        onClick = onFriendPressed
     ) {
         Row(
             modifier = Modifier
@@ -57,17 +57,17 @@ fun MyFriendCard(
                     .clip(CircleShape)
                     .size(dimens.xxLarge),
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(friend.imageUrl)
+                    .data(imageUrl)
                     .crossfade(true)
                     .build(),
                 contentScale = Crop,
-                contentDescription = friend.name,
+                contentDescription = name,
             )
 
             Text(
                 color = colors.primaryText,
                 style = typography.t3,
-                text = friend.name,
+                text = name,
                 modifier = Modifier
                     .padding(dimens.small)
                     .weight(1f)
@@ -78,7 +78,7 @@ fun MyFriendCard(
                     .wrapContentWidth()
                     .padding(horizontal = dimens.small, vertical = dimens.small),
                 text = stringResource(R.string.unsubscribe)
-            ) { onUnsubscribePressed(friend.id) }
+            ) { onUnsubscribePressed() }
         }
     }
 }
@@ -91,13 +91,9 @@ fun MyFriendCard(
 fun PreviewMyFriendCard_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
         MyFriendCard(
-            friend = MyFriendUI(
-                id = "friendId",
-                name = "friendName",
-                imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
-                description = "description",
-                pokemonCards = persistentListOf()
-            ),
+            id = "friendId",
+            name = "friendName",
+            imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
             onFriendPressed = {},
             onUnsubscribePressed = {}
         )
@@ -110,13 +106,9 @@ fun PreviewMyFriendCard_LightTheme() {
 fun PreviewMyFriendCard_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
         MyFriendCard(
-            friend = MyFriendUI(
-                id = "friendId",
-                name = "friendName",
-                imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
-                description = "description",
-                pokemonCards = persistentListOf()
-            ),
+            id = "friendId",
+            name = "friendName",
+            imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
             onFriendPressed = {},
             onUnsubscribePressed = {}
         )

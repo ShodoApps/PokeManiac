@@ -1,6 +1,7 @@
 package com.shodo.android.myfriends.myfriendlist
 
 import android.content.Context
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shodo.android.coreui.navigator.SearchFriendNavigator
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Immutable
 sealed class MyFriendListUiState {
     data object Loading: MyFriendListUiState()
     data class Data(val friends: PersistentList<MyFriendUI>): MyFriendListUiState()

@@ -37,7 +37,10 @@ fun SearchFriendContent(
     ) {
         items(items = users, key = { it.id }) { user ->
             UserCard(
-                user = user,
+                id = user.id,
+                name = user.name,
+                imageUrl = user.imageUrl,
+                subscriptionState = user.subscriptionState,
                 onSubscribeUserPressed = onSubscribeUserPressed,
                 onUnsubscribeUserPressed = onUnsubscribeUserPressed
             )

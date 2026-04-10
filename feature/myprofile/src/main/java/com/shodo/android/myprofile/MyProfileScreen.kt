@@ -4,7 +4,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -14,6 +13,7 @@ import androidx.lifecycle.Lifecycle.Event.ON_RESUME
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.shodo.android.coreui.extensions.observeWithLifecycle
 import com.shodo.android.myprofile.ui.MyProfileView
 import kotlinx.coroutines.flow.collectLatest
 
@@ -40,10 +40,8 @@ fun MyProfileScreen(
     val context = LocalContext.current
 
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(Unit) {
-        viewModel.error.collectLatest { error ->
-            snackbarHostState.showSnackbar(error.message.toString())
-        }
+    viewModel.error.observeWithLifecycle(lifecycleOwner) { error ->
+        snackbarHostState.showSnackbar(error.message.toString())
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -60,12 +58,15 @@ fun MyProfileScreen(
         }
     }
 
+    val onPostTransactionPressed = remember(viewModel, context) { { viewModel.navigateToPostTransaction(context) } }
+    val onBillingPressed = remember(viewModel, context) { { viewModel.navigateToBilling(context) } }
+
     MyProfileView(
         modifier = modifier,
         uiState = uiState,
         onBackPressed = onBackPressed,
-        onPostTransactionPressed = { viewModel.navigateToPostTransaction(context) },
-        onBillingPressed = { viewModel.navigateToBilling(context) },
+        onPostTransactionPressed = onPostTransactionPressed,
+        onBillingPressed = onBillingPressed,
         snackbarHostState = snackbarHostState
     )
 }

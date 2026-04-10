@@ -230,7 +230,23 @@ Use these checklists before starting work to ensure nothing is missed.
 
 ### Compose Standards
 - [ ] Screen/View pattern respected
-- [ ] No recomposition issues (state, remember, keys)
+- [ ] Recomposition — Tier 1 (always apply, negligible complexity cost):
+  - [ ] All `UiState` sealed classes annotated with `@Immutable`
+  - [ ] All UI model `data class` annotated with `@Immutable` (or `@Stable` if they contain `Uri` or other non-annotated-but-reliable types)
+  - [ ] All collection fields in UI models use `PersistentList<>`, not `List<>`
+  - [ ] Lambda parameters consumed inside `observeWithLifecycle` protected with `rememberUpdatedState`
+  - [ ] All lazy `items { }` use `key = { it.id }`
+  - [ ] All single `item { }` blocks in lazy layouts have a string key: `item(key = "header") { ... }`
+  - [ ] All `SharedFlow` collected via `observeWithLifecycle()` from coreui (lifecycle-aware)
+  - [ ] Values derived from parameters (sumOf, filter, count…) wrapped in `remember(param) { ... }`
+- [ ] Recomposition — Tier 2 (only on screens with LazyList / LazyGrid / animations):
+  - [ ] Navigation lambdas capturing `context`/`viewModel` wrapped in `remember(viewModel, context) { ... }`
+  - [ ] Leaf composables (cards, list items) receive only the fields they actually display — not the full model object
+  - [ ] Per-item lambdas inside lazy item lambdas use `remember(item.id, callback) { { callback(item.id) } }`
+  - Note: `DashboardScreen`, `SearchFriendScreen`, `MyFriendListScreen`, `MyFriendDetailScreen`, `MyProfileScreen` are Tier 2 screens in this project
+- [ ] No lazy layout (`LazyColumn`, `LazyVerticalGrid`…) nested inside a scrollable container (`Column + verticalScroll`, `Row + horizontalScroll`)
+- [ ] View derives all displayed data from `uiState` — no duplicate parameters that also exist in the state (single source of truth)
+- [ ] Navigation routes carry only IDs — not display data (`name`, `description`, `imageUrl`)
 - [ ] Preview composables for all states
 - [ ] Wrapped in PokeManiacTheme
 - [ ] Proper lambda passing (trailing syntax)

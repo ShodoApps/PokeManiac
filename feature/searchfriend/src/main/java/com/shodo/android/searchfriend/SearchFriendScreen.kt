@@ -3,13 +3,12 @@ package com.shodo.android.searchfriend
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.shodo.android.coreui.extensions.observeWithLifecycle
 import com.shodo.android.searchfriend.ui.SearchFriendView
-import kotlinx.coroutines.flow.collectLatest
 
 /**
  * SearchFriendScreen is a container composable responsible for:
@@ -31,10 +30,8 @@ fun SearchFriendScreen(
 ) {
 
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(Unit) {
-        viewModel.error.collectLatest { error ->
-            snackbarHostState.showSnackbar(error.message.toString())
-        }
+    viewModel.error.observeWithLifecycle { error ->
+        snackbarHostState.showSnackbar(error.message.toString())
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

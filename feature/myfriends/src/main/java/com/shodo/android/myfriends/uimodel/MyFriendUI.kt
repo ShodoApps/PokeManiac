@@ -1,11 +1,13 @@
 package com.shodo.android.myfriends.uimodel
 
+import androidx.compose.runtime.Immutable
 import com.shodo.android.domain.repositories.entities.ImageSource
 import com.shodo.android.domain.repositories.entities.User
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 
+@Immutable
 data class MyFriendUI(
     val id: String,
     val name: String,
@@ -14,6 +16,7 @@ data class MyFriendUI(
     val pokemonCards: PersistentList<MyFriendPokemonCardUI>
 )
 
+@Immutable
 data class MyFriendPokemonCardUI(
     val id: String,
     val pokemonId: Int,

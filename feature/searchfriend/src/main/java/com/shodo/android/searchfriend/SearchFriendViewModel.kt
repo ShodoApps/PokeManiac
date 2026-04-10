@@ -1,5 +1,6 @@
 package com.shodo.android.searchfriend
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shodo.android.domain.repositories.entities.ImageSource
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Immutable
 sealed class SearchFriendUiState {
     data object EmptySearch : SearchFriendUiState()
     data object Loading : SearchFriendUiState()
@@ -150,7 +152,7 @@ private fun User.mapToUI() = SearchFriendUI(
     imageUrl = imageUrl,
     description = description,
     subscriptionState = if (isSubscribed) Subscribed else NotSubscribed,
-    pokemonCards = pokemonCards.map { it.maptoUI() }
+    pokemonCards = pokemonCards.map { it.maptoUI() }.toPersistentList()
 )
 
 private fun UserPokemonCard.maptoUI() = SearchFriendPokemonCardUI(

@@ -3,8 +3,6 @@ package com.shodo.android.myfriends.myfrienddetail.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,14 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,21 +50,76 @@ fun FriendDetailContent(
     onUnsubscribePressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    val totalVotes = remember(friend.pokemonCards) { friend.pokemonCards.sumOf { it.totalVotes } }
+
+    LazyVerticalGrid(
         modifier = modifier
             .fillMaxSize()
-            .background(color = colors.backgroundApp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center
+            .background(color = colors.backgroundApp),
+        columns = GridCells.Adaptive(minSize = dimens.minGridUserCellSize),
+        contentPadding = PaddingValues(bottom = dimens.xSmall)
     ) {
-        FriendDetailHeader(friend.imageUrl, friend.name, onUnsubscribePressed)
-        FriendDescriptions(friend.description, friend.pokemonCards)
-        FriendCardsContent(friend.name, friend.pokemonCards, Modifier.weight(1f))
+        friendHeader(friend.imageUrl, friend.name, onUnsubscribePressed)
+        friendDescriptions(friend.description, totalVotes)
+        if (friend.pokemonCards.isEmpty()) {
+            friendEmptyState(friend.name)
+        } else {
+            friendCardsSeparator()
+            friendCards(friend.pokemonCards)
+        }
+    }
+}
+
+private fun LazyGridScope.friendHeader(imageUrl: String, name: String, onUnsubscribePressed: () -> Unit) {
+    item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
+        FriendDetailHeader(imageUrl, name, onUnsubscribePressed)
+    }
+}
+
+private fun LazyGridScope.friendDescriptions(description: String, totalVotes: Int) {
+    item(key = "descriptions", span = { GridItemSpan(maxLineSpan) }) {
+        FriendDescriptions(description, totalVotes)
+    }
+}
+
+private fun LazyGridScope.friendEmptyState(friendName: String) {
+    item(key = "empty_state", span = { GridItemSpan(maxLineSpan) }) {
+        GenericEmptyScreen(
+            text = stringResource(R.string.my_friend_detail_no_activity_yet, friendName)
+        )
+    }
+}
+
+private fun LazyGridScope.friendCardsSeparator() {
+    item(key = "separator", span = { GridItemSpan(maxLineSpan) }) {
+        Box(
+            modifier = Modifier
+                .padding(top = dimens.small)
+                .fillMaxWidth()
+                .height(dimens.separator)
+                .background(color = colors.tertiary)
+        )
+    }
+}
+
+private fun LazyGridScope.friendCards(pokemonCards: PersistentList<MyFriendPokemonCardUI>) {
+    items(items = pokemonCards, key = { it.id }) { card ->
+        AsyncImage(
+            modifier = Modifier
+                .padding(dimens.xxSmall)
+                .clip(RectangleShape),
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(card.imageUrl)
+                .crossfade(true)
+                .build(),
+            contentScale = Crop,
+            contentDescription = card.name
+        )
     }
 }
 
 @Composable
-private fun ColumnScope.FriendDetailHeader(
+private fun FriendDetailHeader(
     friendImageUrl: String,
     friendName: String,
     onUnsubscribePressed: () -> Unit
@@ -100,7 +154,7 @@ private fun ColumnScope.FriendDetailHeader(
 }
 
 @Composable
-private fun ColumnScope.FriendDescriptions(friendDescription: String, friendPokemonCards: PersistentList<MyFriendPokemonCardUI>) {
+private fun FriendDescriptions(friendDescription: String, totalVotes: Int) {
     if (friendDescription.length > 1) { // To avoid the descriptions of 1 character
         Text(
             modifier = Modifier.padding(top = dimens.standard, start = dimens.standard, end = dimens.standard),
@@ -113,57 +167,10 @@ private fun ColumnScope.FriendDescriptions(friendDescription: String, friendPoke
         modifier = Modifier.padding(top = dimens.xSmall, start = dimens.standard, end = dimens.standard),
         color = colors.primaryText,
         style = typography.t5,
-        text = friendPokemonCards.sumOf { it.totalVotes }.takeIf { it > 0 }?.let {
+        text = totalVotes.takeIf { it > 0 }?.let {
             stringResource(R.string.my_friend_detail_total_votes, it)
         } ?: stringResource(R.string.my_friend_detail_total_votes_none),
     )
-}
-
-@Composable
-private fun ColumnScope.FriendCardsContent(friendName: String, friendPokemonCards: PersistentList<MyFriendPokemonCardUI>, modifier: Modifier = Modifier) {
-    if (friendPokemonCards.isEmpty()) {
-        GenericEmptyScreen(
-            text = stringResource(R.string.my_friend_detail_no_activity_yet, friendName),
-            modifier = modifier
-        )
-    } else {
-        // Separator
-        Box(
-            modifier = Modifier
-                .padding(top = dimens.small)
-                .fillMaxWidth()
-                .height(dimens.separator)
-                .background(color = colors.tertiary)
-        )
-        FriendActivities(
-            modifier = modifier.padding(top = dimens.standard),
-            pokemonCards = friendPokemonCards
-        )
-    }
-}
-
-@Composable
-private fun FriendActivities(pokemonCards: PersistentList<MyFriendPokemonCardUI>, modifier: Modifier = Modifier) {
-    LazyVerticalGrid(
-        modifier = modifier,
-        columns = GridCells.Adaptive(minSize = dimens.minGridUserCellSize),
-        contentPadding = PaddingValues(dimens.xSmall)
-    ) {
-        items(
-            items = pokemonCards,
-            key = { it.id }
-        ) { card ->
-            AsyncImage(
-                modifier = Modifier.clip(RectangleShape),
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(card.imageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentScale = Crop,
-                contentDescription = card.name
-            )
-        }
-    }
 }
 
 //region Previews
@@ -235,15 +242,11 @@ private fun PreviewFriendDetailContent(darkTheme: Boolean, pokemonCards: Persist
 @Composable
 fun PreviewFriendDetailHeader_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
-        Column(
-            modifier = Modifier.background(color = colors.backgroundApp)
-        ) {
-            FriendDetailHeader(
-                friendImageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
-                friendName = "friendName",
-                onUnsubscribePressed = {}
-            )
-        }
+        FriendDetailHeader(
+            friendImageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
+            friendName = "friendName",
+            onUnsubscribePressed = {}
+        )
     }
 }
 
@@ -252,15 +255,11 @@ fun PreviewFriendDetailHeader_LightTheme() {
 @Composable
 fun PreviewFriendDetailHeader_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
-        Column(
-            modifier = Modifier.background(color = colors.backgroundApp)
-        ) {
-            FriendDetailHeader(
-                friendImageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
-                friendName = "friendName",
-                onUnsubscribePressed = {}
-            )
-        }
+        FriendDetailHeader(
+            friendImageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
+            friendName = "friendName",
+            onUnsubscribePressed = {}
+        )
     }
 }
 
@@ -272,129 +271,38 @@ fun PreviewFriendDetailHeader_DarkTheme() {
 @Preview(showBackground = true, name = "FriendDescriptions - With Description - With Votes - LightTheme")
 @Composable
 fun PreviewFriendDescriptions_WithDescription_WithVotes_LightTheme() {
-    PreviewFriendDescriptions(
-        darkTheme = false,
-        description = "description",
-        friendPokemonCards = previewPokemonCards()
-    )
+    PreviewFriendDescriptions(darkTheme = false, description = "description", totalVotes = 23)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true, name = "FriendDescriptions - With Description - With Votes - DarkTheme")
 @Composable
 fun PreviewFriendDescriptions_WithDescription_WithVotes_DarkTheme() {
-    PreviewFriendDescriptions(
-        darkTheme = true,
-        description = "description",
-        friendPokemonCards = previewPokemonCards()
-    )
+    PreviewFriendDescriptions(darkTheme = true, description = "description", totalVotes = 23)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true, name = "FriendDescriptions - No Description - No Votes - LightTheme")
 @Composable
 fun PreviewFriendDescriptions_NoDescription_NoVotes_LightTheme() {
-    PreviewFriendDescriptions(
-        darkTheme = false,
-        description = "-",
-        friendPokemonCards = persistentListOf()
-    )
+    PreviewFriendDescriptions(darkTheme = false, description = "-", totalVotes = 0)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true, name = "FriendDescriptions - No Description - No Votes - DarkTheme")
 @Composable
 fun PreviewFriendDescriptions_NoDescription_NoVotes_DarkTheme() {
-    PreviewFriendDescriptions(
-        darkTheme = true,
-        description = "-",
-        friendPokemonCards = persistentListOf()
-    )
+    PreviewFriendDescriptions(darkTheme = true, description = "-", totalVotes = 0)
 }
 
 @Composable
-private fun PreviewFriendDescriptions(darkTheme: Boolean, description: String, friendPokemonCards: PersistentList<MyFriendPokemonCardUI>) {
+private fun PreviewFriendDescriptions(darkTheme: Boolean, description: String, totalVotes: Int) {
     PokeManiacTheme(darkTheme = darkTheme) {
-        Column(
-            modifier = Modifier.background(color = colors.backgroundApp).fillMaxWidth()
-        ) {
-            FriendDescriptions(
-                friendDescription = description,
-                friendPokemonCards = friendPokemonCards
-            )
-        }
+        FriendDescriptions(friendDescription = description, totalVotes = totalVotes)
     }
 }
 
 //endregion FriendDescriptions
-
-//region FriendCardsContent
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "FriendCardsContent - No PokemonCards - LightTheme")
-@Composable
-fun PreviewFriendCardsContent_NoPokemonCards_LightTheme() {
-    PokeManiacTheme(darkTheme = false) {
-        Column(
-            modifier = Modifier.background(color = colors.backgroundApp)
-        ) {
-            FriendCardsContent(
-                friendName = "friendName",
-                friendPokemonCards = persistentListOf()
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "FriendCardsContent - No PokemonCards - DarkTheme")
-@Composable
-fun PreviewFriendCardsContent_NoPokemonCards_DarkTheme() {
-    PokeManiacTheme(darkTheme = true) {
-        Column(
-            modifier = Modifier.background(color = colors.backgroundApp)
-        ) {
-            FriendCardsContent(
-                friendName = "friendName",
-                friendPokemonCards = persistentListOf()
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "FriendCardsContent - With PokemonCards - LightTheme")
-@Composable
-fun PreviewFriendCardsContent_WithPokemonCards_LightTheme() {
-    PokeManiacTheme(darkTheme = false) {
-        Column(
-            modifier = Modifier.background(color = colors.backgroundApp).fillMaxSize()
-        ) {
-            FriendCardsContent(
-                friendName = "friendName",
-                friendPokemonCards = previewPokemonCards()
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, name = "FriendCardsContent - With PokemonCards - DarkTheme")
-@Composable
-fun PreviewFriendCardsContent_WithPokemonCards_DarkTheme() {
-    PokeManiacTheme(darkTheme = true) {
-        Column(
-            modifier = Modifier.background(color = colors.backgroundApp).fillMaxSize()
-        ) {
-            FriendCardsContent(
-                friendName = "friendName",
-                friendPokemonCards = previewPokemonCards()
-            )
-        }
-    }
-}
-
-//endregion FriendCardsContent
 
 private fun previewPokemonCards() = persistentListOf(
     MyFriendPokemonCardUI(

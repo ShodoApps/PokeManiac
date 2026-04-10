@@ -1,5 +1,6 @@
 package com.shodo.android.myfriends.myfrienddetail
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shodo.android.domain.repositories.friends.UserRepository
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Immutable
 sealed class MyFriendDetailUiState {
     data class Data(val friend: MyFriendUI) : MyFriendDetailUiState()
     data object Loading : MyFriendDetailUiState()

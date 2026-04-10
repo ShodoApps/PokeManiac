@@ -1,6 +1,7 @@
 package com.shodo.android.myprofile
 
 import android.content.Context
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shodo.android.coreui.navigator.BillingNavigator
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Immutable
 sealed class MyProfileUiState {
     data object Loading: MyProfileUiState()
     data class Data(val profile: MyProfileUI): MyProfileUiState()

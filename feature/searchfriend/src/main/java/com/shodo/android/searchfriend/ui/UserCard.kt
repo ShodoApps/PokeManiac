@@ -14,6 +14,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +30,6 @@ import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
 import com.shodo.android.coreui.theme.PokeManiacTheme.typography
 import com.shodo.android.coreui.ui.PrimaryButton
 import com.shodo.android.coreui.ui.SecondaryButton
-import com.shodo.android.searchfriend.uimodel.SearchFriendUI
 import com.shodo.android.searchfriend.uimodel.SubscriptionState
 import com.shodo.android.searchfriend.uimodel.SubscriptionState.NotSubscribed
 import com.shodo.android.searchfriend.uimodel.SubscriptionState.Subscribed
@@ -37,10 +37,16 @@ import com.shodo.android.searchfriend.uimodel.SubscriptionState.UpdatingSubscrib
 
 @Composable
 fun UserCard(
-    user: SearchFriendUI,
+    id: String,
+    name: String,
+    imageUrl: String,
+    subscriptionState: SubscriptionState,
     onSubscribeUserPressed: (String) -> Unit,
     onUnsubscribeUserPressed: (String) -> Unit
 ) {
+    val onSubscribe = remember(id, onSubscribeUserPressed) { { onSubscribeUserPressed(id) } }
+    val onUnsubscribe = remember(id, onUnsubscribeUserPressed) { { onUnsubscribeUserPressed(id) } }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -61,17 +67,17 @@ fun UserCard(
                     .wrapContentSize()
                     .size(dimens.xxxLarge),
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(user.imageUrl)
+                    .data(imageUrl)
                     .crossfade(true)
                     .build(),
                 contentScale = Crop,
-                contentDescription = user.name,
+                contentDescription = name,
             )
 
             Text(
                 color = colors.primaryText,
                 style = typography.t3,
-                text = user.name,
+                text = name,
                 modifier = Modifier.padding(
                     top = dimens.small,
                     start = dimens.small,
@@ -80,9 +86,9 @@ fun UserCard(
             )
 
             SubscriptionStateContent(
-                subscriptionState = user.subscriptionState,
-                onUnsubscribeUserPressed =  { onUnsubscribeUserPressed(user.id) },
-                onSubscribeUserPressed = { onSubscribeUserPressed(user.id) }
+                subscriptionState = subscriptionState,
+                onUnsubscribeUserPressed = onUnsubscribe,
+                onSubscribeUserPressed = onSubscribe
             )
         }
     }

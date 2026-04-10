@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.shodo.android.coreui.theme.PokeManiacTheme
@@ -19,7 +20,7 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun MyFriendsListContent(
     friends: PersistentList<MyFriendUI>,
-    onFriendClicked: (MyFriendUI) -> Unit,
+    onFriendClicked: (id: String) -> Unit,
     onUnsubscribeFriend: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -33,7 +34,15 @@ fun MyFriendsListContent(
             items = friends,
             key = { it.id }
         ) { friend ->
-            MyFriendCard(friend, onFriendClicked, onUnsubscribeFriend)
+            val onFriendPressed = remember(friend.id, onFriendClicked) { { onFriendClicked(friend.id) } }
+            val onUnsubscribePressed = remember(friend.id, onUnsubscribeFriend) { { onUnsubscribeFriend(friend.id) } }
+            MyFriendCard(
+                id = friend.id,
+                name = friend.name,
+                imageUrl = friend.imageUrl,
+                onFriendPressed = onFriendPressed,
+                onUnsubscribePressed = onUnsubscribePressed
+            )
         }
     }
 }

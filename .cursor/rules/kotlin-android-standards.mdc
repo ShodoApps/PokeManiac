@@ -6,6 +6,8 @@ alwaysApply: false
 
 # PokeManiac Kotlin & Android Coding Standards
 
+> **Guiding principle:** Standards exist to solve real problems, not to be followed for their own sake. Don't apply a pattern just because it's "best practice" if it makes the code harder to understand. Code must remain readable by a senior Android developer who doesn't know this codebase. See `pokemaniac-guide.mdc` for the full engineering philosophy.
+
 ## Immutability First
 
 ### Collections

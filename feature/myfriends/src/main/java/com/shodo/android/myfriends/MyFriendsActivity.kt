@@ -46,7 +46,7 @@ sealed class Routes {
     data object MyFriendList: Routes()
 
     @Serializable
-    data class MyFriendDetail(val id: String, val name: String): Routes()
+    data class MyFriendDetail(val id: String): Routes()
 }
 
 @Composable
@@ -65,7 +65,7 @@ fun MyFriendsNavHost(modifier: Modifier = Modifier, navController: NavHostContro
             MyFriendListScreen(
                 modifier = Modifier,
                 viewModel = koinViewModel(),
-                onFriendPressed = { friend -> navController.navigate(MyFriendDetail(friend.id, friend.name)) },
+                onFriendPressed = { friendId -> navController.navigate(MyFriendDetail(friendId)) },
                 onBackPressed = onBackPressed
             )
         }
@@ -79,7 +79,6 @@ fun MyFriendsNavHost(modifier: Modifier = Modifier, navController: NavHostContro
             val myFriendDetail: MyFriendDetail = backStackEntry.toRoute()
             MyFriendDetailScreen(
                 friendId = myFriendDetail.id,
-                friendName = myFriendDetail.name,
                 viewModel = koinViewModel(),
                 onBackPressed = onBackPressed
             )

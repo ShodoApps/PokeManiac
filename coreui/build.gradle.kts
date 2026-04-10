@@ -38,6 +38,9 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)
 
+    // Lifecycle
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
     // Compose Navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)

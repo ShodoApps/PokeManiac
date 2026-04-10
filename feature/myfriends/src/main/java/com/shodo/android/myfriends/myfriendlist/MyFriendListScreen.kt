@@ -4,7 +4,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -14,9 +13,8 @@ import androidx.lifecycle.Lifecycle.Event.ON_START
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.shodo.android.coreui.extensions.observeWithLifecycle
 import com.shodo.android.myfriends.myfriendlist.ui.MyFriendListView
-import com.shodo.android.myfriends.uimodel.MyFriendUI
-import kotlinx.coroutines.flow.collectLatest
 
 /**
  * MyFriendListScreen is a container composable responsible for:
@@ -37,15 +35,13 @@ fun MyFriendListScreen(
     modifier: Modifier = Modifier,
     viewModel: MyFriendListViewModel,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
-    onFriendPressed: (MyFriendUI) -> Unit,
+    onFriendPressed: (id: String) -> Unit,
     onBackPressed: () -> Unit
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(Unit) {
-        viewModel.error.collectLatest { error ->
-            snackbarHostState.showSnackbar(error.message.toString())
-        }
+    viewModel.error.observeWithLifecycle(lifecycleOwner) { error ->
+        snackbarHostState.showSnackbar(error.message.toString())
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -62,11 +58,13 @@ fun MyFriendListScreen(
         }
     }
 
+    val onSearchFriendsPressed = remember(viewModel, context) { { viewModel.navigateToSearchFriend(context) } }
+
     MyFriendListView(
         modifier = modifier,
         uiState = uiState,
         onFriendPressed = onFriendPressed,
-        onSearchFriendsPressed = { viewModel.navigateToSearchFriend(context) },
+        onSearchFriendsPressed = onSearchFriendsPressed,
         onUnsubscribePressed = viewModel::unsubscribeFriend,
         onBackPressed = onBackPressed,
         snackbarHostState = snackbarHostState

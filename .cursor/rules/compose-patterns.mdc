@@ -1,10 +1,12 @@
 ---
-description: PokeManiac Compose patterns - Screen vs View split, lifecycle-aware state collection, previews. Apply when working with Compose files.
+description: PokeManiac Compose patterns - Screen vs View split, lifecycle-aware state collection, recomposition optimization, previews. Apply when working with Compose files.
 globs: "**/*.kt"
 alwaysApply: false
 ---
 
 # PokeManiac Compose Patterns
+
+> **Guiding principle:** All patterns here are applied pragmatically. Complexity is only justified by a visible, concrete benefit. Code must remain readable by a senior Android developer who doesn't know this codebase. When in doubt, prefer the simpler solution. See `pokemaniac-guide.mdc` for the full engineering philosophy.
 
 ## Screen vs View Pattern
 
@@ -26,12 +28,10 @@ fun MyFeatureScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    
-    // Error handling
-    LaunchedEffect(Unit) {
-        viewModel.error.collectLatest { error ->
-            snackbarHostState.showSnackbar(error.message.toString())
-        }
+
+    // Error handling — lifecycle-aware: pauses when app is in background
+    viewModel.error.observeWithLifecycle(lifecycleOwner) { error ->
+        snackbarHostState.showSnackbar(error.message.toString())
     }
     
     // State collection — lifecycle-aware: pauses when app is in background
@@ -50,13 +50,17 @@ fun MyFeatureScreen(
         }
     }
     
+    // Stable lambda — only wrap in remember() if this screen contains a LazyList/LazyGrid/animation
+    val context = LocalContext.current
+    val onNavigate = remember(viewModel, context) { { viewModel.navigateSomewhere(context) } }
+
     // Delegate to stateless View
     MyFeatureView(
         modifier = modifier,
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onAction = viewModel::onAction,
-        onNavigate = { viewModel.navigator.navigate() }
+        onNavigate = onNavigate
     )
 }
 ```
@@ -186,6 +190,308 @@ Text(
 
 ---
 
+## Recomposition Optimization
+
+Compose skips recomposing a function only when all its parameters are **stable AND equal** to the previous call. Unstable types or new lambda instances on every recomposition prevent skipping.
+
+### When to optimize — pragmatic tiers
+
+Optimization has a cost in code complexity. Apply the full set of optimizations only where recomposition problems are actually **visible** to the user.
+
+**Tier 1 — Always apply (zero or negligible complexity cost):**
+- `@Immutable` / `@Stable` on UiState and UI models — one annotation, no logic change
+- `PersistentList<>` for all collection fields — already the project standard
+- `observeWithLifecycle()` for all SharedFlow — replaces old pattern 1:1, also a correctness fix
+- `rememberUpdatedState` for callbacks in `observeWithLifecycle` — 1 extra line, correctness fix
+- `key = { it.id }` on all lazy `items { }` — prevents item recomposition on reorder
+- String `key` on all single `item { }` blocks in lazy layouts — `item(key = "header") { ... }`
+- `remember(param) { }` for any value derived inline from a parameter (sumOf, filter, count…)
+
+**Tier 2 — Apply only on screens with LazyList, LazyGrid, or animations:**
+- `remember(viewModel, context) { ... }` for navigation lambdas — adds lines, only pays off when child composables inside a scrolling list can actually skip
+- Pass only the fields a composable actually uses — see "Recomposition Scope" section below
+
+**This project's Tier 2 screens** (have LazyColumn / LazyVerticalGrid):
+- `DashboardScreen` — LazyColumn with live feed + pull-to-refresh
+- `SearchFriendScreen` — LazyVerticalGrid + frequent state changes from search
+- `MyFriendListScreen` — LazyColumn of friends
+- `MyFriendDetailScreen` — LazyVerticalGrid of cards
+- `MyProfileScreen` — LazyVerticalGrid of cards
+
+**Not worth optimizing** (simple, static, no list/animation):
+- `PostTransactionStep1Screen` — camera flow, single interaction
+- `PostTransactionStep2Screen` — plain form
+- `BillingScreen` — stub/placeholder
+
+---
+
+### ✅ Recomposition Scope — Pass Only Used Fields to Leaf Composables
+
+Every parameter a composable reads is a **recomposition dependency**. If a card receives a full `MyFriendUI` object but only displays `name` and `imageUrl`, it will still recompose when `pokemonCards` changes — even though it never touched that field.
+
+**Rule:** Leaf composables (cards, list items) must receive only the fields they actually display. Pass individual primitives/Strings, not the whole model object.
+
+```kotlin
+// ❌ BAD — card receives MyFriendUI but only uses id, name, imageUrl.
+//         If pokemonCards or description changes, the card recomposes for nothing.
+@Composable
+fun MyFriendCard(friend: MyFriendUI, onFriendPressed: () -> Unit) {
+    Text(friend.name)    // uses name
+    AsyncImage(friend.imageUrl)  // uses imageUrl
+    // friend.pokemonCards and friend.description are never read — but still a dependency
+}
+
+// ✅ GOOD — card declares exactly what it needs.
+@Composable
+fun MyFriendCard(
+    id: String,
+    name: String,
+    imageUrl: String,
+    onFriendPressed: () -> Unit,
+    onUnsubscribePressed: () -> Unit
+) { ... }
+```
+
+**At the call site (inside a LazyColumn/LazyGrid item lambda):**
+
+```kotlin
+items(items = friends, key = { it.id }) { friend ->
+    // Stable lambdas — recreated only if friend.id or the parent callback changes
+    val onFriendPressed = remember(friend.id, onFriendClicked) { { onFriendClicked(friend.id) } }
+    val onUnsubscribe = remember(friend.id, onUnsubscribeFriend) { { onUnsubscribeFriend(friend.id) } }
+    MyFriendCard(
+        id = friend.id,
+        name = friend.name,
+        imageUrl = friend.imageUrl,
+        onFriendPressed = onFriendPressed,
+        onUnsubscribePressed = onUnsubscribe
+    )
+}
+```
+
+The `remember(item.id, callback) { { callback(item.id) } }` pattern inside a lazy item is valid: each item has its own composition scope, so `remember` works per-item. The lambda is only recreated when `item.id` or `callback` changes identity.
+
+---
+
+### ✅ Wrap Derived Values in remember()
+
+If a composable computes a value from a **parameter** inline (e.g. `sumOf`, `filter`, `count`), that computation runs on **every recomposition** — even when the input hasn't changed.
+
+Use `remember(param) { ... }` to run the computation only when the input changes:
+
+```kotlin
+// ❌ BAD — sumOf runs on every recomposition
+@Composable
+fun MyDescription(pokemonCards: PersistentList<MyFriendPokemonCardUI>) {
+    val totalVotes = pokemonCards.sumOf { it.totalVotes }  // recomputed every time
+    Text("Total votes: $totalVotes")
+}
+
+// ✅ GOOD — sumOf runs only when pokemonCards changes
+@Composable
+fun MyContent(friend: MyFriendUI) {
+    val totalVotes = remember(friend.pokemonCards) { friend.pokemonCards.sumOf { it.totalVotes } }
+    MyDescription(totalVotes)
+}
+
+// ✅ Then the child composable takes the already-computed scalar
+@Composable
+fun MyDescription(totalVotes: Int) {
+    Text("Total votes: $totalVotes")
+}
+```
+
+Note: `derivedStateOf` is for **`MutableState` inputs**. For plain composable parameters, use `remember(key) { }`.
+
+---
+
+### ❌ Never Nest a Lazy Layout Inside a Scrollable Container
+
+Placing a `LazyColumn`, `LazyVerticalGrid`, etc. inside a `Column + verticalScroll` gives the lazy layout **infinite height**. Compose is forced to lay out all items at once — defeating the entire purpose of a lazy layout.
+
+```kotlin
+// ❌ BAD — LazyVerticalGrid has infinite height, all items are composed at once
+Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+    HeaderSection()
+    LazyVerticalGrid(...) {
+        items(cards) { card -> CardItem(card) }
+    }
+}
+
+// ✅ GOOD — LazyVerticalGrid is the root scroller; header is a full-span item
+LazyVerticalGrid(columns = GridCells.Adaptive(minSize = cellSize)) {
+    item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
+        HeaderSection()
+    }
+    items(cards, key = { it.id }) { card ->
+        CardItem(card)
+    }
+}
+```
+
+`GridItemSpan(maxLineSpan)` makes an item span **all columns** — behaving like a full-width row inside the grid. `maxLineSpan` resolves to the actual column count at runtime.
+
+---
+
+### ✅ Use LazyGridScope Extension Functions for Complex Grids
+
+When a `LazyVerticalGrid` contains multiple sections (header, descriptions, separator, grid cells, empty state), extract **private `LazyGridScope` extension functions**. This keeps the main composable readable and hides the `GridItemSpan` boilerplate.
+
+```kotlin
+@Composable
+fun FriendDetailContent(friend: MyFriendUI, onUnsubscribePressed: () -> Unit) {
+    val totalVotes = remember(friend.pokemonCards) { friend.pokemonCards.sumOf { it.totalVotes } }
+
+    LazyVerticalGrid(columns = GridCells.Adaptive(minSize = dimens.minGridUserCellSize)) {
+        friendHeader(friend.imageUrl, friend.name, onUnsubscribePressed)
+        friendDescriptions(friend.description, totalVotes)
+        if (friend.pokemonCards.isEmpty()) {
+            friendEmptyState(friend.name)
+        } else {
+            friendCardsSeparator()
+            friendCards(friend.pokemonCards)
+        }
+    }
+}
+
+// Each section is a private LazyGridScope extension — named, keyed, and self-contained
+private fun LazyGridScope.friendHeader(imageUrl: String, name: String, onUnsubscribe: () -> Unit) {
+    item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
+        FriendDetailHeader(imageUrl, name, onUnsubscribe)
+    }
+}
+
+private fun LazyGridScope.friendCards(cards: PersistentList<MyFriendPokemonCardUI>) {
+    items(items = cards, key = { it.id }) { card ->
+        CardThumbnail(card.imageUrl, card.name)
+    }
+}
+// ... other sections follow the same pattern
+```
+
+**Rules for `LazyGridScope` extension functions:**
+- Always `private`
+- Always provide a string `key` on every `item { }` block
+- Composable content (e.g. `stringResource`, theme values) goes inside the `item { }` lambda — not in the extension function itself
+- Keep each function focused on one visual section
+
+---
+
+### ✅ Annotate UI Models with @Immutable or @Stable
+
+Without annotations, the Compose compiler treats `sealed class`, `data class`, and enums as **unstable** by default — it recomposes defensively even when nothing changed.
+
+**Rules:**
+- `@Immutable` — all `val` fields are primitives, `String`, `enum`, `@Immutable` types, or `PersistentList`. Promise: the object will never change after construction.
+- `@Stable` — use when a field contains a type that has correct `equals()` but is not annotated (e.g. `android.net.Uri`). Promise: equals() is reliable.
+
+```kotlin
+// ✅ All fields are stable — use @Immutable
+@Immutable
+data class MyFriendPokemonCardUI(
+    val id: String,
+    val name: String,
+    val totalVotes: Int
+)
+
+// ✅ PersistentList fields are fine — use @Immutable
+@Immutable
+data class MyFriendUI(
+    val id: String,
+    val name: String,
+    val pokemonCards: PersistentList<MyFriendPokemonCardUI>
+)
+
+// ✅ Contains Uri (no @Immutable annotation in framework) — use @Stable
+@Stable
+data class MyProfilePokemonCardUI(
+    val id: String,
+    val name: String,
+    val imageUri: Uri,  // Uri has correct equals() but is not @Immutable
+    val totalVotes: Int
+)
+
+// ✅ Sealed UiState class — always annotate
+@Immutable
+sealed class MyFeatureUiState {
+    data object Loading : MyFeatureUiState()
+    data class Data(val items: PersistentList<ItemUI>) : MyFeatureUiState()
+    data object EmptyResult : MyFeatureUiState()
+}
+
+// ❌ BAD — no annotation, Compose treats as unstable, no skipping
+sealed class MyFeatureUiState { ... }
+data class ItemUI(val name: String) // Compose cannot infer stability
+```
+
+### ✅ Always Use PersistentList for Collection Fields in UI Models
+
+Plain `List<T>` is treated as **unstable** by the Compose compiler because `MutableList` implements it. `PersistentList` from `kotlinx-collections-immutable` is annotated `@Immutable` and is always safe.
+
+```kotlin
+// ✅ GOOD — PersistentList is @Immutable
+@Immutable
+data class SearchFriendUI(
+    val id: String,
+    val pokemonCards: PersistentList<SearchFriendPokemonCardUI>
+)
+
+// ❌ BAD — List<T> is treated as unstable
+data class SearchFriendUI(
+    val id: String,
+    val pokemonCards: List<SearchFriendPokemonCardUI>
+)
+```
+
+### ✅ Wrap Navigation Lambdas in remember() — Tier 2 screens only
+
+Inline lambdas that capture `LocalContext.current` or `viewModel` create a **new instance on every recomposition**. Child composables that receive them can never skip recomposition.
+
+This optimization only pays off when the receiving composable contains a **LazyList, LazyGrid, or animated content**. On simple screens (forms, camera flows), the overhead of recomposition is negligible and adding `remember` wrappers adds complexity without visible benefit.
+
+```kotlin
+val context = LocalContext.current
+
+// ✅ Apply on screens with LazyList / LazyGrid / animations
+val onSearchFriendsPressed = remember(viewModel, context) {
+    { viewModel.navigateToSearchFriend(context) }
+}
+val onUnsubscribePressed = remember(viewModel) { viewModel::unsubscribeFriend }
+
+// ✅ Fine as-is on simple screens (forms, camera, static content)
+onSavePressed = { viewModel.save() }
+```
+
+**When to key on what:**
+- Captures only `viewModel` → `remember(viewModel) { ... }`
+- Captures `viewModel` + `context` → `remember(viewModel, context) { ... }`
+- Pure method reference → `remember(viewModel) { viewModel::method }`
+
+### ✅ Use rememberUpdatedState for LaunchedEffect Callbacks
+
+`LaunchedEffect(Unit)` starts once and never restarts. If it calls a lambda parameter (`onBackPressed`, `onSuccess`), it will hold a **stale reference** if the parent ever provides a new lambda.
+
+```kotlin
+// ✅ GOOD — always calls the latest version of the callback
+val currentOnBackPressed by rememberUpdatedState(onBackPressed)
+LaunchedEffect(Unit) {
+    viewModel.unsubscribed.collectLatest {
+        currentOnBackPressed()
+    }
+}
+
+// ❌ BAD — onBackPressed may be stale if the parent recomposed with a new lambda
+LaunchedEffect(Unit) {
+    viewModel.unsubscribed.collectLatest {
+        onBackPressed()  // potentially stale reference
+    }
+}
+```
+
+Apply `rememberUpdatedState` to **any lambda parameter** consumed inside a `LaunchedEffect(Unit)` or `LaunchedEffect(someStableKey)`.
+
+---
+
 ## State Collection Best Practices
 
 ### ✅ Always use collectAsStateWithLifecycle() for StateFlow
@@ -205,12 +511,55 @@ Required dependency in each feature module's `build.gradle.kts`:
 implementation(libs.androidx.lifecycle.runtime.compose)
 ```
 
-### ✅ Use collectLatest with LaunchedEffect for SharedFlow
-One-shot events (errors, navigation signals) use `SharedFlow` collected via `LaunchedEffect` — this is unaffected by lifecycle since it already stops when the composable leaves composition.
+### ✅ Collect SharedFlow with observeWithLifecycle()
+
+Use the `observeWithLifecycle()` extension from `coreui` to collect any `SharedFlow` in a Screen. It wraps `flowWithLifecycle` with the correct `LaunchedEffect` keys so collection is paused when the lifecycle drops below `STARTED` (app backgrounded).
+
 ```kotlin
+import com.shodo.android.coreui.extensions.observeWithLifecycle
+
+// Simple error flow — lifecycleOwner defaults to LocalLifecycleOwner.current
+viewModel.error.observeWithLifecycle { error ->
+    snackbarHostState.showSnackbar(error.message.toString())
+}
+
+// Pass an explicit lifecycleOwner when the Screen already has one as a parameter
+viewModel.error.observeWithLifecycle(lifecycleOwner) { error ->
+    snackbarHostState.showSnackbar(error.message.toString())
+}
+
+// Navigation/one-shot flow — combine with rememberUpdatedState when the callback
+// may change identity across recompositions
+val currentOnBackPressed by rememberUpdatedState(onBackPressed)
+viewModel.unsubscribed.observeWithLifecycle(lifecycleOwner) {
+    currentOnBackPressed()
+}
+```
+
+**How it works:** `observeWithLifecycle` is defined in `coreui/extensions/FlowExtensions.kt`:
+```kotlin
+@Composable
+fun <T> Flow<T>.observeWithLifecycle(
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    action: suspend (T) -> Unit
+) {
+    LaunchedEffect(this, lifecycleOwner) {
+        flowWithLifecycle(lifecycleOwner.lifecycle, minActiveState).collect(action)
+    }
+}
+```
+
+**Important:** `SharedFlow` has no replay (replay = 0 by default). Events emitted while the lifecycle is below `STARTED` are lost. This is intentional and acceptable for:
+- **Error flows** — stale error snackbars should not pop up when returning from background.
+- **Navigation/one-shot flows** — these are immediate responses to user actions; they won't be emitted while backgrounded in normal usage.
+
+**Never do this** — the inner `launch` escapes composable scope and creates an orphan coroutine:
+```kotlin
+// ❌ BAD — orphan coroutine, wrong key, no lifecycle awareness
 LaunchedEffect(Unit) {
-    viewModel.error.collectLatest { error ->
-        snackbarHostState.showSnackbar(error.message.toString())
+    lifecycleOwner.lifecycleScope.launch {
+        flowWithLifecycle(...).collect(action)
     }
 }
 ```
@@ -339,7 +688,7 @@ sealed class Routes {
     data object List : Routes()
     
     @Serializable
-    data class Detail(val id: String, val name: String) : Routes()
+    data class Detail(val id: String) : Routes()  // ID only — no display data
 }
 
 @Composable
@@ -350,15 +699,41 @@ fun MyFeatureNavHost(navController: NavHostController) {
     ) {
         composable<Routes.List> {
             MyListScreen(
-                onItemClick = { id, name ->
-                    navController.navigate(Routes.Detail(id, name))
+                onItemClick = { itemId ->
+                    navController.navigate(Routes.Detail(itemId))
                 }
             )
         }
         composable<Routes.Detail> { backStackEntry ->
             val args: Routes.Detail = backStackEntry.toRoute()
-            MyDetailScreen(id = args.id, name = args.name)
+            MyDetailScreen(id = args.id)  // Screen loads its own data from the ViewModel
         }
     }
 }
 ```
+
+### ✅ Navigation Routes Carry IDs Only — Not Display Data
+
+Routes must only contain the **identifier** needed to load the data — never display data like `name`, `description`, or `imageUrl`.
+
+**Why:** If a route carries `name` and the API also returns a `name`, you have two sources of truth. They can diverge, and the View would need to decide which one to trust.
+
+```kotlin
+// ❌ BAD — name duplicated: also present in MyDetailUiState.Data.friend.name
+data class Detail(val id: String, val name: String) : Routes()
+
+// Screen has a dual source of truth: friendName from args AND state.friend.name from the API
+MyDetailView(friendName = args.name, uiState = uiState)  // which one is correct?
+
+// ✅ GOOD — only the ID travels via navigation
+data class Detail(val id: String) : Routes()
+
+// The View derives everything it needs from uiState — single source of truth
+@Composable
+fun MyDetailView(uiState: MyDetailUiState, ...) {
+    val name = if (uiState is Data) uiState.friend.name else ""
+    Scaffold(topBar = { TopBar(title = name) }) { ... }
+}
+```
+
+**Consequence for the top bar:** While loading, the title will be empty. This is acceptable — the loading state shows a spinner, not a title. Once data loads, the real name from the API appears. Never add a separate `name` parameter to a `*View` composable just to pre-populate the toolbar during loading.
