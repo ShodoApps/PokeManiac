@@ -34,6 +34,9 @@ dependencies {
     // Coroutines Core - Flow
     implementation(libs.kotlinx.coroutines.core)
 
+    // KMP-ready date/time
+    api(libs.kotlinx.datetime)
+
     // Koin - Dependency injection
     implementation(libs.koin.core)
 }

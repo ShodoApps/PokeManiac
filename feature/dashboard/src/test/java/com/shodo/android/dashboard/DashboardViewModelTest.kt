@@ -24,7 +24,7 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -153,7 +153,7 @@ class DashboardViewModelTest {
         private val defaultNewActivity = NewActivity(
             userName = "Ash",
             userImageUrl = "https://image.url/ash.jpg",
-            date = LocalDateTime.of(2024, 1, 15, 10, 30),
+            date = LocalDateTime(2024, 1, 15, 10, 30),
             pokemonCard = UserPokemonCard(
                 pokemonId = 25,
                 name = "Pikachu",

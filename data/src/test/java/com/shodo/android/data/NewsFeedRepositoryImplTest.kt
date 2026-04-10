@@ -23,7 +23,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -78,7 +78,7 @@ class NewsFeedRepositoryImplTest {
     fun `getNewActivities returns only personal activities when all friends are null`() = runTest {
         // Given
         stubAllFriendsNull()
-        val myActivity = activity("Pikachu", LocalDateTime.of(2025, 3, 1, 10, 0), 25)
+        val myActivity = activity("Pikachu", LocalDateTime(2025, 3, 1, 10, 0), 25)
         `when`(myActivitiesDataStore.getAllActivities()).thenReturn(flow { emit(listOf(myActivity)) })
 
         // When
@@ -98,7 +98,7 @@ class NewsFeedRepositoryImplTest {
         `when`(friendsDataStore.getFriendById("70")).thenReturn(flow { emit(null) })
         `when`(friendsDataStore.getFriendById("720")).thenReturn(flow { emit(null) })
 
-        val myActivity = activity("Pikachu", LocalDateTime.of(2024, 1, 1, 0, 0), 25)
+        val myActivity = activity("Pikachu", LocalDateTime(2024, 1, 1, 0, 0), 25)
         `when`(myActivitiesDataStore.getAllActivities()).thenReturn(flow { emit(listOf(myActivity)) })
 
         // When
@@ -119,8 +119,8 @@ class NewsFeedRepositoryImplTest {
         stubAllFriendsNull()
         `when`(friendsDataStore.getFriendById("70")).thenReturn(flow { emit(userWithCards("Batman70", 1)) })
 
-        val oldActivity = activity("Pikachu", LocalDateTime.of(2020, 1, 1, 0, 0), 25)
-        val recentActivity = activity("Charizard", LocalDateTime.of(2025, 6, 1, 0, 0), 6)
+        val oldActivity = activity("Pikachu", LocalDateTime(2020, 1, 1, 0, 0), 25)
+        val recentActivity = activity("Charizard", LocalDateTime(2025, 6, 1, 0, 0), 6)
         `when`(myActivitiesDataStore.getAllActivities()).thenReturn(
             flow { emit(listOf(oldActivity, recentActivity)) }
         )
@@ -185,7 +185,7 @@ class NewsFeedRepositoryImplTest {
         private val defaultActivity = NewActivity(
             userName = "Ash",
             userImageUrl = null,
-            date = LocalDateTime.of(2024, 6, 1, 12, 0),
+            date = LocalDateTime(2024, 6, 1, 12, 0),
             pokemonCard = UserPokemonCard(
                 pokemonId = 25,
                 name = "Pikachu",

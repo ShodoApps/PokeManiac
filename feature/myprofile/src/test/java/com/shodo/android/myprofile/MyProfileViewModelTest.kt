@@ -22,7 +22,7 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -56,7 +56,7 @@ class MyProfileViewModelTest {
     fun `start emits Loading then Data with mapped FileSource cards`() = runTest {
         // Given — activity with FileSource card (kept by the mapper)
         `when`(myProfileRepository.getMyActivities()).thenReturn(
-            flow { emit(listOf(activityWithFileSource("content://media/pikachu.jpg", "Pikachu", LocalDateTime.of(2024, 6, 10, 12, 0)))) }
+            flow { emit(listOf(activityWithFileSource("content://media/pikachu.jpg", "Pikachu", LocalDateTime(2024, 6, 10, 12, 0)))) }
         )
 
         viewModel.uiState.test {
@@ -94,8 +94,8 @@ class MyProfileViewModelTest {
     @Test
     fun `start emits cards sorted by most recent date first`() = runTest {
         // Given — two activities with different dates (older Pikachu, newer Charizard)
-        val older = activityWithFileSource("content://media/pikachu.jpg", "Pikachu", LocalDateTime.of(2024, 1, 1, 10, 0))
-        val newer = activityWithFileSource("content://media/charizard.jpg", "Charizard", LocalDateTime.of(2024, 12, 31, 23, 59))
+        val older = activityWithFileSource("content://media/pikachu.jpg", "Pikachu", LocalDateTime(2024, 1, 1, 10, 0))
+        val newer = activityWithFileSource("content://media/charizard.jpg", "Charizard", LocalDateTime(2024, 12, 31, 23, 59))
 
         `when`(myProfileRepository.getMyActivities()).thenReturn(
             flow { emit(listOf(older, newer)) }
@@ -148,7 +148,7 @@ class MyProfileViewModelTest {
     private fun activityWithUrlSource(cardName: String) = NewActivity(
         userName = "Ash",
         userImageUrl = null,
-        date = LocalDateTime.of(2024, 6, 11, 14, 0),
+        date = LocalDateTime(2024, 6, 11, 14, 0),
         pokemonCard = UserPokemonCard(
             pokemonId = 4,
             name = cardName,

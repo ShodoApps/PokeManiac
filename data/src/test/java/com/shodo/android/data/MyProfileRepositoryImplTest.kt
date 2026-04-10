@@ -20,7 +20,7 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 import kotlin.test.assertEquals
 
 @ExperimentalCoroutinesApi
@@ -60,7 +60,7 @@ class MyProfileRepositoryImplTest {
         private val defaultActivity = NewActivity(
             userName = "Ash",
             userImageUrl = null,
-            date = LocalDateTime.of(2024, 6, 1, 12, 0),
+            date = LocalDateTime(2024, 6, 1, 12, 0),
             pokemonCard = UserPokemonCard(
                 pokemonId = 25,
                 name = "Pikachu",

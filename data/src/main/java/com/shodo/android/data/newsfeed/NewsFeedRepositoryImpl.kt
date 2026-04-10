@@ -7,7 +7,7 @@ import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -31,7 +31,7 @@ class NewsFeedRepositoryImpl(
                             NewActivity(
                                 userName = batman69.name,
                                 userImageUrl = batman69.imageUrl,
-                                date = LocalDateTime.of(2025, 2, 20, 12, 34, 50),
+                                date = LocalDateTime(2025, 2, 20, 12, 34, 50),
                                 pokemonCard = card,
                                 activityType = NewActivityType.Purchase,
                                 price = 59
@@ -43,7 +43,7 @@ class NewsFeedRepositoryImpl(
                             NewActivity(
                                 userName = batman69.name,
                                 userImageUrl = batman69.imageUrl,
-                                date = LocalDateTime.of(2025, 3, 10, 13, 32, 29),
+                                date = LocalDateTime(2025, 3, 10, 13, 32, 29),
                                 pokemonCard = card,
                                 activityType = NewActivityType.Purchase,
                                 price = 190
@@ -54,7 +54,7 @@ class NewsFeedRepositoryImpl(
                         NewActivity(
                             userName = batman69.name,
                             userImageUrl = batman69.imageUrl,
-                            date = LocalDateTime.of(2025, 3, 10, 2, 4, 30),
+                            date = LocalDateTime(2025, 3, 10, 2, 4, 30),
                             pokemonCard = UserPokemonCard(
                                 pokemonId = 42,
                                 totalVotes = 1,
@@ -74,7 +74,7 @@ class NewsFeedRepositoryImpl(
                             NewActivity(
                                 userName = batman70.name,
                                 userImageUrl = batman70.imageUrl,
-                                date = LocalDateTime.of(2025, 1, 12, 3, 34, 2),
+                                date = LocalDateTime(2025, 1, 12, 3, 34, 2),
                                 pokemonCard = card,
                                 activityType = NewActivityType.Purchase,
                                 price = 59
@@ -85,7 +85,7 @@ class NewsFeedRepositoryImpl(
                         NewActivity(
                             userName = batman70.name,
                             userImageUrl = batman70.imageUrl,
-                            date = LocalDateTime.of(2025, 3, 10, 2, 4, 12),
+                            date = LocalDateTime(2025, 3, 10, 2, 4, 12),
                             pokemonCard = UserPokemonCard(
                                 pokemonId = 150,
                                 totalVotes = 193,
@@ -108,7 +108,7 @@ class NewsFeedRepositoryImpl(
                             NewActivity(
                                 userName = superman720.name,
                                 userImageUrl = superman720.imageUrl,
-                                date = LocalDateTime.of(2024, 12, 30, 13, 50, 24),
+                                date = LocalDateTime(2024, 12, 30, 13, 50, 24),
                                 pokemonCard = card,
                                 activityType = NewActivityType.Purchase,
                                 price = 59
@@ -119,7 +119,7 @@ class NewsFeedRepositoryImpl(
                         NewActivity(
                             userName = superman720.name,
                             userImageUrl = superman720.imageUrl,
-                            date = LocalDateTime.of(2025, 2, 14, 19, 4, 45),
+                            date = LocalDateTime(2025, 2, 14, 19, 4, 45),
                             pokemonCard = UserPokemonCard(
                                 pokemonId = 12,
                                 totalVotes = 20,

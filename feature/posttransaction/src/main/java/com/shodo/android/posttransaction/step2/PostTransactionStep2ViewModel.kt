@@ -12,7 +12,9 @@ import com.shodo.android.domain.repositories.news.NewsFeedRepository
 import com.shodo.android.coreui.UiError
 import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Filling
 import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Loading
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,7 +54,7 @@ class PostTransactionStep2ViewModel(
                         NewActivity(
                             userName = "Super Collectionneur",
                             userImageUrl = null,
-                            date = LocalDateTime.now(),
+                            date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
                             pokemonCard = UserPokemonCard(
                                 pokemonId = pokemonNumber,
                                 name = pokemonName,

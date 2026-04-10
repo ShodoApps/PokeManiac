@@ -7,7 +7,10 @@ import com.shodo.android.domain.repositories.entities.ImageSource
 import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -22,7 +25,7 @@ class MyActivitiesDataStoreImpl(private val database: PokeManiacDatabase) : MyAc
 }
 
 private fun NewActivity.mapToBase() = MyActivityBase(
-    date = LocalDateTime.now().toString(),
+    date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toString(),
     price = price,
     type = when (activityType) {
         NewActivityType.Purchase -> NewActivityTypeBase.Purchase

@@ -8,6 +8,7 @@ import com.shodo.android.domain.repositories.entities.ImageSource
 import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import java.time.format.DateTimeFormatter
+import kotlinx.datetime.toJavaLocalDateTime
 
 @Stable
 data class NewActivityUI(
@@ -43,7 +44,7 @@ fun NewActivity.mapToUI(): NewActivityUI = NewActivityUI(
     id = userName + pokemonCard.name + date,
     friendName = userName,
     friendImageUrl = userImageUrl,
-    date = date.format(DATE_FORMATTER),
+    date = date.toJavaLocalDateTime().format(DATE_FORMATTER),
     activityType = activityType.mapToUI(),
     pokemonCard = PokemonCardUI(
         name = pokemonCard.name,

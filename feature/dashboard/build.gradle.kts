@@ -46,6 +46,9 @@ dependencies {
     // Kotlin Immutable collections - PersistentList
     implementation(libs.kotlinx.collections.immutable)
 
+    // KMP-ready date/time
+    implementation(libs.kotlinx.datetime)
+
     // Koin - Dependency injection
     implementation(libs.koin.androidx.compose)
 

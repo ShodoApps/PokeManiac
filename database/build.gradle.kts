@@ -44,4 +44,7 @@ dependencies {
 
     // Gson - Room Type Converters
     implementation(libs.gson)
+
+    // KMP-ready date/time
+    implementation(libs.kotlinx.datetime)
 }

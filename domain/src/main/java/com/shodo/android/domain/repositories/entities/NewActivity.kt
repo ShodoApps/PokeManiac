@@ -1,6 +1,6 @@
 package com.shodo.android.domain.repositories.entities
 
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 
 data class NewActivity(
     val userName: String,
