@@ -77,34 +77,44 @@ class SearchFriendViewModel(
     fun unsubscribeFriend(friendId: String) = updateFriendSubscription(friendId = friendId, subscribe = false)
 
     private fun updateFriendSubscription(friendId: String, subscribe: Boolean) {
-        (_uiState.value as? Data)?.let { data ->
-            viewModelScope.launch {
-                // 1. set the aimed friend's subscription to UpdatingSubscribe
-                _uiState.update {
-                    Data(people = data.people.map { friend ->
-                        if (friend.id == friendId) {
-                            friend.copy(subscriptionState = UpdatingSubscribe)
-                        } else friend
-                    }.toPersistentList())
+        val data = _uiState.value as? Data ?: return
+        val friend = data.people.firstOrNull { it.id == friendId } ?: return
+        viewModelScope.launch {
+            // 1. Optimistically set the friend's subscription to UpdatingSubscribe
+            _uiState.update {
+                Data(people = data.people.map { f ->
+                    if (f.id == friendId) f.copy(subscriptionState = UpdatingSubscribe) else f
+                }.toPersistentList())
+            }
+            try {
+                // 2. Perform suspend operations OUTSIDE update{}
+                if (subscribe) {
+                    trackingRepository.sendEventClick(TrackingEventClick(TRACKING_SUBSCRIBE_CLICK))
+                    userRepository.subscribeUser(friend.mapToModel())
+                } else {
+                    trackingRepository.sendEventClick(TrackingEventClick(TRACKING_UNSUBSCRIBE_CLICK))
+                    userRepository.unsubscribeUser(friendId)
                 }
-                try {
-                    _uiState.update {
-                        Data(people = data.people.map { friend ->
-                            if (friend.id == friendId) {
-                                if (subscribe) {
-                                    trackingRepository.sendEventClick(TrackingEventClick(TRACKING_SUBSCRIBE_CLICK))
-                                    userRepository.subscribeUser(friend.mapToModel())
-                                } else {
-                                    trackingRepository.sendEventClick(TrackingEventClick(TRACKING_UNSUBSCRIBE_CLICK))
-                                    userRepository.unsubscribeUser(friend.id)
-                                }
-                                friend.copy(subscriptionState = if (subscribe) Subscribed else NotSubscribed)
-                            } else friend
-                        }.toPersistentList())
-                    }
-                } catch (e: Exception) {
-                    _error.emit(e)
+                // 3. Update state with final subscription state
+                _uiState.update { currentState ->
+                    (currentState as? Data)?.copy(
+                        people = currentState.people.map { f ->
+                            if (f.id == friendId) f.copy(subscriptionState = if (subscribe) Subscribed else NotSubscribed)
+                            else f
+                        }.toPersistentList()
+                    ) ?: currentState
                 }
+            } catch (e: Exception) {
+                // Revert to previous subscription state on failure
+                _uiState.update { currentState ->
+                    (currentState as? Data)?.copy(
+                        people = currentState.people.map { f ->
+                            if (f.id == friendId) f.copy(subscriptionState = if (subscribe) NotSubscribed else Subscribed)
+                            else f
+                        }.toPersistentList()
+                    ) ?: currentState
+                }
+                _error.emit(e)
             }
         }
     }
@@ -130,7 +140,7 @@ private fun UserPokemonCard.maptoUI() = SearchFriendPokemonCardUI(
     totalVotes = totalVotes,
     hasMyVote = hasMyVote,
     name = name,
-    imageUrl = (imageSource as ImageSource.UrlSource).imageUrl
+    imageUrl = (imageSource as? ImageSource.UrlSource)?.imageUrl ?: ""
 )
 
 private fun SearchFriendUI.mapToModel() = User(

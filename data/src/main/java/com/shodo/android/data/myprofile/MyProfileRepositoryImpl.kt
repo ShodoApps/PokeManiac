@@ -5,7 +5,7 @@ import com.shodo.android.domain.repositories.myprofile.MyProfileRepository
 import kotlinx.coroutines.flow.Flow
 
 class MyProfileRepositoryImpl(private val myActivitiesDataStore: MyActivitiesDataStore) : MyProfileRepository {
-    override suspend fun getMyActivities(): Flow<List<NewActivity>> {
+    override fun getMyActivities(): Flow<List<NewActivity>> {
         return myActivitiesDataStore.getAllActivities()
     }
 }

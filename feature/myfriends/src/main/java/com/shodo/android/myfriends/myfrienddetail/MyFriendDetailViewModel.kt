@@ -7,6 +7,7 @@ import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailUiState.Data
 import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailUiState.Loading
 import com.shodo.android.myfriends.uimodel.MyFriendUI
 import com.shodo.android.myfriends.uimodel.mapToUI
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,8 +34,11 @@ class MyFriendDetailViewModel(
     private val _uiState: MutableStateFlow<MyFriendDetailUiState> = MutableStateFlow(Loading)
     val uiState: StateFlow<MyFriendDetailUiState> = _uiState.asStateFlow()
 
+    private var detailJob: Job? = null
+
     fun start(id: String) {
-        viewModelScope.launch {
+        detailJob?.cancel()
+        detailJob = viewModelScope.launch {
             _uiState.update { Loading }
             try {
                 userRepository.getSubscribedUser(id).collect { user ->

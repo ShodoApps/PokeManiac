@@ -17,7 +17,7 @@ class MyActivitiesDataStoreImpl(private val database: PokeManiacDatabase) : MyAc
         database.localMyActivitiesDao().insert(newActivity.mapToBase())
     }
 
-    override suspend fun getAllActivities(): Flow<List<NewActivity>> {
+    override fun getAllActivities(): Flow<List<NewActivity>> {
         return database.localMyActivitiesDao().getAllActivities().map { activities -> activities.map { it.mapToModel() } }
     }
 }

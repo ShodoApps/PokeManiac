@@ -20,7 +20,6 @@ import com.shodo.android.database.myactivities.MyActivitiesDataStoreImpl
 import com.shodo.android.domain.repositories.friends.UserRepository
 import com.shodo.android.domain.repositories.myprofile.MyProfileRepository
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
-import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
@@ -29,7 +28,6 @@ val databaseModule = module {
     fun provideDataBase(application: Application): PokeManiacDatabase {
         return Room.databaseBuilder(application, PokeManiacDatabase::class.java, "PokeManiacDB")
             .fallbackToDestructiveMigration(false)
-            .allowMainThreadQueries()
             .build()
     }
 
@@ -51,7 +49,6 @@ val dataModule = module {
 val apiModule = module {
     // network
     factory { BaseUrlProvider() }
-    factory { OkHttpClient.Builder() }
     factory { retrofitWith().create(SuperHerosApiService::class.java) }
 
     // requests

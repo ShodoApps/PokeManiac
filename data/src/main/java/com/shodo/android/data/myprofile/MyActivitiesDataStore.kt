@@ -5,5 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface MyActivitiesDataStore {
     suspend fun saveNewActivity(newActivity: NewActivity)
-    suspend fun getAllActivities(): Flow<List<NewActivity>>
+    fun getAllActivities(): Flow<List<NewActivity>>
 }

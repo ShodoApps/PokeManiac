@@ -3,8 +3,8 @@ package com.shodo.android.data.myfriends
 import com.shodo.android.domain.repositories.entities.User
 import com.shodo.android.domain.repositories.friends.UserRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.zip
 
 class UserRepositoryImpl(
     private val friendsRequest: FriendsRequest,
@@ -19,12 +19,13 @@ class UserRepositoryImpl(
         return friendsDataStore.getFriendById(userId)
     }
 
-    override suspend fun searchUsers(userName: String): Flow<List<User>> {
+    override fun searchUsers(userName: String): Flow<List<User>> {
         val subscribedFriends = friendsDataStore.getSubscribedFriends()
         val searchFriends = flow { emit(friendsRequest.searchUsers(userName)) }
-        return searchFriends.zip(subscribedFriends) { searchResults, subscribedUsers ->
+        return combine(searchFriends, subscribedFriends) { searchResults, subscribedUsers ->
+            val subscribedIds = subscribedUsers.map { it.id }.toSet()
             searchResults.map { searchResult ->
-                subscribedUsers.firstOrNull { it.id == searchResult.id } ?: searchResult
+                searchResult.copy(isSubscribed = searchResult.id in subscribedIds)
             }
         }
     }

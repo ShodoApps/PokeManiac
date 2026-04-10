@@ -9,7 +9,9 @@ import com.shodo.android.domain.repositories.entities.UserPokemonCard
 
 class FriendsRequestImpl(private val apiService: SuperHerosApiService) : FriendsRequest {
     override suspend fun searchUsers(friendName: String): List<User> {
-        return apiService.searchCharacter(friendName).body()?.results?.map { superheroDTO -> superheroDTO.mapToFriend() } ?: emptyList()
+        val response = apiService.searchCharacter(friendName)
+        if (!response.isSuccessful) throw Exception("HTTP ${response.code()}: ${response.message()}")
+        return response.body()?.results?.map { superheroDTO -> superheroDTO.mapToFriend() } ?: emptyList()
     }
 }
 

@@ -12,6 +12,7 @@ import com.shodo.android.myfriends.uimodel.MyFriendUI
 import com.shodo.android.myfriends.uimodel.mapToUI
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -36,8 +37,11 @@ class MyFriendListViewModel(
     private val _error = MutableSharedFlow<Exception>()
     val error = _error.asSharedFlow()
 
+    private var friendsJob: Job? = null
+
     fun fetchMyFriends() {
-        viewModelScope.launch {
+        friendsJob?.cancel()
+        friendsJob = viewModelScope.launch {
             _uiState.update { Loading }
             try {
                 userRepository.getSubscribedUsers().collect { friends ->

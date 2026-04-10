@@ -16,7 +16,7 @@ class NewsFeedRepositoryImpl(
     private val friendsDataStore: FriendsDataStore,
     private val myActivitiesDataStore: MyActivitiesDataStore
 ) : NewsFeedRepository {
-    override suspend fun getNewActivities(): Flow<List<NewActivity>> {
+    override fun getNewActivities(): Flow<List<NewActivity>> {
         val getMyActivities = myActivitiesDataStore.getAllActivities()
         val getBatman69Activities = friendsDataStore.getFriendById("69")
         val getBatman70Activities = friendsDataStore.getFriendById("70")
@@ -24,26 +24,30 @@ class NewsFeedRepositoryImpl(
         return getBatman69Activities.combine(getBatman70Activities) { batman69, batman70 ->
             mutableListOf<NewActivity>().apply {
                 batman69?.let {
-                    add(
-                        NewActivity(
-                            userName = batman69.name,
-                            userImageUrl = batman69.imageUrl,
-                            date = LocalDateTime.of(2025, 2, 20, 12, 34, 50),
-                            pokemonCard = batman69.pokemonCards[2],
-                            activityType = NewActivityType.Purchase,
-                            price = 59
+                    batman69.pokemonCards.getOrNull(2)?.let { card ->
+                        add(
+                            NewActivity(
+                                userName = batman69.name,
+                                userImageUrl = batman69.imageUrl,
+                                date = LocalDateTime.of(2025, 2, 20, 12, 34, 50),
+                                pokemonCard = card,
+                                activityType = NewActivityType.Purchase,
+                                price = 59
+                            )
                         )
-                    )
-                    add(
-                        NewActivity(
-                            userName = batman69.name,
-                            userImageUrl = batman69.imageUrl,
-                            date = LocalDateTime.of(2025, 3, 10, 13, 32, 29),
-                            pokemonCard = batman69.pokemonCards[3],
-                            activityType = NewActivityType.Purchase,
-                            price = 190
+                    }
+                    batman69.pokemonCards.getOrNull(3)?.let { card ->
+                        add(
+                            NewActivity(
+                                userName = batman69.name,
+                                userImageUrl = batman69.imageUrl,
+                                date = LocalDateTime.of(2025, 3, 10, 13, 32, 29),
+                                pokemonCard = card,
+                                activityType = NewActivityType.Purchase,
+                                price = 190
+                            )
                         )
-                    )
+                    }
                     add(
                         NewActivity(
                             userName = batman69.name,
@@ -63,16 +67,18 @@ class NewsFeedRepositoryImpl(
                 }
 
                 batman70?.let {
-                    add(
-                        NewActivity(
-                            userName = batman70.name,
-                            userImageUrl = batman70.imageUrl,
-                            date = LocalDateTime.of(2025, 1, 12, 3, 34, 2),
-                            pokemonCard = batman70.pokemonCards[0],
-                            activityType = NewActivityType.Purchase,
-                            price = 59
+                    batman70.pokemonCards.getOrNull(0)?.let { card ->
+                        add(
+                            NewActivity(
+                                userName = batman70.name,
+                                userImageUrl = batman70.imageUrl,
+                                date = LocalDateTime.of(2025, 1, 12, 3, 34, 2),
+                                pokemonCard = card,
+                                activityType = NewActivityType.Purchase,
+                                price = 59
+                            )
                         )
-                    )
+                    }
                     add(
                         NewActivity(
                             userName = batman70.name,
@@ -95,16 +101,18 @@ class NewsFeedRepositoryImpl(
             mutableListOf<NewActivity>().apply {
                 addAll(batmansActivities)
                 superman720?.let {
-                    add(
-                        NewActivity(
-                            userName = superman720.name,
-                            userImageUrl = superman720.imageUrl,
-                            date = LocalDateTime.of(2024, 12, 30, 13, 50, 24),
-                            pokemonCard = superman720.pokemonCards[0],
-                            activityType = NewActivityType.Purchase,
-                            price = 59
+                    superman720.pokemonCards.getOrNull(0)?.let { card ->
+                        add(
+                            NewActivity(
+                                userName = superman720.name,
+                                userImageUrl = superman720.imageUrl,
+                                date = LocalDateTime.of(2024, 12, 30, 13, 50, 24),
+                                pokemonCard = card,
+                                activityType = NewActivityType.Purchase,
+                                price = 59
+                            )
                         )
-                    )
+                    }
                     add(
                         NewActivity(
                             userName = superman720.name,

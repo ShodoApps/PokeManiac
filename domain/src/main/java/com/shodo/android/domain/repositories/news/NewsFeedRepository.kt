@@ -4,6 +4,6 @@ import com.shodo.android.domain.repositories.entities.NewActivity
 import kotlinx.coroutines.flow.Flow
 
 interface NewsFeedRepository {
-    suspend fun getNewActivities(): Flow<List<NewActivity>>
+    fun getNewActivities(): Flow<List<NewActivity>>
     suspend fun saveNewActivity(newActivity: NewActivity)
 }

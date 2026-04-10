@@ -20,6 +20,7 @@ import com.shodo.android.domain.repositories.news.NewsFeedRepository
 import java.time.format.DateTimeFormatter
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,15 +50,19 @@ class DashboardViewModel(
     private val _uiState: MutableStateFlow<DashboardUiState> = MutableStateFlow(Loading)
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
+    private var newsFeedJob: Job? = null
+
     fun start() {
-        viewModelScope.launch {
+        newsFeedJob?.cancel()
+        newsFeedJob = viewModelScope.launch {
             _uiState.update { Loading }
             fetchNewActivities()
         }
     }
 
     fun refreshNewsFeed() {
-        viewModelScope.launch {
+        newsFeedJob?.cancel()
+        newsFeedJob = viewModelScope.launch {
             _uiState.update { Loading }
             try {
                 delay(2000) // Mock Delay to show the loading state
@@ -82,22 +87,29 @@ class DashboardViewModel(
     }
 
     private suspend fun fetchNewActivities() {
-        newsFeedRepository.getNewActivities().collect { result ->
-            if (result.isNotEmpty()) {
-                _uiState.update { DashboardUiState.Data(result.map { it.mapToUI() }.toPersistentList()) }
-            } else {
-                _uiState.update { EmptyResult }
+        try {
+            newsFeedRepository.getNewActivities().collect { result ->
+                if (result.isNotEmpty()) {
+                    _uiState.update { DashboardUiState.Data(result.map { it.mapToUI() }.toPersistentList()) }
+                } else {
+                    _uiState.update { EmptyResult }
+                }
             }
+        } catch (e: Exception) {
+            _error.emit(e)
+            _uiState.update { EmptyResult }
         }
     }
 }
+
+private val DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
 
 private fun NewActivity.mapToUI(): NewActivityUI {
     return NewActivityUI(
         id = userName + pokemonCard.name + date,
         friendName = userName,
         friendImageUrl = userImageUrl,
-        date = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+        date = date.format(DATE_FORMATTER),
         activityType = activityType.mapToUI(),
         pokemonCard = PokemonCardUI(
             name = pokemonCard.name,

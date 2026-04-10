@@ -12,6 +12,7 @@ import com.shodo.android.myprofile.MyProfileUiState.Loading
 import com.shodo.android.myprofile.uimodel.MyProfilePokemonCardUI
 import com.shodo.android.myprofile.uimodel.MyProfileUI
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -36,8 +37,11 @@ class MyProfileViewModel(
     private val _error = MutableSharedFlow<Exception>()
     val error = _error.asSharedFlow()
 
+    private var activitiesJob: Job? = null
+
     fun start() {
-        viewModelScope.launch {
+        activitiesJob?.cancel()
+        activitiesJob = viewModelScope.launch {
             _uiState.update { Loading }
             try {
                 myProfileRepository.getMyActivities().collect { myActivies ->
@@ -46,7 +50,7 @@ class MyProfileViewModel(
                             profile = MyProfileUI(
                                 name = null,
                                 imageUrl = null,
-                                pokemonCards = myActivies.sortedByDescending { it.date }.map { it.pokemonCard.mapToUI() }.toPersistentList()
+                                pokemonCards = myActivies.sortedByDescending { it.date }.mapNotNull { it.pokemonCard.mapToUI() }.toPersistentList()
                             ))
                     }
                 }
@@ -64,9 +68,12 @@ class MyProfileViewModel(
     }
 }
 
-private fun UserPokemonCard.mapToUI() = MyProfilePokemonCardUI(
-    id = name + (imageSource as ImageSource.FileSource).fileUri,
-    totalVotes = totalVotes,
-    name = name,
-    imageUri = (imageSource as ImageSource.FileSource).fileUri
-)
+private fun UserPokemonCard.mapToUI(): MyProfilePokemonCardUI? {
+    val fileSource = imageSource as? ImageSource.FileSource ?: return null
+    return MyProfilePokemonCardUI(
+        id = name + fileSource.fileUri,
+        totalVotes = totalVotes,
+        name = name,
+        imageUri = fileSource.fileUri
+    )
+}
