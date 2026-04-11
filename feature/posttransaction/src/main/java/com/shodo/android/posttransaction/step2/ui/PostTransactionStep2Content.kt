@@ -20,7 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MenuAnchorType.Companion.PrimaryNotEditable
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -213,7 +213,7 @@ private fun ColumnScope.TransactionTypeDropdown(
     ) {
         OutlinedTextField(
             modifier = Modifier
-                .menuAnchor(PrimaryNotEditable, true)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                 .fillMaxWidth(),
             readOnly = true,
             value = selectedTransactionType,

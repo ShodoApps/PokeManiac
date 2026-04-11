@@ -1,6 +1,6 @@
 package com.shodo.android.searchfriend.ui
 
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
@@ -81,7 +81,7 @@ fun DebouncedSearchTextField(
             placeholder = { Text(placeholderText) },
             singleLine = true,
             textStyle = typography.t7.copy(color = colors.primaryText),
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = colors.backgroundCell,
                 unfocusedContainerColor = colors.backgroundCell,

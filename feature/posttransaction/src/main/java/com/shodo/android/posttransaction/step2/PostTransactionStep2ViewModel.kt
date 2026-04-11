@@ -12,7 +12,7 @@ import com.shodo.android.domain.repositories.news.NewsFeedRepository
 import com.shodo.android.coreui.UiError
 import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Filling
 import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Loading
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.coroutines.flow.MutableSharedFlow
