@@ -21,33 +21,30 @@ import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
 import com.shodo.android.coreui.ui.GenericEmptyScreen
 import com.shodo.android.coreui.ui.GenericLoader
-import com.shodo.android.searchfriend.SearchFriendUiState
-import com.shodo.android.searchfriend.SearchFriendUiState.Data
-import com.shodo.android.searchfriend.SearchFriendUiState.EmptyResult
-import com.shodo.android.searchfriend.SearchFriendUiState.EmptySearch
-import com.shodo.android.searchfriend.SearchFriendUiState.Loading
-import com.shodo.android.searchfriend.uimodel.SearchFriendUI
-import com.shodo.android.searchfriend.uimodel.SubscriptionState
+import com.shodo.android.presentation.searchfriend.SearchFriendUiModel
+import com.shodo.android.presentation.searchfriend.SearchFriendUiState
+import com.shodo.android.presentation.searchfriend.SearchFriendUiState.Data
+import com.shodo.android.presentation.searchfriend.SearchFriendUiState.EmptyResult
+import com.shodo.android.presentation.searchfriend.SearchFriendUiState.EmptySearch
+import com.shodo.android.presentation.searchfriend.SearchFriendUiState.Loading
+import com.shodo.android.presentation.searchfriend.SubscriptionState
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 /**
- * Main Composable displaying the application's SearchFriend screen.
- * It uses a `Scaffold` to display a top bar (`SearchFriendTopBar`),
- * main content, and a `SnackbarHost` for displaying temporary messages.
+ * Stateless Search Friend **UI** (Compose): scaffold, top bar, loader / empty / grid of results.
  *
- * @param modifier           Modifier to customize the root layout.
- * @param uiState            UI state representing the current screen state. Possible states:
- *                           - `Loading`: Displays a loading indicator.
- *                           - `Data`: Displays a list of found users.
- *                           - `EmptySearch`: Displays a message indicating no query typed in the search view.
- *                           - `EmptyResult`: Displays a message indicating no friends found.
+ * [uiState] and list row models come from `:shared:presentation`
+ * ([com.shodo.android.presentation.searchfriend.SearchFriendUiState],
+ * [com.shodo.android.presentation.searchfriend.SearchFriendUiModel]); this composable has no ViewModel reference.
  *
- * @param onSearchFriend                Callback to launch the search for a query.
- * @param onSubscribeFriendPressed      Callback to subscribe on a found user.
- * @param onUnsubscribeFriendPressed    Callback to subscribe from a found user.
- * @param onBackPressed                 Callback to navigate back.
- * @param snackbarHostState             State of the `SnackbarHost` to display temporary messages.
+ * @param modifier Modifier for the root [androidx.compose.material3.Scaffold].
+ * @param uiState Current screen state (`Loading`, `Data`, `EmptySearch`, `EmptyResult`).
+ * @param onSearchFriend Invoked with the search query string.
+ * @param onSubscribeFriendPressed Invoked with the friend id to subscribe.
+ * @param onUnsubscribeFriendPressed Invoked with the friend id to unsubscribe.
+ * @param onBackPressed Invoked when the user requests back navigation.
+ * @param snackbarHostState Host state for transient messages (e.g. errors collected in [com.shodo.android.searchfriend.SearchFriendScreen]).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -169,8 +166,8 @@ private fun PreviewSearchFriendView(darkTheme: Boolean, uiState: SearchFriendUiS
     }
 }
 
-private fun previewUsers(): PersistentList<SearchFriendUI> = persistentListOf(
-    SearchFriendUI(
+private fun previewUsers(): PersistentList<SearchFriendUiModel> = persistentListOf(
+    SearchFriendUiModel(
         id = "friendId",
         name = "friendName",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
@@ -178,7 +175,7 @@ private fun previewUsers(): PersistentList<SearchFriendUI> = persistentListOf(
         pokemonCards = persistentListOf(),
         subscriptionState = SubscriptionState.Subscribed
     ),
-    SearchFriendUI(
+    SearchFriendUiModel(
         id = "friendId1",
         name = "friendName1",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/891.jpg",
@@ -186,7 +183,7 @@ private fun previewUsers(): PersistentList<SearchFriendUI> = persistentListOf(
         pokemonCards = persistentListOf(),
         subscriptionState = SubscriptionState.NotSubscribed
     ),
-    SearchFriendUI(
+    SearchFriendUiModel(
         id = "friendId2",
         name = "friendName2",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/1345.jpg",

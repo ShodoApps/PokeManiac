@@ -11,15 +11,15 @@ import com.shodo.android.coreui.extensions.observeWithLifecycle
 import com.shodo.android.searchfriend.ui.SearchFriendView
 
 /**
- * SearchFriendScreen is a container composable responsible for:
- * - Collecting the UI state from the SearchFriendViewModel.
- * - Handling lifecycle events to trigger ViewModel actions.
- * - Displaying error messages using a Snackbar.
- * - Delegating the UI rendering to the stateless SearchFriendView composable.
+ * Search Friend **screen container** (Android / Compose): collects state, shows errors, delegates UI to [SearchFriendView].
  *
- * @param modifier            Modifier to apply to the root of the screen.
- * @param viewModel           The ViewModel handling the logic and state for the Search Friends functionality.
- * @param onBackPressed       Callback triggered when the back button is pressed.
+ * [viewModel] is the AndroidX wrapper in this module; screen state types come from `:shared:presentation`
+ * ([com.shodo.android.presentation.searchfriend.SearchFriendUiState]). One-shot errors are
+ * [com.shodo.android.presentation.PresentationError] values collected with lifecycle awareness and shown in a snackbar.
+ *
+ * @param modifier Modifier to apply to the root of the screen.
+ * @param viewModel AndroidX [SearchFriendViewModel] that forwards to [com.shodo.android.presentation.searchfriend.SearchFriendScreenModel].
+ * @param onBackPressed Invoked when the user navigates back (e.g. top bar).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

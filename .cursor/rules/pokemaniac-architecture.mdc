@@ -155,13 +155,14 @@ class MyRepositoryImpl(
 
 | Type | Pattern | Example |
 |------|---------|---------|
-| ViewModel | `*ViewModel` | `SearchFriendViewModel` |
+| ViewModel (AndroidX, feature module) | `*ViewModel` | `SearchFriendViewModel` (thin; forwards to `ScreenModel`) |
+| ScreenModel (KMP `:shared:presentation`) | `*ScreenModel` | `SearchFriendScreenModel` |
 | UI State | `*UiState` (sealed class) | `SearchFriendUiState` |
 | Repository Interface | `*Repository` | `UserRepository` |
 | Repository Implementation | `*RepositoryImpl` | `UserRepositoryImpl` |
 | Screen (Container) | `*Screen` | `SearchFriendScreen` |
 | View (Stateless) | `*View` / `*Content` | `SearchFriendView`, `MyFriendListContent` |
-| UI Model | `*UI` or `*Ui` | `SearchFriendUI`, `UserCardUI` |
+| UI Model | `*UiModel` (shared) or legacy `*UI` / `*Ui` | `SearchFriendUiModel`, `UserCardUI` |
 | Activity | `*Activity` | `SearchFriendActivity` |
 | Navigator Interface | `*Navigator` | `SearchFriendNavigator` |
 | Navigator Implementation | `*NavigatorImpl` | `SearchFriendNavigatorImpl` |
@@ -176,6 +177,7 @@ class MyRepositoryImpl(
 
 ✅ **Features import from:**
 - `domain` package
+- `com.shodo.android.presentation` (`:shared:presentation`) for shared **ScreenModel** / **UiState** / **UiModel**
 - `coreui` package
 - `tracking` package
 - Other features' navigators only (via Koin interface)
@@ -191,7 +193,7 @@ class MyRepositoryImpl(
 1. Create feature module under `feature:newfeature`
 2. Create `*Activity`, `*Screen`, `*View` files
 3. Define UI state as sealed class
-4. Create `*ViewModel` with `StateFlow<UiState>` + `SharedFlow<Error>`
+4. Create AndroidX `*ViewModel` (if used) + shared `*ScreenModel` in `:shared:presentation` with `StateFlow<UiState>` + `SharedFlow<Error>` (see `docs/kmp-migration-plan.md`)
 5. Define `*Navigator` interface in `coreui`
 6. Implement `*NavigatorImpl` in feature
 7. Create `di/*Module.kt` with `viewModelOf()` and navigator bindings

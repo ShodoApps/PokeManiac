@@ -16,14 +16,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.shodo.android.coreui.theme.PokeManiacTheme
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
-import com.shodo.android.searchfriend.uimodel.SearchFriendUI
-import com.shodo.android.searchfriend.uimodel.SubscriptionState
+import com.shodo.android.presentation.searchfriend.SearchFriendUiModel
+import com.shodo.android.presentation.searchfriend.SubscriptionState
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
+/**
+ * Scrollable grid of search results; each row is a [com.shodo.android.presentation.searchfriend.SearchFriendUiModel].
+ */
 @Composable
 fun SearchFriendContent(
-    users: PersistentList<SearchFriendUI>,
+    users: PersistentList<SearchFriendUiModel>,
     onSubscribeUserPressed: (String) -> Unit,
     onUnsubscribeUserPressed: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -79,8 +82,8 @@ private fun PreviewSearchFriendContent(darkTheme: Boolean) {
     }
 }
 
-private fun previewUsers(): PersistentList<SearchFriendUI> = persistentListOf(
-    SearchFriendUI(
+private fun previewUsers(): PersistentList<SearchFriendUiModel> = persistentListOf(
+    SearchFriendUiModel(
         id = "friendId",
         name = "friendName",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
@@ -88,7 +91,7 @@ private fun previewUsers(): PersistentList<SearchFriendUI> = persistentListOf(
         pokemonCards = persistentListOf(),
         subscriptionState = SubscriptionState.Subscribed
     ),
-    SearchFriendUI(
+    SearchFriendUiModel(
         id = "friendId1",
         name = "friendName1",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/891.jpg",
@@ -96,7 +99,7 @@ private fun previewUsers(): PersistentList<SearchFriendUI> = persistentListOf(
         pokemonCards = persistentListOf(),
         subscriptionState = SubscriptionState.NotSubscribed
     ),
-    SearchFriendUI(
+    SearchFriendUiModel(
         id = "friendId2",
         name = "friendName2",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/1345.jpg",

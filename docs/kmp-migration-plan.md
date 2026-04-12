@@ -17,8 +17,8 @@ It complements `.cursor/rules/pokemaniac-architecture.mdc` and `.cursor/rules/po
 ### 1.2 Long term
 
 - **Shared business and presentation logic** consumable from **Jetpack Compose** (Android) and **SwiftUI** (iOS).
-- **ViewModels** and **use cases** live in **shared modules**, not in Android-only feature modules.
-- **AndroidX `ViewModel` is not** the long-term owner of screen logic: shared types are **plain Kotlin**; Android (and later iOS) only **wire lifecycle** and UI.
+- **Screen logic** (**`ScreenModel`** in `:shared:presentation`) and **use cases** (when added) live in **shared modules**, not only in Android feature code.
+- **AndroidX `ViewModel`** can remain a **thin lifecycle shell** on Android; the portable coordinator is **`XxxScreenModel`** (plain Kotlin). iOS (later) wires scope without AndroidX.
 
 ---
 
@@ -28,7 +28,7 @@ Dependency direction (high level):
 
 ```
 Android UI (Compose, navigation, Activities)
-        → shared presentation (ViewModels, UiState, events)
+        → shared presentation (ScreenModels, UiState, events)
         → shared application / use cases (orchestration; optional per feature)
         → shared domain (entities, repository interfaces, errors)
         ↑ implemented by ↑
@@ -41,29 +41,32 @@ Data access (network, DB, platform I/O) — Android first; KMP or expect/actual 
 |--------|----------------|--------------------------------------------------|
 | **Domain** | Entities, value types, **repository interfaces**, domain errors | `:domain` (KMP) or `:shared:domain` if split later |
 | **Application** | Use cases / orchestration (no UI, no platform APIs) | `:shared:application` or part of domain if you want fewer modules |
-| **Presentation** | **ViewModels** (shared), **UiState**, user events, `StateFlow`/`Flow` exposed to UI | `:shared:presentation` (or per-feature `:shared:presentation:search` only if needed later) |
+| **Presentation** | **`ScreenModel`** (shared KMP), **UiState**, user events, `StateFlow`/`Flow`; Android may add thin **`ViewModel`** | **`:shared:presentation`** (KMP; first spike: Search Friend) |
 | **Android UI** | Composables, Activities, navigators, Android-specific I/O edges | `:app`, `:feature:*`, `:coreui` |
 
 **Note:** Feature modules can remain **thin Android UI shells** that depend on **shared presentation** — a single monolithic `app` module for all screens is **optional**, not required for KMP.
 
 ### 2.2 “App” vs “presentation”
 
-- **Presentation** = shared **ViewModels + UiState** (MVVM / MVI oriented).
-- **App** is not used here as a layer name for ViewModels; **application** means **use-case / orchestration** layer if split from domain.
+- **Presentation** = shared **`ScreenModel` + `UiState`** (MVVM / MVI oriented); Android **`ViewModel`** is optional glue.
+- **App** is not used here as a layer name for screen coordinators; **application** means **use-case / orchestration** layer if split from domain.
 
 ---
 
 ## 3. Naming conventions (agreed)
 
-### 3.1 Keep `XxxViewModel` in shared code
+### 3.1 Android `ViewModel` vs shared **ScreenModel** (coordinator naming)
 
-- Use **`XxxViewModel`** for the shared screen coordinator type.
-- It **must not** extend **`androidx.lifecycle.ViewModel`** in the shared module.
-- Disambiguation is by **location**: `presentation` package / `:shared:presentation` module, not by renaming to Presenter/Controller.
+- **Android feature module:** keep **`XxxViewModel`** as the type that extends **`androidx.lifecycle.ViewModel`** (Koin, `koinViewModel()`, process retention). It should stay **thin**: forward to shared logic and supply **`viewModelScope`**.
+- **Shared (`:shared:presentation`):** use **`XxxScreenModel`** for the KMP screen coordinator (state + flows + user actions). It **must not** extend AndroidX `ViewModel`; the platform passes a **`CoroutineScope`** (on Android, `viewModelScope` from the wrapper).
 
-### 3.2 `XxxViewModel` vs `XxxUiModel` (naming)
+This avoids **two classes named `SearchFriendViewModel`** and matches a common **KMP migration** approach: AndroidX `ViewModel` is the lifecycle/scope shell; **`ScreenModel`** is the portable “MVVM ViewModel” logic. Other teams use **`Presenter`**, **`Interactor`**, or **`DefaultXxxViewModel`** instead of `ScreenModel`; pick one project-wide (**we use `ScreenModel`**).
 
-- **`XxxViewModel`** — the **screen coordinator** (shared, plain Kotlin; not AndroidX `ViewModel`). Do **not** name this type **`UiModel`**; that would confuse **controller** vs **data**.
+Long term, if the project drops AndroidX `ViewModel` entirely, the Android wrapper may go away and UI layers would hold the **`ScreenModel`** (or renamed type) with an explicitly scoped coroutine context.
+
+### 3.2 Screen coordinator vs `XxxUiModel` (naming)
+
+- **`XxxScreenModel`** (shared) — the **screen coordinator** (plain Kotlin). Do **not** name this type **`UiModel`**; that would confuse **controller** vs **row/screen data**.
 - **`XxxUiModel`** — **presentation data** the UI renders: labels, flags, formatted fields, row/card content. These types live inside **`XxxUiState`** branches (e.g. a `Data` state holding `List<FriendUiModel>`).
 - **Legacy / existing code** may still use **`XxxUI` / `XxxUi`** under feature **`uimodel/`**; new **shared presentation** code should prefer **`XxxUiModel`** where it matches this pipeline.
 
@@ -76,7 +79,7 @@ End-to-end shape (DTO inward → UI outward):
 | **Data / datasources** | **`XxxDto`**, Room entities, wire formats | Storage and transport shapes only |
 | **Repository implementation** | (internal DTOs) | Maps **Dto → domain**; **DTOs do not cross** the repository interface |
 | **Domain** (repos + use cases) | **`XxxModel`** where useful, or **named entities** (`User`, `NewActivity`, …) | Business meaning; **shared `commonMain`** for KMP |
-| **Presentation** | **`XxxUiModel`** | What the screen needs; built by **ViewModel** from domain models |
+| **Presentation** | **`XxxUiModel`** | What the screen needs; built by **ScreenModel** (or coordinator) from domain models |
 | **Presentation** | **`XxxUiState`** | **Sealed** screen state: `Loading`, `Empty`, `Error`, **`Data(...)`** holding **`XxxUiModel`(s)** as needed |
 
 **Flow in words:**
@@ -84,7 +87,7 @@ End-to-end shape (DTO inward → UI outward):
 1. **Datasources** expose **DTOs** (or equivalents) **only inside the data layer**.
 2. **Repository implementations** map **Dto → domain**; **repository interfaces** (in domain) expose **domain types only** — never DTOs.
 3. **Use cases** (when present) consume/return **domain** types (entities or use-case-specific results).
-4. **ViewModels** receive **domain** models from repositories/use cases, **map domain → `XxxUiModel`**, and expose **`StateFlow<XxxUiState>`** (or equivalent) so **views** observe **UiState** that carries **UiModels** where relevant.
+4. **Screen coordinators** (`XxxScreenModel` in shared) receive **domain** models from repositories/use cases, **map domain → `XxxUiModel`**, and expose **`StateFlow<XxxUiState>`** (or equivalent) so **views** observe **UiState** that carries **UiModels** where relevant.
 
 **Practical notes (agreed):**
 
@@ -94,14 +97,14 @@ End-to-end shape (DTO inward → UI outward):
 
 ### 3.4 UiState location (shared modules)
 
-- **`XxxUiState`** and **`XxxUiModel`** (and **`XxxViewModel`**) live in **shared presentation** (`commonMain`) for parity across **Jetpack Compose** and **SwiftUI** later.
+- **`XxxUiState`**, **`XxxUiModel`**, and **`XxxScreenModel`** live in **shared presentation** (`commonMain`) for parity across **Jetpack Compose** and **SwiftUI** later.
 - This matches **MVVM** / **MVI**: **Jetpack Compose** uses `collectAsState()` / `StateFlow`; **SwiftUI** will use the project-chosen Flow interop when iOS starts.
 
 ---
 
 ## 4. MVVM / MVI and shared code
 
-- **Single source of truth** for screen state: **`StateFlow<XxxUiState>`** (or equivalent) on the shared **`XxxViewModel`**.
+- **Single source of truth** for screen state: **`StateFlow<XxxUiState>`** (or equivalent) on the shared **`XxxScreenModel`**.
 - **Events**: explicit functions or a sealed **event** type, depending on feature complexity (prefer simple methods unless MVI unification helps).
 - **Side effects** (navigation, one-shot errors): design **platform-agnostic** contracts (interfaces / callbacks) injected from Android (later iOS), not Android classes referenced from `commonMain`.
 
@@ -109,8 +112,8 @@ End-to-end shape (DTO inward → UI outward):
 
 ## 5. Lifecycle (explicit tradeoff)
 
-- Shared **`XxxViewModel`** owns a **`CoroutineScope`** (or receives one) that the **platform** starts and cancels.
-- **Android**: Compose **`DisposableEffect`**, `LifecycleOwner`, or a **thin Android-only adapter** attaches scope to lifecycle; no requirement to use **`viewModelScope`** inside shared code.
+- Shared **`XxxScreenModel`** uses a **`CoroutineScope`** passed in by the **platform** (starts/cancelled with that scope).
+- **Android (current pattern):** a thin **`XxxViewModel`** supplies **`viewModelScope`** to the **`ScreenModel`**; shared code never references AndroidX.
 - **iOS (later)**: SwiftUI **`.task` / `onDisappear`** (or equivalent) mirrors the same contract.
 
 This is an **accepted** tradeoff: less magic than AndroidX `ViewModel`, more **explicit** cross-platform control.
@@ -143,26 +146,28 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 ### Phase B — Shared presentation module (spike)
 
 1. Add **`:shared:presentation`** (KMP, `commonMain` + `androidTarget()`).
-2. Migrate **one feature**: shared **`XxxViewModel`** + **`XxxUiState`**, Android feature module keeps **Compose + wiring** only.
+2. Migrate **one feature**: shared **`XxxScreenModel`** + **`XxxUiState`**, Android feature module keeps **Compose + thin `ViewModel` + wiring** as needed.
 3. Define **minimal** navigation / error ports as interfaces implemented on Android.
 
 **Outcome:** Pattern proven before wide migration.
+
+**Status — done (spike):** **`:shared:presentation`** added; **Search Friend** logic lives in **`com.shodo.android.presentation.searchfriend`** as **`SearchFriendScreenModel`**, plus **`SearchFriendUiState`**, **`SearchFriendUiModel`**, mappers. **`PresentationError`** is the shared user-facing error type. **`feature:searchfriend`** exposes **`SearchFriendViewModel`** (AndroidX) that forwards to **`SearchFriendScreenModel`** using **`viewModelScope`**. Compose imports **`UiState` / `UiModel`** from the shared module.
 
 ### Phase C — Shared application / use cases (**optional, defer until needed**)
 
 **Agreement (same as §8 — pragmatism):**
 
 - **No** use-case classes for **trivial** flows (single repository call, no meaningful orchestration or mapping).
-- **Shared ViewModels may call repository interfaces directly** for simple screens; that stays valid for the **current** app complexity.
+- **Shared `ScreenModel`s may call repository interfaces directly** for simple screens; that stays valid for the **current** app complexity.
 - Introduce **use cases** only when they **earn their keep**, for example:
-  - **Cross-feature** orchestration reused from several ViewModels
+  - **Cross-feature** orchestration reused from several screen coordinators
   - **Non-trivial** rules, branching, or composition of several repositories
-  - **Testing** a policy in isolation without a heavy ViewModel test
+  - **Testing** a policy in isolation without a heavy `ScreenModel` test
 
 **When you add them:**
 
 1. Add **`:shared:application`** (or fold use cases into **`:domain`** if you prefer fewer modules — both are acceptable).
-2. **Extract incrementally** from ViewModels where a use case clearly clarifies reuse or tests; do **not** create a mandatory “every screen has a use case” layer.
+2. **Extract incrementally** from `ScreenModel`s / Android wrappers where a use case clearly clarifies reuse or tests; do **not** create a mandatory “every screen has a use case” layer.
 
 **For PokeManiac today:** Phase C can remain **theoretical** until a concrete need appears; **A → B → D** (and later E/F) do **not** require a use-case module first.
 
@@ -178,13 +183,13 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 ### Phase F — iOS
 
 1. Add Apple targets to relevant shared modules.
-2. SwiftUI screens consume **same ViewModels + UiState**; platform code provides **expect/actual** capabilities (e.g. local image capture per project guide).
+2. SwiftUI screens consume **same `ScreenModel` + `UiState`**; platform code provides **expect/actual** capabilities (e.g. local image capture per project guide).
 
 ---
 
 ## 8. Pragmatism (project philosophy)
 
-- Do not add **use-case classes** that only wrap a single repository call unless they **earn their keep** (testing, policy, reuse, **cross-feature** orchestration). **ViewModel → repository** is fine for simple flows — see **§7 Phase C**.
+- Do not add **use-case classes** that only wrap a single repository call unless they **earn their keep** (testing, policy, reuse, **cross-feature** orchestration). **`ScreenModel` → repository** is fine for simple flows — see **§7 Phase C**.
 - Prefer **explicit, readable** Kotlin over heavy abstraction.
 - **Platform-specific capability** stays at **edges** (`expect`/`actual`, not inside dumb entities) — see **pokemaniac-guide** (`ImageSource.FileSource`, future `LocalImageCapture`).
 
@@ -202,11 +207,11 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 | Topic | Agreement |
 |--------|-----------|
 | KMP now, **Android-only targets** initially | Yes — `commonMain` + `androidTarget()` |
-| **ViewModels** in **presentation** layer (not “app” as layer name) | Yes |
-| Name **shared coordinator** **`XxxViewModel`** (not AndroidX subclass) | Yes |
-| Name type **`UiModel`** for the coordinator | No — use **`XxxViewModel`**; **`XxxUiModel`** is **presentation data** inside **UiState** |
-| **DTO → domain (repo impl) → ViewModel → UiModel in UiState** pipeline | Yes |
-| **`XxxUiState` + `XxxUiModel` in shared** with ViewModel | Yes — MVVM/MVI friendly for Compose & SwiftUI |
+| **Screen coordinators** in **presentation** (`ScreenModel` + optional Android `ViewModel`) | Yes |
+| **Android** screen type **`XxxViewModel`** (AndroidX) + **shared** **`XxxScreenModel`** (KMP coordinator) | Yes — avoids duplicate simple names |
+| Name type **`UiModel`** for the coordinator | No — use **`XxxScreenModel`**; **`XxxUiModel`** is **presentation data** inside **UiState** |
+| **DTO → domain (repo impl) → ScreenModel → UiModel in UiState** pipeline | Yes |
+| **`XxxUiState` + `XxxUiModel` + `XxxScreenModel` in shared** | Yes — MVVM/MVI friendly for Compose & SwiftUI |
 | **Incremental** migration, green CI | Yes |
 | **iOS** | Deferred; structure stays **easy to add** |
 | **Use cases** | **Optional** — no layer for one-liners; add only when reuse, policy, or real orchestration justify it (**§7 Phase C**, **§8**) |

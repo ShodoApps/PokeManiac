@@ -4,10 +4,11 @@ import app.cash.turbine.test
 import com.shodo.android.domain.repositories.entities.User
 import com.shodo.android.domain.repositories.friends.UserRepository
 import com.shodo.android.domain.repositories.tracking.TrackingRepository
-import com.shodo.android.searchfriend.uimodel.SearchFriendUI
-import com.shodo.android.searchfriend.uimodel.SubscriptionState.NotSubscribed
-import com.shodo.android.searchfriend.uimodel.SubscriptionState.Subscribed
-import com.shodo.android.searchfriend.uimodel.SubscriptionState.UpdatingSubscribe
+import com.shodo.android.presentation.searchfriend.SearchFriendUiModel
+import com.shodo.android.presentation.searchfriend.SearchFriendUiState
+import com.shodo.android.presentation.searchfriend.SubscriptionState.NotSubscribed
+import com.shodo.android.presentation.searchfriend.SubscriptionState.Subscribed
+import com.shodo.android.presentation.searchfriend.SubscriptionState.UpdatingSubscribe
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +27,10 @@ import org.mockito.MockitoAnnotations
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+/**
+ * Unit tests for [SearchFriendViewModel] (AndroidX wrapper). Behavior is implemented by
+ * [com.shodo.android.presentation.searchfriend.SearchFriendScreenModel] in `:shared:presentation`.
+ */
 @ExperimentalCoroutinesApi
 class SearchFriendViewModelTest {
 
@@ -224,7 +229,7 @@ class SearchFriendViewModelTest {
             pokemonCards = listOf()
         )
 
-        private val defaultFriendUINotSubscribed = SearchFriendUI(
+        private val defaultFriendUINotSubscribed = SearchFriendUiModel(
             id = "friendId",
             name = "friendName",
             imageUrl = "friendImageUrl",
@@ -232,7 +237,7 @@ class SearchFriendViewModelTest {
             subscriptionState = NotSubscribed,
             pokemonCards = persistentListOf()
         )
-        private val defaultFriendUINotSubscribed2 = SearchFriendUI(
+        private val defaultFriendUINotSubscribed2 = SearchFriendUiModel(
             id = "friendId2",
             name = "friendName2",
             imageUrl = "friendImageUrl2",
@@ -240,7 +245,7 @@ class SearchFriendViewModelTest {
             subscriptionState = NotSubscribed,
             pokemonCards = persistentListOf()
         )
-        private val defaultFriendUISubscribed = SearchFriendUI(
+        private val defaultFriendUISubscribed = SearchFriendUiModel(
             id = "friendId",
             name = "friendName",
             imageUrl = "friendImageUrl",

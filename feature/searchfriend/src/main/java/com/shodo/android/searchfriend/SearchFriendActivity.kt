@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import com.shodo.android.coreui.theme.PokeManiacTheme
 import org.koin.androidx.compose.koinViewModel
 
+/** Activity entry for Search Friend; resolves [SearchFriendViewModel] via Koin and hosts [SearchFriendScreen]. */
 class SearchFriendActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

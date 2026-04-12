@@ -30,11 +30,14 @@ import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
 import com.shodo.android.coreui.theme.PokeManiacTheme.typography
 import com.shodo.android.coreui.ui.PrimaryButton
 import com.shodo.android.coreui.ui.SecondaryButton
-import com.shodo.android.searchfriend.uimodel.SubscriptionState
-import com.shodo.android.searchfriend.uimodel.SubscriptionState.NotSubscribed
-import com.shodo.android.searchfriend.uimodel.SubscriptionState.Subscribed
-import com.shodo.android.searchfriend.uimodel.SubscriptionState.UpdatingSubscribe
+import com.shodo.android.presentation.searchfriend.SubscriptionState
+import com.shodo.android.presentation.searchfriend.SubscriptionState.NotSubscribed
+import com.shodo.android.presentation.searchfriend.SubscriptionState.Subscribed
+import com.shodo.android.presentation.searchfriend.SubscriptionState.UpdatingSubscribe
 
+/**
+ * Single user row: avatar, name, subscribe / unsubscribe actions driven by [SubscriptionState] from shared presentation.
+ */
 @Composable
 fun UserCard(
     id: String,
