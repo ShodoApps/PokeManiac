@@ -29,7 +29,7 @@ android {
 
 dependencies {
     implementation(project(":database"))
-    implementation(project(":api"))
+    implementation(project(":shared:api"))
     implementation(project(":data"))
     implementation(project(":domain"))
 
@@ -37,11 +37,8 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.core)
 
-    // SquareUp Retrofit & OkHttp - Network
-    implementation(platform(libs.squareup.okhttp.bom))
-    implementation(libs.squareup.okhttp)
-    implementation(libs.squareup.okhttp.brotli)
-    implementation(libs.squareup.retrofit.converter.gson)
+    // HttpClient / HttpClientEngine types in Koin lambdas (engines come from :shared:api)
+    implementation(libs.ktor.client.core)
 
     // Room - Database
     ksp(libs.androidx.room.compiler)

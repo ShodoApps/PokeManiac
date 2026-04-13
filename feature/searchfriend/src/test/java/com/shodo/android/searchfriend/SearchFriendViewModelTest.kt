@@ -13,6 +13,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -131,6 +132,30 @@ class SearchFriendViewModelTest {
 
             // Then
             assertEquals("Network error", awaitItem().message)
+        }
+    }
+
+    @Test
+    fun `searchFriend error updates ui away from Loading`() = runTest {
+        // Given — SharedFlow.emit suspends without a collector; keep one running alongside uiState.test
+        `when`(userRepository.searchUsers("friendName")).thenThrow(RuntimeException("Network error"))
+        launch {
+            viewModel.error.collect { }
+        }
+
+        viewModel.uiState.test {
+            assertTrue(awaitItem() is SearchFriendUiState.EmptySearch)
+
+            // When
+            viewModel.searchFriend("friendName")
+
+            // Then — not stuck on Loading; may observe Loading then EmptyResult, or only EmptyResult if updates are conflated
+            val emptyResult = when (val next = awaitItem()) {
+                is SearchFriendUiState.Loading -> awaitItem() as SearchFriendUiState.EmptyResult
+                is SearchFriendUiState.EmptyResult -> next
+                else -> error("Unexpected state: $next")
+            }
+            assertEquals("friendName", emptyResult.query)
         }
     }
 

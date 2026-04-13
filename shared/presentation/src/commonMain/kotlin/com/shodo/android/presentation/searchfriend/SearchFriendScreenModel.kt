@@ -80,6 +80,7 @@ class SearchFriendScreenModel(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
+                    _uiState.update { EmptyResult(friendName) }
                     _error.emit(PresentationError.from(e))
                 }
             }

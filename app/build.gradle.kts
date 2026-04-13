@@ -67,8 +67,9 @@ dependencies {
     // Koin - Dependency injection
     implementation(libs.koin.androidx.compose)
 
-    // Coil - Remote Image Compose
+    // Coil 3: compose UI + explicit OkHttp network fetcher (required for https:// image URLs; not bundled in coil-compose)
     implementation(libs.coil.compose)
+    implementation(libs.coil.network)
 
     // Previews
     debugImplementation(libs.androidx.compose.ui.tooling)

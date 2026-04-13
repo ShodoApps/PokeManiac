@@ -1,6 +1,7 @@
 package com.shodo.android.data.myfriends
 
 import com.shodo.android.domain.repositories.entities.User
+import com.shodo.android.domain.repositories.friends.FriendsRequest
 import com.shodo.android.domain.repositories.friends.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

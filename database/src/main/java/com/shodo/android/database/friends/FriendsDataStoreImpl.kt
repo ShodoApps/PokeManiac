@@ -36,7 +36,7 @@ class FriendsDataStoreImpl(private val database: PokeManiacDatabase) : FriendsDa
 private fun FriendBase.mapToModel() = User(
     id = id,
     name = name,
-    imageUrl = imageUrl,
+    imageUrl = imageUrl.normalizeForCoil(),
     description = description,
     isSubscribed = isSubscribed,
     pokemonCards = pokemonCards.map { it.mapToModel() }
@@ -47,8 +47,14 @@ private fun PokemonCardBase.mapToModel() = UserPokemonCard(
     totalVotes = totalVotes,
     hasMyVote = hasMyVote,
     name = name,
-    imageSource = ImageSource.UrlSource(imageUrl)
+    imageSource = ImageSource.UrlSource(imageUrl.normalizeForCoil())
 )
+
+/** Protocol-relative URLs (`//host/…`) are valid from APIs but Coil needs `https://…`. */
+private fun String.normalizeForCoil(): String {
+    val t = trim()
+    return if (t.startsWith("//")) "https:$t" else t
+}
 
 private fun User.mapToBase() = FriendBase(
     id = id,
