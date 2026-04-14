@@ -30,7 +30,7 @@ android {
 dependencies {
     implementation(project(":shared:domain"))
     implementation(project(":coreui"))
-    implementation(project(":tracking"))
+    implementation(project(":shared:tracking"))
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))

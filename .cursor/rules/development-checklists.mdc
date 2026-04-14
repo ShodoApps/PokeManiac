@@ -44,7 +44,7 @@ Use these checklists before starting work to ensure nothing is missed.
 
 ### Gradle Configuration
 - [ ] `feature/mynewfeature/build.gradle.kts` created
-- [ ] Dependencies: `domain`, `coreui`, `tracking`, Compose, Koin
+- [ ] Dependencies: `domain`, `coreui`, `:shared:tracking` (if using `TrackingRepository`), Compose, Koin
 - [ ] Added to `settings.gradle.kts`
 - [ ] Added dependency to `app/build.gradle.kts`
 
@@ -55,7 +55,7 @@ Use these checklists before starting work to ensure nothing is missed.
 
 ### Imports Verification
 - [ ] ❌ NO imports from `:shared:data`, `:shared:api`, or `database` implementation packages
-- [ ] ✅ Only imports from `domain`, `coreui`, `tracking`
+- [ ] ✅ Only imports from `domain`, `coreui` (and not `:shared:tracking` impl types — use `TrackingRepository` from domain)
 
 ### Testing
 - [ ] `MyNewFeatureViewModelTest.kt` created

@@ -18,7 +18,7 @@ Data Layer (Implementations)
 ```
 
 - **Features never depend on data modules** (`:shared:data`, `:shared:api`, `:database`)
-- **Features depend only on `:shared:domain`** (Kotlin package `com.shodo.android.domain`) **+ `coreui` + `tracking`**
+- **Features depend only on `:shared:domain`** (Kotlin package `com.shodo.android.domain`) **+ `coreui` + `:shared:tracking`** (Gradle) when they inject **`TrackingRepository`**
 - **Dependencies are injected via Koin** from `dependencyinjection` module
 
 ❌ **BAD**: Feature imports `FriendsRepositoryImpl` directly
@@ -169,7 +169,7 @@ class MyRepositoryImpl(
 - `domain` package
 - `com.shodo.android.presentation` (`:shared:presentation`) for shared **ScreenModel** / **UiState** / **UiModel**
 - `coreui` package
-- `tracking` package
+- **`TrackingRepository`** (and related domain types) from **`domain`** — not implementation classes from `:shared:tracking`
 - Other features' navigators only (via Koin interface)
 
 ❌ **Features never import from:**

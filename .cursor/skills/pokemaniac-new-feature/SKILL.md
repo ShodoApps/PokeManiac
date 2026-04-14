@@ -381,7 +381,7 @@ android {
 dependencies {
     implementation(project(":shared:domain"))
     implementation(project(":coreui"))
-    implementation(project(":tracking"))
+    implementation(project(":shared:tracking"))
     
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

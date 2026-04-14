@@ -40,7 +40,7 @@ dependencies {
     implementation(project(":coreui"))
 
     // Third Party Modules (for now only Tracking)
-    implementation(project(":tracking"))
+    implementation(project(":shared:tracking"))
 
     // Clean Archi Module
     implementation(project(":shared:domain"))

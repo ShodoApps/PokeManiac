@@ -77,7 +77,7 @@ Data Access Layer
 └── database (Room DAOs, DataStore implementations)
 
 Cross-Cutting Concerns
-├── tracking (Analytics & event tracking)
+├── shared:tracking (KMP — `TrackingRepository` impl + Koin `trackingModule`)
 └── dependencyinjection (Koin configuration aggregator)
 ```
 

@@ -5,6 +5,5 @@ import com.shodo.android.tracking.TrackingRepositoryImpl
 import org.koin.dsl.module
 
 val trackingModule = module {
-
     single<TrackingRepository> { TrackingRepositoryImpl(get()) }
 }
