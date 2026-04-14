@@ -72,8 +72,8 @@ Domain Layer
 └── domain (Repository interfaces, entities)
 
 Data Access Layer
-├── data (Repository implementations, DataStore interfaces)
-├── api (Retrofit services, API request implementations)
+├── shared:data (KMP — repository implementations, DataStore interfaces)
+├── shared:api (KMP — remote clients, DTOs, e.g. Ktor)
 └── database (Room DAOs, DataStore implementations)
 
 Cross-Cutting Concerns
@@ -92,11 +92,11 @@ Features (app, feature:*)
     ↓ depends on ↓
 domain (interfaces only)
     ↓ depends on ↓
-data, api, database (implementations)
+:shared:data, :shared:api, :database (implementations)
 ```
 
 **Never violate this:**
-- ❌ Feature modules never import from `data`, `api`, `database`
+- ❌ Feature modules never import from `:shared:data`, `:shared:api`, or `database` implementation code
 - ❌ ViewModel never directly instantiates repository implementations
 - ✅ All dependencies resolved through Koin DI container
 
@@ -123,23 +123,22 @@ feature/myfeature/
 │   │   └── MyFeaturePreview.kt # Preview composables
 │   ├── uimodel/
 │   │   └── MyFeatureUI.kt      # UI-only data models
-│   └── (no imports from data, api, database)
+│   └── (no imports from :shared:data, :shared:api, database)
 └── src/test/java/...
     └── MyFeatureViewModelTest.kt
 ```
 
 ### Data Layer
 ```
-data/
+shared/data/
 ├── myentity/
-│   ├── MyRepository.kt          # Consumed by features
-│   └── MyRepositoryImpl.kt       # Implements interface
+│   └── MyRepositoryImpl.kt       # Implements domain interface (features never import this)
 
-api/
+shared/api/
 ├── myentity/
-│   └── MyRequestImpl.kt          # Calls Retrofit service
+│   └── MyRequestImpl.kt          # Remote calls (e.g. Ktor)
 └── core/remote/
-    └── MyApiService.kt          # Retrofit interface
+    └── MyApiService.kt          # Typed HTTP facade
 
 database/
 ├── myentity/

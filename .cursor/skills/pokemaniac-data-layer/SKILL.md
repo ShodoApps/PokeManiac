@@ -49,7 +49,7 @@ interface MyRepository {
 
 ## Step 2: Create Request Interface (Data Layer)
 
-**File:** `data/src/main/java/com/shodo/android/data/myentity/MyRequest.kt`
+**File:** `shared/data/src/commonMain/kotlin/com/shodo/android/data/myentity/MyRequest.kt` (or remote impl under `shared/api/` — see `docs/kmp-migration-plan.md`)
 
 Request interfaces define how to fetch remote data:
 
@@ -69,7 +69,7 @@ interface MyRequest {
 
 ## Step 3: Create DataStore Interface (Data Layer)
 
-**File:** `data/src/main/java/com/shodo/android/data/myentity/MyDataStore.kt`
+**File:** `shared/data/src/commonMain/kotlin/com/shodo/android/data/myentity/MyDataStore.kt`
 
 DataStore interfaces define how to access local persistence:
 
@@ -92,7 +92,7 @@ interface MyDataStore {
 
 ## Step 4: Implement Repository (Data Layer)
 
-**File:** `data/src/main/java/com/shodo/android/data/myentity/MyRepositoryImpl.kt`
+**File:** `shared/data/src/commonMain/kotlin/com/shodo/android/data/myentity/MyRepositoryImpl.kt`
 
 Repository combines data from API and local storage:
 

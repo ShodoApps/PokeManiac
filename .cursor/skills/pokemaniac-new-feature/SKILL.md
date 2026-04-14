@@ -428,7 +428,7 @@ startKoin {
 - Use PersistentList for immutable collections
 
 ❌ **DON'T:**
-- Import from `data`, `api`, `database`
+- Import from `:shared:data`, `:shared:api`, or `database` implementation packages
 - Use multiple Boolean flags for state
 - Expose domain models in UI state
 - Forget lifecycle callback in Screen

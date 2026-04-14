@@ -1,0 +1,53 @@
+// Kotlin Multiplatform shared data layer (`:shared:data`): repository implementations + datastore interfaces (commonMain).
+// Room / platform I/O stay in `:database` behind these contracts. See docs/kmp-migration-plan.md — Phase D.
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.multiplatform)
+}
+
+kotlin {
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(project(":domain"))
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.koin.core)
+        }
+        androidUnitTest.dependencies {
+            implementation(libs.junit4)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.mockito.core)
+            implementation(libs.kotlin.test)
+            implementation(libs.turbine)
+        }
+    }
+}
+
+android {
+    namespace = "com.shodo.android.data"
+    compileSdk = 36
+
+    defaultConfig {
+        minSdk = 26
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}

@@ -12,6 +12,7 @@ ksp = "2.3.6"
 coil = "3.4.0"
 mockitoCore = "5.23.0"
 turbine = "1.2.1"
+junit4 = "4.13.2"
 navigationCompose = "2.9.7"
 composeBom = "2026.03.01"
 material = "1.13.0"
@@ -48,6 +49,7 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 
 turbine = { module = "app.cash.turbine:turbine", name = "turbine", version.ref = "turbine" }
+junit4 = { module = "junit:junit", version.ref = "junit4" }
 
 squareup-okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttpBrotli" }
 squareup-okhttp = { module = "com.squareup.okhttp3:okhttp" }

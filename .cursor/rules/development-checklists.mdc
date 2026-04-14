@@ -54,7 +54,7 @@ Use these checklists before starting work to ensure nothing is missed.
 - [ ] Feature Activity reachable from other features
 
 ### Imports Verification
-- [ ] ❌ NO imports from `data`, `api`, `database`
+- [ ] ❌ NO imports from `:shared:data`, `:shared:api`, or `database` implementation packages
 - [ ] ✅ Only imports from `domain`, `coreui`, `tracking`
 
 ### Testing

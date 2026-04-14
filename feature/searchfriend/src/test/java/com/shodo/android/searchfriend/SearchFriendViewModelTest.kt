@@ -139,7 +139,7 @@ class SearchFriendViewModelTest {
     fun `searchFriend error updates ui away from Loading`() = runTest {
         // Given — SharedFlow.emit suspends without a collector; keep one running alongside uiState.test
         `when`(userRepository.searchUsers("friendName")).thenThrow(RuntimeException("Network error"))
-        launch {
+        backgroundScope.launch {
             viewModel.error.collect { }
         }
 

@@ -17,7 +17,7 @@ Domain Layer (Interfaces + Entities)
 Data Layer (Implementations)
 ```
 
-- **Features never depend on data modules** (`data`, `api`, `database`)
+- **Features never depend on data modules** (`:shared:data`, `:shared:api`, `:database`)
 - **Features depend only on `domain` + `coreui` + `tracking`**
 - **Dependencies are injected via Koin** from `dependencyinjection` module
 
@@ -42,20 +42,10 @@ Each feature (`dashboard`, `searchfriend`, `myfriends`, `myprofile`, `posttransa
 - **Entities** - Domain models (e.g. `User`, `NewActivity`)
 - **Use cases** (currently disabled - call repositories directly from ViewModels)
 
-### Data Layer
-- **Repository implementations** - `UserRepositoryImpl`, etc.
-- **DataStore interfaces** - `FriendsDataStore`, `MyActivitiesDataStore`
-- Combine data from API and Database
-
-### API Module
-- Retrofit service interfaces
-- Request implementations
-- DTO to domain entity mapping
-
-### Database Module
-- Room DAOs
-- DataStore implementations
-- DTO to entity mapping
+### Data Layer (`:shared:data` + `:shared:api` + `:database`)
+- **`:shared:data`** — Repository implementations (`UserRepositoryImpl`, …), **DataStore interfaces** (`FriendsDataStore`, …); KMP `commonMain` + `androidTarget()`.
+- **`:shared:api`** — Remote clients (e.g. Ktor), DTOs, request implementations such as `FriendsRequestImpl`; KMP with platform HTTP engines.
+- **`:database`** — Room DAOs, DataStore **implementations**, entity ↔ domain mapping.
 
 ---
 
@@ -183,7 +173,7 @@ class MyRepositoryImpl(
 - Other features' navigators only (via Koin interface)
 
 ❌ **Features never import from:**
-- `data`, `api`, `database` packages
+- `com.shodo.android.data` (`:shared:data`), `com.shodo.android.shared.api` (`:shared:api`), or `database` packages
 - Implementation details outside domain
 
 ---
@@ -197,4 +187,4 @@ class MyRepositoryImpl(
 5. Define `*Navigator` interface in `coreui`
 6. Implement `*NavigatorImpl` in feature
 7. Create `di/*Module.kt` with `viewModelOf()` and navigator bindings
-8. Ensure NO imports from `data`, `api`, `database`
+8. Ensure NO imports from `:shared:data`, `:shared:api`, or `database` implementation packages

@@ -122,7 +122,7 @@ This is an **accepted** tradeoff: less magic than AndroidX `ViewModel`, more **e
 
 ## 6. Dependency rules (KMP-aware)
 
-- **Presentation** depends on **domain** (and **application** if split), never on **`data` / `api` / `database`**.
+- **Presentation** depends on **domain** (and **application** if split), never on **`:shared:data` / `:shared:api` / `:database`**.
 - **Android UI** depends on **presentation** + **coreui** + **tracking** (tracking may stay Android-only initially or gain a KMP interface later).
 - **Data** implements **domain** repository interfaces; **dependency injection** wires implementations (Koin KMP or equivalent when iOS joins).
 
@@ -175,6 +175,12 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 
 1. For each feature: move or wrap **network/DB** behind **domain** contracts using **KMP-friendly** stacks or **`expect`/`actual`**, as pragmatic per slice.
 2. Keep **Android Retrofit/Room** behind **`actual`** until a slice justifies **common** networking/storage.
+
+**Status — in progress:**
+
+- **Remote (friends search):** **`:shared:api`** — KMP (`commonMain` + platform engines), Ktor + DTOs; **`FriendsRequest`** implementation lives there.
+- **Repository orchestration:** **`:shared:data`** — KMP (`commonMain` + `androidTarget()` only, same pattern as **`:shared:presentation`**). Repository implementations and **datastore interfaces** (`FriendsDataStore`, `MyActivitiesDataStore`, `TrackingDataStore`) are in **`commonMain`**; **`:database`** stays Android (Room) as the **`actual`** side of those contracts.
+- **Next slices (when you pick them):** e.g. tighten **`:database`** boundaries only if a feature needs shared persistence types; otherwise leave Room Android-only per §2 above.
 
 ### Phase E — DI for multiplatform
 

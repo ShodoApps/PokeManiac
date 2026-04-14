@@ -10,6 +10,11 @@ import com.shodo.android.shared.api.core.remote.model.SuperheroDTO
 /**
  * Same layering as before: [FriendsRequest] implementation delegates to [SuperHerosApiService], then maps DTO → domain.
  *
+ * **Portrait URLs:** the API points [User.imageUrl] at `superherodb.com`, which is often behind **Cloudflare** bot/challenge
+ * protection. In-app image loaders (Coil + OkHttp) are not a full browser and may get blocked or receive HTML instead of
+ * JPEG — that is an infrastructure/CDN constraint, not a Compose or Coil configuration bug. Mitigations are outside this
+ * mapper: e.g. your own image proxy/CDN, a backend that resolves portraits, or a host that allows mobile app traffic.
+ *
  * Does not catch [kotlinx.coroutines.CancellationException]; it propagates so upstream coroutines (e.g. ViewModel / Flow) cancel correctly.
  * Never wrap this call in `catch (Exception)` without rethrowing cancellation first.
  */
@@ -37,7 +42,7 @@ private fun SuperheroDTO.mapToFriend() = User(
 
 /**
  * SuperHero DB returns protocol-relative image URLs (`//www.superherodb.com/...`).
- * Coil needs an absolute `https://…` string to load them over the network.
+ * Normalize to `https://…` so clients have an absolute URL (whether they can fetch it past Cloudflare is separate).
  */
 private fun String.normalizeSuperHeroImageUrl(): String {
     val t = trim()
