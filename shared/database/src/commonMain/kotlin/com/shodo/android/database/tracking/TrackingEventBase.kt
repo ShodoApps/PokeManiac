@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "tracking_event_table")
 data class TrackingEventBase(
     @PrimaryKey @ColumnInfo(name = "eventName") val name: String,
-    @ColumnInfo(name = "eventCount") val count: Int
+    @ColumnInfo(name = "eventCount") val count: Int,
 )

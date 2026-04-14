@@ -1,10 +1,16 @@
-// Kotlin Multiplatform shared data layer (`:shared:data`): repository implementations + datastore interfaces (commonMain).
-// Room / platform I/O stay in `:shared:database` behind these contracts. See docs/kmp-migration-plan.md — Phase D.
+// Kotlin Multiplatform Room (`:shared:database`): entities, DAOs, DataStore implementations. `androidTarget()` only for now.
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.androidx.room)
+    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.kotlin.serialization)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 kotlin {
@@ -16,22 +22,23 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":shared:data"))
             implementation(project(":shared:domain"))
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
             implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.koin.core)
-        }
-        androidUnitTest.dependencies {
-            implementation(libs.junit4)
-            implementation(libs.kotlinx.coroutines.test)
-            implementation(libs.mockito.core)
-            implementation(libs.kotlin.test)
-            implementation(libs.turbine)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.json)
         }
     }
 }
 
+dependencies {
+    add("kspAndroid", libs.androidx.room.compiler)
+}
+
 android {
-    namespace = "com.shodo.android.data"
+    namespace = "com.shodo.android.database"
     compileSdk = 36
 
     defaultConfig {

@@ -92,7 +92,7 @@ Features (app, feature:*)
     ↓ depends on ↓
 domain (interfaces only)
     ↓ depends on ↓
-:shared:data, :shared:api, :database (implementations)
+:shared:data, :shared:api, :shared:database (implementations)
 ```
 
 **Never violate this:**
@@ -123,7 +123,7 @@ feature/myfeature/
 │   │   └── MyFeaturePreview.kt # Preview composables
 │   ├── uimodel/
 │   │   └── MyFeatureUI.kt      # UI-only data models
-│   └── (no imports from :shared:data, :shared:api, database)
+│   └── (no imports from :shared:data, :shared:api, :shared:database)
 └── src/test/java/...
     └── MyFeatureViewModelTest.kt
 ```
@@ -140,11 +140,11 @@ shared/api/
 └── core/remote/
     └── MyApiService.kt          # Typed HTTP facade
 
-database/
+shared/database/   # KMP module `:shared:database` — `src/commonMain/kotlin/...`
 ├── myentity/
 │   ├── MyEntityDao.kt           # Room DAO
 │   ├── MyEntityBase.kt          # Room entity
-│   └── MyDataStoreImpl.kt        # Local persistence
+│   └── MyDataStoreImpl.kt       # Local persistence
 ```
 
 ---

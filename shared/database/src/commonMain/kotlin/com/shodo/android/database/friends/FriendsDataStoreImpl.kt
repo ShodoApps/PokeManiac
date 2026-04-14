@@ -39,7 +39,7 @@ private fun FriendBase.mapToModel() = User(
     imageUrl = imageUrl.normalizeForCoil(),
     description = description,
     isSubscribed = isSubscribed,
-    pokemonCards = pokemonCards.map { it.mapToModel() }
+    pokemonCards = pokemonCards.map { it.mapToModel() },
 )
 
 private fun PokemonCardBase.mapToModel() = UserPokemonCard(
@@ -47,7 +47,7 @@ private fun PokemonCardBase.mapToModel() = UserPokemonCard(
     totalVotes = totalVotes,
     hasMyVote = hasMyVote,
     name = name,
-    imageSource = ImageSource.UrlSource(imageUrl.normalizeForCoil())
+    imageSource = ImageSource.UrlSource(imageUrl.normalizeForCoil()),
 )
 
 /** Protocol-relative URLs (`//host/…`) are valid from APIs but Coil needs `https://…`. */
@@ -62,7 +62,7 @@ private fun User.mapToBase() = FriendBase(
     imageUrl = imageUrl,
     description = description,
     isSubscribed = isSubscribed,
-    pokemonCards = pokemonCards.map { it.mapToBase() }
+    pokemonCards = pokemonCards.map { it.mapToBase() },
 )
 
 private fun UserPokemonCard.mapToBase() = PokemonCardBase(
@@ -70,5 +70,5 @@ private fun UserPokemonCard.mapToBase() = PokemonCardBase(
     totalVotes = totalVotes,
     hasMyVote = hasMyVote,
     name = name,
-    imageUrl = (imageSource as ImageSource.UrlSource).imageUrl
+    imageUrl = (imageSource as ImageSource.UrlSource).imageUrl,
 )

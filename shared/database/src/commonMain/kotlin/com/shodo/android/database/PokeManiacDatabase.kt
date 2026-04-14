@@ -20,7 +20,7 @@ abstract class PokeManiacDatabase : RoomDatabase() {
 
     abstract fun localMyActivitiesDao(): MyActivitiesDao
 
-    // Tracking
     abstract fun localScreenEventDao(): TrackingEventScreenDao
+
     abstract fun localClickEventDao(): TrackingEventClickDao
 }

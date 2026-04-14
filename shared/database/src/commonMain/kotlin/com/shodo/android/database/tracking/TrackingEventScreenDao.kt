@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
 
 @Dao
-interface TrackingEventClickDao {
+interface TrackingEventScreenDao {
 
     @Insert(onConflict = REPLACE)
     fun sendEvent(event: TrackingEventBase)

@@ -17,7 +17,7 @@ Domain Layer (Interfaces + Entities)
 Data Layer (Implementations)
 ```
 
-- **Features never depend on data modules** (`:shared:data`, `:shared:api`, `:database`)
+- **Features never depend on data modules** (`:shared:data`, `:shared:api`, `:shared:database`)
 - **Features depend only on `:shared:domain`** (Kotlin package `com.shodo.android.domain`) **+ `coreui` + `:shared:tracking`** (Gradle) when they inject **`TrackingRepository`**
 - **Dependencies are injected via Koin** from `dependencyinjection` module
 
@@ -42,10 +42,10 @@ Each feature (`dashboard`, `searchfriend`, `myfriends`, `myprofile`, `posttransa
 - **Entities** - Domain models (e.g. `User`, `NewActivity`)
 - **Use cases** (currently disabled - call repositories directly from ViewModels)
 
-### Data Layer (`:shared:data` + `:shared:api` + `:database`)
+### Data Layer (`:shared:data` + `:shared:api` + `:shared:database`)
 - **`:shared:data`** — Repository implementations (`UserRepositoryImpl`, …), **DataStore interfaces** (`FriendsDataStore`, …); KMP `commonMain` + `androidTarget()`.
 - **`:shared:api`** — Remote clients (e.g. Ktor), DTOs, request implementations such as `FriendsRequestImpl`; KMP with platform HTTP engines.
-- **`:database`** — Room DAOs, DataStore **implementations**, entity ↔ domain mapping.
+- **`:shared:database`** — KMP Room (`commonMain` + `androidTarget()`): DAOs, DataStore **implementations**, entity ↔ domain mapping.
 
 ---
 
@@ -173,7 +173,7 @@ class MyRepositoryImpl(
 - Other features' navigators only (via Koin interface)
 
 ❌ **Features never import from:**
-- `com.shodo.android.data` (`:shared:data`), `com.shodo.android.shared.api` (`:shared:api`), or `database` packages
+- `com.shodo.android.data` (`:shared:data`), `com.shodo.android.shared.api` (`:shared:api`), or `com.shodo.android.database` (`:shared:database`) packages
 - Implementation details outside domain
 
 ---

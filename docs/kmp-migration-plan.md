@@ -122,7 +122,7 @@ This is an **accepted** tradeoff: less magic than AndroidX `ViewModel`, more **e
 
 ## 6. Dependency rules (KMP-aware)
 
-- **Presentation** depends on **`:shared:domain`** (and **application** if split), never on **`:shared:data` / `:shared:api` / `:database`**.
+- **Presentation** depends on **`:shared:domain`** (and **application** if split), never on **`:shared:data` / `:shared:api` / `:shared:database`**.
 - **Android UI** depends on **presentation** + **coreui** + **tracking** (tracking may stay Android-only initially or gain a KMP interface later).
 - **Data** implements **domain** repository interfaces; **dependency injection** wires implementations (Koin KMP or equivalent when iOS joins).
 
@@ -179,8 +179,8 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 **Status — in progress:**
 
 - **Remote (friends search):** **`:shared:api`** — KMP (`commonMain` + platform engines), Ktor + DTOs; **`FriendsRequest`** implementation lives there.
-- **Repository orchestration:** **`:shared:data`** — KMP (`commonMain` + `androidTarget()` only, same pattern as **`:shared:presentation`**). Repository implementations and **datastore interfaces** (`FriendsDataStore`, `MyActivitiesDataStore`, `TrackingDataStore`) are in **`commonMain`**; **`:database`** stays Android (Room) as the **`actual`** side of those contracts.
-- **Next slices (when you pick them):** e.g. tighten **`:database`** boundaries only if a feature needs shared persistence types; otherwise leave Room Android-only per §2 above.
+- **Repository orchestration:** **`:shared:data`** — KMP (`commonMain` + `androidTarget()` only, same pattern as **`:shared:presentation`**). Repository implementations and **datastore interfaces** (`FriendsDataStore`, `MyActivitiesDataStore`, `TrackingDataStore`) are in **`commonMain`**; **`:shared:database`** is KMP (`commonMain` + `androidTarget()`): Room entities, DAOs, and DataStore **implementations** (SQLite driver: **`androidx.sqlite:sqlite-bundled`** in `commonMain` today).
+- **Next slices (when you pick them):** e.g. add **Apple targets** to **`:shared:database`** when iOS persistence is needed, with platform-specific DB builders per [Room KMP](https://developer.android.com/kotlin/multiplatform/room).
 
 ### Phase E — DI for multiplatform
 

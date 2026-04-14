@@ -7,7 +7,6 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-
 interface FriendsDao {
 
     @Query("SELECT * FROM friends_table")

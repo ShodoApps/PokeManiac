@@ -19,6 +19,7 @@ material = "1.13.0"
 koin = "4.2.1"
 okhttpBrotli = "5.3.2"
 room = "2.8.4"
+sqlite = "2.6.2"
 kotlinxSerializationJson = "1.11.0"
 ktor = "3.2.3"
 
@@ -58,6 +59,8 @@ squareup-retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-
 
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
@@ -78,4 +81,5 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+androidx-room = { id = "androidx.room", version.ref = "room" }
 

@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.ksp)
 }
 
 android {
@@ -28,7 +27,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":database"))
+    implementation(project(":shared:database"))
     implementation(project(":shared:api"))
     implementation(project(":shared:data"))
     implementation(project(":shared:domain"))
@@ -40,8 +39,7 @@ dependencies {
     // HttpClient / HttpClientEngine types in Koin lambdas (engines come from :shared:api)
     implementation(libs.ktor.client.core)
 
-    // Room - Database
-    ksp(libs.androidx.room.compiler)
+    // Room — database builder only (entities / KSP live in `:shared:database`)
     implementation(libs.androidx.room.ktx)
 }
 kotlin {

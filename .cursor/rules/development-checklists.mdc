@@ -96,10 +96,10 @@ Use these checklists before starting work to ensure nothing is missed.
 - [ ] DTOs properly mapped to domain entities
 
 ### Database Layer
-- [ ] Room entity created: `database/myentity/MyEntityBase.kt`
-- [ ] DAO created: `database/myentity/MyEntityDao.kt`
+- [ ] Room entity created: `shared/database/src/commonMain/kotlin/.../myentity/MyEntityBase.kt`
+- [ ] DAO created: `shared/database/src/commonMain/kotlin/.../myentity/MyEntityDao.kt`
 - [ ] Methods: `getAll()`, `getById()`, `insert()`, `update()`, `delete()`
-- [ ] `database/myentity/MyDataStoreImpl.kt` created
+- [ ] `shared/database/src/commonMain/kotlin/.../myentity/MyDataStoreImpl.kt` created
 - [ ] Implements `MyDataStore` interface
 - [ ] Entities properly mapped to/from domain models
 

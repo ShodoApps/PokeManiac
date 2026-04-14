@@ -226,7 +226,7 @@ class MyRequestImpl(
 
 ## Step 6: Create DAO & Room Entity
 
-**File:** `database/src/main/java/com/shodo/android/database/myentity/MyEntityBase.kt`
+**File:** `shared/database/src/commonMain/kotlin/com/shodo/android/database/myentity/MyEntityBase.kt`
 
 Room entity (with naming convention `*Base`):
 
@@ -245,7 +245,7 @@ data class MyEntityBase(
 )
 ```
 
-**File:** `database/src/main/java/com/shodo/android/database/myentity/MyEntityDao.kt`
+**File:** `shared/database/src/commonMain/kotlin/com/shodo/android/database/myentity/MyEntityDao.kt`
 
 ```kotlin
 package com.shodo.android.database.myentity
@@ -285,7 +285,7 @@ interface MyEntityDao {
 
 ## Step 7: Create DataStore Implementation
 
-**File:** `database/src/main/java/com/shodo/android/database/myentity/MyDataStoreImpl.kt`
+**File:** `shared/database/src/commonMain/kotlin/com/shodo/android/database/myentity/MyDataStoreImpl.kt`
 
 ```kotlin
 package com.shodo.android.database.myentity
@@ -339,7 +339,7 @@ class MyDataStoreImpl(
 
 ## Step 8: Register in Room Database
 
-**File:** `database/src/main/java/com/shodo/android/database/PokeManiacDatabase.kt`
+**File:** `shared/database/src/commonMain/kotlin/com/shodo/android/database/PokeManiacDatabase.kt`
 
 ```kotlin
 package com.shodo.android.database

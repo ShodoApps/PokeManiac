@@ -17,6 +17,6 @@ class TrackingDataStoreImpl(private val database: PokeManiacDatabase) : Tracking
     override suspend fun sendEventClick(clickName: String) {
         val newEventCount = (database.localClickEventDao().getEvent(clickName)?.count ?: 0) + 1
         database.localClickEventDao().sendEvent(TrackingEventBase(clickName, newEventCount))
-        println("TRACKING $clickName count = ${database.localScreenEventDao().getEvent(clickName)?.count ?: 0}")
+        println("TRACKING $clickName count = ${database.localClickEventDao().getEvent(clickName)?.count ?: 0}")
     }
 }

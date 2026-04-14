@@ -36,8 +36,8 @@ private fun NewActivity.mapToBase() = MyActivityBase(
         name = pokemonCard.name,
         fileUri = (pokemonCard.imageSource as ImageSource.FileSource).fileUri,
         hasMyVote = pokemonCard.hasMyVote,
-        totalVotes = pokemonCard.totalVotes
-    )
+        totalVotes = pokemonCard.totalVotes,
+    ),
 )
 
 private fun MyActivityBase.mapToModel() = NewActivity(
@@ -54,6 +54,6 @@ private fun MyActivityBase.mapToModel() = NewActivity(
         imageSource = ImageSource.FileSource(pokemonCard.fileUri),
         totalVotes = pokemonCard.totalVotes,
         hasMyVote = pokemonCard.hasMyVote,
-        name = pokemonCard.name
-    )
+        name = pokemonCard.name,
+    ),
 )
