@@ -59,7 +59,7 @@ kotlin {
         commonMain {
             kotlin.srcDir(generatedSuperHeroKotlin)
             dependencies {
-                api(project(":domain"))
+                api(project(":shared:domain"))
                 implementation(libs.koin.core)
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)

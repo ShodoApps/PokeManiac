@@ -39,7 +39,7 @@ Data access (network, DB, platform I/O) — Android first; KMP or expect/actual 
 
 | Layer | Responsibility | Typical module name (to introduce incrementally) |
 |--------|----------------|--------------------------------------------------|
-| **Domain** | Entities, value types, **repository interfaces**, domain errors | `:domain` (KMP) or `:shared:domain` if split later |
+| **Domain** | Entities, value types, **repository interfaces**, domain errors | **`:shared:domain`** (KMP; lives under `shared/domain/`) |
 | **Application** | Use cases / orchestration (no UI, no platform APIs) | `:shared:application` or part of domain if you want fewer modules |
 | **Presentation** | **`ScreenModel`** (shared KMP), **UiState**, user events, `StateFlow`/`Flow`; Android may add thin **`ViewModel`** | **`:shared:presentation`** (KMP; first spike: Search Friend) |
 | **Android UI** | Composables, Activities, navigators, Android-specific I/O edges | `:app`, `:feature:*`, `:coreui` |
@@ -122,7 +122,7 @@ This is an **accepted** tradeoff: less magic than AndroidX `ViewModel`, more **e
 
 ## 6. Dependency rules (KMP-aware)
 
-- **Presentation** depends on **domain** (and **application** if split), never on **`:shared:data` / `:shared:api` / `:database`**.
+- **Presentation** depends on **`:shared:domain`** (and **application** if split), never on **`:shared:data` / `:shared:api` / `:database`**.
 - **Android UI** depends on **presentation** + **coreui** + **tracking** (tracking may stay Android-only initially or gain a KMP interface later).
 - **Data** implements **domain** repository interfaces; **dependency injection** wires implementations (Koin KMP or equivalent when iOS joins).
 
@@ -134,14 +134,14 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 
 ### Phase A — KMP foundation (Android target only)
 
-1. Convert **`:domain`** to **`kotlin-multiplatform`** + **`com.android.library`**.
+1. Convert **`:shared:domain`** (path `shared/domain/`) to **`kotlin-multiplatform`** + **`com.android.library`**.
 2. Move pure Kotlin sources to **`commonMain/kotlin`** (same packages).
 3. **`androidTarget()` only** — no iOS targets.
 4. Verify **`testDebugUnitTest`** and **`assembleRelease`**.
 
 **Outcome:** Domain is **multiplatform-ready**; adding `iosArm64()` / `iosSimulatorArm64()` later is mostly Gradle/CI work.
 
-**Status — done:** `:domain` uses **`org.jetbrains.kotlin.multiplatform`** + **`com.android.library`**, sources in **`src/commonMain/kotlin`**, manifest in **`src/androidMain`**, **`androidTarget()`** only. Version catalog: **`kotlin-multiplatform`** plugin; root `build.gradle.kts` applies it with **`apply false`**.
+**Status — done:** **`:shared:domain`** uses **`org.jetbrains.kotlin.multiplatform`** + **`com.android.library`**, sources in **`src/commonMain/kotlin`**, manifest in **`src/androidMain`**, **`androidTarget()`** only. Version catalog: **`kotlin-multiplatform`** plugin; root `build.gradle.kts` applies it with **`apply false`**.
 
 ### Phase B — Shared presentation module (spike)
 
@@ -166,7 +166,7 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 
 **When you add them:**
 
-1. Add **`:shared:application`** (or fold use cases into **`:domain`** if you prefer fewer modules — both are acceptable).
+1. Add **`:shared:application`** (or fold use cases into **`:shared:domain`** if you prefer fewer modules — both are acceptable).
 2. **Extract incrementally** from `ScreenModel`s / Android wrappers where a use case clearly clarifies reuse or tests; do **not** create a mandatory “every screen has a use case” layer.
 
 **For PokeManiac today:** Phase C can remain **theoretical** until a concrete need appears; **A → B → D** (and later E/F) do **not** require a use-case module first.

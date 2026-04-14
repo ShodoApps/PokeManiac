@@ -69,7 +69,7 @@ Presentation Layer
 └── coreui (Shared components, theme, navigators)
 
 Domain Layer
-└── domain (Repository interfaces, entities)
+└── shared:domain (Repository interfaces, entities; path `shared/domain/`)
 
 Data Access Layer
 ├── shared:data (KMP — repository implementations, DataStore interfaces)

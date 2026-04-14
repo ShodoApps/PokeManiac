@@ -43,7 +43,7 @@ dependencies {
     implementation(project(":tracking"))
 
     // Clean Archi Module
-    implementation(project(":domain"))
+    implementation(project(":shared:domain"))
 
     // Dependency Injection - For clean archi modules
     implementation(project(":dependencyinjection"))

@@ -18,7 +18,7 @@ Data Layer (Implementations)
 ```
 
 - **Features never depend on data modules** (`:shared:data`, `:shared:api`, `:database`)
-- **Features depend only on `domain` + `coreui` + `tracking`**
+- **Features depend only on `:shared:domain`** (Kotlin package `com.shodo.android.domain`) **+ `coreui` + `tracking`**
 - **Dependencies are injected via Koin** from `dependencyinjection` module
 
 ❌ **BAD**: Feature imports `FriendsRepositoryImpl` directly

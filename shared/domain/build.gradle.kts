@@ -1,3 +1,4 @@
+// Kotlin Multiplatform domain layer (`:shared:domain`): entities + repository interfaces. Path: `shared/domain/`.
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {

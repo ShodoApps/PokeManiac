@@ -28,7 +28,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":domain"))
+    implementation(project(":shared:domain"))
     implementation(project(":shared:data"))
 
     // Koin - Dependency injection

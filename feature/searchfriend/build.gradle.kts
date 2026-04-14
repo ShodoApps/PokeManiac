@@ -29,7 +29,7 @@ android {
 
 dependencies {
     // Domain contracts + shared presentation (Search Friend ViewModel / UiState / UiModels live in :shared:presentation).
-    implementation(project(":domain"))
+    implementation(project(":shared:domain"))
     implementation(project(":shared:presentation"))
     implementation(project(":coreui"))
     implementation(project(":tracking"))
