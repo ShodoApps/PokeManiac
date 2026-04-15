@@ -19,7 +19,7 @@ It complements `.cursor/rules/pokemaniac-architecture.mdc` and `.cursor/rules/po
 
 - **Shared business and presentation logic** consumable from **Jetpack Compose** (Android) and **SwiftUI** (iOS).
 - **Screen logic** (**`ScreenModel`** in `:shared:presentation`) and **use cases** (when added) live in **shared modules**, not only in Android feature code.
-- **AndroidX `ViewModel`** can remain a **thin lifecycle shell** on Android; the portable coordinator is **`XxxScreenModel`** (plain Kotlin). iOS (later) wires scope without AndroidX.
+- **AndroidX `ViewModel`** can remain a **thin lifecycle shell** on Android; the **shared** screen coordinator is **`XxxScreenModel`** (plain Kotlin). iOS (later) wires scope without AndroidX.
 
 ---
 
@@ -48,7 +48,8 @@ Data access — **`:shared:api`** (HTTP + DTOs), **`:shared:data`** (repository 
 | **Local DB** | Room entities, DAOs, **DataStore** *implementations* | **`:shared:database`** (`shared/database/`) |
 | **Analytics wiring** | **`TrackingRepository`** implementation + **`trackingModule`** (Koin) | **`:shared:tracking`** (`shared/tracking/`) |
 | **Android UI** | Composables, Activities, navigators, Android-specific I/O edges | `:app`, `:feature:*`, `:coreui` |
-| **DI aggregator** | Koin modules wiring implementations (Android `Application` today) | `:dependencyinjection` |
+| **DI (`commonMain`)** | Koin **`koin-core`** modules (API + repository factories, no `Context`) | **`:shared:di`** |
+| **DI (Android edge)** | `startKoin`, `androidContext`, `Room.databaseBuilder`, feature `viewModelOf` | **`app`** (`PokeManiacApplication` + `di/`) |
 
 **Note:** Feature modules can remain **thin Android UI shells** that depend on **shared presentation** — a single monolithic `app` module for all screens is **optional**, not required for KMP.
 
@@ -66,7 +67,7 @@ Data access — **`:shared:api`** (HTTP + DTOs), **`:shared:data`** (repository 
 - **Android feature module:** keep **`XxxViewModel`** as the type that extends **`androidx.lifecycle.ViewModel`** (Koin, `koinViewModel()`, process retention). It should stay **thin**: forward to shared logic and supply **`viewModelScope`**.
 - **Shared (`:shared:presentation`):** use **`XxxScreenModel`** for the KMP screen coordinator (state + flows + user actions). It **must not** extend AndroidX `ViewModel`; the platform passes a **`CoroutineScope`** (on Android, `viewModelScope` from the wrapper).
 
-This avoids **two classes named `SearchFriendViewModel`** and matches a common **KMP migration** approach: AndroidX `ViewModel` is the lifecycle/scope shell; **`ScreenModel`** is the portable “MVVM ViewModel” logic. Other teams use **`Presenter`**, **`Interactor`**, or **`DefaultXxxViewModel`** instead of `ScreenModel`; pick one project-wide (**we use `ScreenModel`**).
+This avoids **two classes named `SearchFriendViewModel`** and matches a common **KMP migration** approach: AndroidX `ViewModel` is the lifecycle/scope shell; **`ScreenModel`** is the **shared** “MVVM ViewModel” logic. Other teams use **`Presenter`**, **`Interactor`**, or **`DefaultXxxViewModel`** instead of `ScreenModel`; pick one project-wide (**we use `ScreenModel`**).
 
 Long term, if the project drops AndroidX `ViewModel` entirely, the Android wrapper may go away and UI layers would hold the **`ScreenModel`** (or renamed type) with an explicitly scoped coroutine context.
 
@@ -180,7 +181,7 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 ### Phase D — Data layer (per vertical slice)
 
 1. For each feature: move or wrap **network/DB** behind **domain** contracts using **KMP-friendly** stacks or **`expect`/`actual`**, as pragmatic per slice.
-2. Prefer **shared `commonMain`** for wire formats and repository orchestration when the stack supports it; keep **platform-only** code (e.g. `Room.databaseBuilder(Context)`) at the **Android edge** (`:dependencyinjection`, future `expect`/`actual`).
+2. Prefer **shared `commonMain`** for wire formats and repository orchestration when the stack supports it; keep **platform-only** code (e.g. `Room.databaseBuilder(Context)`) at the **Android edge** (**`app`**, future `expect`/`actual`).
 
 **Status — done (Android KMP data stack, current app scope):**
 
@@ -188,7 +189,7 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 |--------|--------|--------|
 | **Friends / hero search (HTTP)** | **`:shared:api`** | KMP `commonMain` + platform engines; **Ktor**; DTOs + **`FriendsRequestImpl`**; domain **`FriendsRequest`** stays in **`:shared:domain`**. |
 | **Repositories** | **`:shared:data`** | **`UserRepositoryImpl`**, **`NewsFeedRepositoryImpl`**, **`MyProfileRepositoryImpl`**; **DataStore interfaces** (`FriendsDataStore`, `MyActivitiesDataStore`, `TrackingDataStore`) in **`commonMain`**. |
-| **Room + DataStore impls** | **`:shared:database`** | KMP **`commonMain`** + **`androidTarget()`**; **Room** plugin + **`kspAndroid`**; **`androidx.sqlite:sqlite-bundled`**; type converters use **`kotlinx.serialization`**. **`Room.databaseBuilder`** remains in **`:dependencyinjection`**. |
+| **Room + DataStore impls** | **`:shared:database`** | KMP **`commonMain`** + **`androidTarget()`**; **Room** plugin + **`kspAndroid`**; **`androidx.sqlite:sqlite-bundled`**; type converters use **`kotlinx.serialization`**. **`Room.databaseBuilder`** lives in **`app`** (`DatabaseModule`). |
 | **Tracking repository** | **`:shared:tracking`** | **`TrackingRepositoryImpl`** + **`trackingModule`** (Koin); depends on **`:shared:data`** / **`:shared:domain`**. |
 
 **Verification (agreed in §1.1):** `./gradlew testDebugUnitTest` and `./gradlew assembleRelease` should stay **green** after data-layer changes.
@@ -201,6 +202,15 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 ### Phase E — DI for multiplatform
 
 1. Evolve **Koin** (or chosen DI) toward **KMP** so iOS can assemble the same graph for shared code.
+
+**Status — in progress (step 1 done):**
+
+- **`:shared:di`** (KMP, `commonMain` + `androidTarget()`): **`apiModule`** + **`dataModule`** in `commonMain` (`koin-core` only); **`sharedKoinArchiModules`** list for reuse from any platform entrypoint.
+- **`app`**: **`startKoin`** + **`databaseModule`** (`Room.databaseBuilder`, DataStore singletons) + **`appCoreArchiModules()`** = `databaseModule` + **`sharedKoinArchiModules`**; feature modules unchanged.
+
+**Next steps (incremental):** duplicate **`startKoin { modules(sharedKoinArchiModules + …) }`** on iOS with **`actual`** platform bindings.
+
+**ScreenModel + Koin (Android):** shared **`ScreenModel`**s are **not** constructed with a bare `factory { ScreenModel(get(), …) }` — they need a **`CoroutineScope`**. Use a **`fun interface` factory** registered as **`factory`** in the feature `di` module; the AndroidX **`ViewModel`** takes that factory and calls **`create(viewModelScope)`** (see **`.cursor/rules/viewmodel-patterns.mdc`** — “Shared ScreenModel + Koin”). Same **`ScreenModel`** type on iOS receives a scope from the platform entrypoint.
 
 ### Phase F — iOS
 

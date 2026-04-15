@@ -33,7 +33,10 @@ import kotlinx.coroutines.withContext
  * as the AndroidX lifecycle type without duplicate class names. Same role as the “shared ViewModel”
  * described in `docs/kmp-migration-plan.md`: state, events, and flows with no Android dependency.
  *
- * The platform supplies a [CoroutineScope] (on Android: `ViewModel.viewModelScope` from a thin wrapper).
+ * On Android, Koin registers **`SearchFriendScreenModelFactory`** in the feature `di` module so the wrapper passes
+ * **`viewModelScope`** at `create(...)` (see **`.cursor/rules/viewmodel-patterns.mdc`** — Shared ScreenModel + Koin).
+ *
+ * The platform supplies a [CoroutineScope] (on Android: `ViewModel.viewModelScope` via that factory).
  *
  * Exposes [uiState] for rendering and [error] for one-shot user messages ([PresentationError]).
  */

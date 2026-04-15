@@ -292,10 +292,62 @@ val myFeatureModule = module {
 }
 ```
 
-Domain use cases are registered once in `domainModule` (`dependencyinjection/CleanArchiModules.kt`) and resolved automatically by `viewModelOf`.
+Domain-facing repositories are registered in **`:shared:di`** (`SharedKoinArchiModules.kt`) and resolved automatically by `viewModelOf` where applicable.
 
-### ViewModel Constructor
-ViewModels inject repositories directly. Only introduce a use case when it genuinely earns its place:
+### Shared `ScreenModel` (KMP) + `CoroutineScope` — project standard (Option 2)
+
+When a feature uses a **`ScreenModel`** in **`:shared:presentation`**, the AndroidX **`ViewModel`** must supply a **lifecycle-bound** [CoroutineScope](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/) (typically **`viewModelScope`**). **Do not** register a global `single<CoroutineScope>` for screens.
+
+**Standard pattern** (Search Friend reference implementation):
+
+1. **`fun interface` factory** in `feature/.../di/` — creates the `ScreenModel` for a given scope:
+
+```kotlin
+fun interface MyFeatureScreenModelFactory {
+    fun create(coroutineScope: CoroutineScope): MyFeatureScreenModel
+}
+```
+
+2. **Koin `factory`** — closes over `get()` for repositories; **scope** is applied at `create(...)`:
+
+```kotlin
+factory<MyFeatureScreenModelFactory> {
+    MyFeatureScreenModelFactory { scope ->
+        MyFeatureScreenModel(repository = get(), coroutineScope = scope)
+    }
+}
+```
+
+3. **AndroidX `ViewModel`** — receives the factory, builds the `ScreenModel` **once** with **`viewModelScope`** (lazy is fine so `viewModelScope` exists):
+
+```kotlin
+class MyFeatureViewModel(
+    private val screenModelFactory: MyFeatureScreenModelFactory,
+) : ViewModel() {
+    private val screenModel by lazy { screenModelFactory.create(viewModelScope) }
+    val uiState get() = screenModel.uiState
+    // …forward actions to screenModel
+}
+```
+
+4. **`viewModelOf(::MyFeatureViewModel)`** — Koin injects the factory.
+
+This matches the intent of **`factory { (scope: CoroutineScope) -> MyFeatureScreenModel(...) }`** plus resolving with **`get { parametersOf(viewModelScope) }`**, without calling `get()` before `ViewModel` construction (which would run too early for `viewModelScope`).
+
+**Unit tests:** construct the same factory manually (no Koin required):
+
+```kotlin
+val factory = MyFeatureScreenModelFactory { scope ->
+    MyFeatureScreenModel(mockRepository, scope)
+}
+val viewModel = MyFeatureViewModel(factory)
+```
+
+**iOS later:** the same **`ScreenModel`** constructor takes a **`CoroutineScope`** from SwiftUI / Kotlin entry; register an **`actual`** factory or build the `ScreenModel` in the iOS coordinator — **no `viewModelScope`**, same shape.
+
+### ViewModel Constructor (legacy / non–ScreenModel screens)
+
+ViewModels that **do not** use a shared `ScreenModel` inject repositories directly. Only introduce a use case when it genuinely earns its place:
 
 ```kotlin
 class MyFeatureViewModel(

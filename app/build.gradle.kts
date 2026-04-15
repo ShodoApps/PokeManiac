@@ -42,11 +42,14 @@ dependencies {
     // Third Party Modules (for now only Tracking)
     implementation(project(":shared:tracking"))
 
-    // Clean Archi Module
+    // Clean Archi / KMP DI
     implementation(project(":shared:domain"))
+    implementation(project(":shared:data"))
+    implementation(project(":shared:di"))
+    implementation(project(":shared:database"))
 
-    // Dependency Injection - For clean archi modules
-    implementation(project(":dependencyinjection"))
+    implementation(libs.koin.android)
+    implementation(libs.androidx.room.ktx)
 
     // Features Modules
     implementation(project(":feature:dashboard"))

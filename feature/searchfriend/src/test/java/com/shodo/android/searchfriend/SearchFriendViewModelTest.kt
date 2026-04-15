@@ -4,8 +4,10 @@ import app.cash.turbine.test
 import com.shodo.android.domain.repositories.entities.User
 import com.shodo.android.domain.repositories.friends.UserRepository
 import com.shodo.android.domain.repositories.tracking.TrackingRepository
+import com.shodo.android.presentation.searchfriend.SearchFriendScreenModel
 import com.shodo.android.presentation.searchfriend.SearchFriendUiModel
 import com.shodo.android.presentation.searchfriend.SearchFriendUiState
+import com.shodo.android.searchfriend.di.SearchFriendScreenModelFactory
 import com.shodo.android.presentation.searchfriend.SubscriptionState.NotSubscribed
 import com.shodo.android.presentation.searchfriend.SubscriptionState.Subscribed
 import com.shodo.android.presentation.searchfriend.SubscriptionState.UpdatingSubscribe
@@ -50,7 +52,10 @@ class SearchFriendViewModelTest {
         MockitoAnnotations.openMocks(this)
         dispatcher = UnconfinedTestDispatcher()
         Dispatchers.setMain(dispatcher)
-        viewModel = SearchFriendViewModel(userRepository, trackingRepository)
+        val screenModelFactory = SearchFriendScreenModelFactory { scope ->
+            SearchFriendScreenModel(userRepository, trackingRepository, scope)
+        }
+        viewModel = SearchFriendViewModel(screenModelFactory)
     }
 
     @After

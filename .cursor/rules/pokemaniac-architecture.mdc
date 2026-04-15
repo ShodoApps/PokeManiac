@@ -19,7 +19,7 @@ Data Layer (Implementations)
 
 - **Features never depend on data modules** (`:shared:data`, `:shared:api`, `:shared:database`)
 - **Features depend only on `:shared:domain`** (Kotlin package `com.shodo.android.domain`) **+ `coreui` + `:shared:tracking`** (Gradle) when they inject **`TrackingRepository`**
-- **Dependencies are injected via Koin** from `dependencyinjection` module
+- **Dependencies are injected via Koin** from **`:shared:di`** (`commonMain` modules) + **`app`** (`DatabaseModule`, `startKoin`)
 
 ❌ **BAD**: Feature imports `FriendsRepositoryImpl` directly
 ✅ **GOOD**: Feature depends on `FriendsRepository` interface from `domain`
@@ -78,6 +78,8 @@ class MyFeatureViewModel(
     }
 }
 ```
+
+When a screen uses a shared **`*ScreenModel`** (`:shared:presentation`), the AndroidX **`*ViewModel`** wires it with a **`fun interface` factory** registered in Koin (**`factory`**) and **`create(viewModelScope)`** — details in **`viewmodel-patterns.mdc`** (Shared ScreenModel + Koin).
 
 ### Screen Pattern (State + Lifecycle)
 ```kotlin

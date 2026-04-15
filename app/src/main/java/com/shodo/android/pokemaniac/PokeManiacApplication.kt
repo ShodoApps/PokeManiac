@@ -3,8 +3,8 @@ package com.shodo.android.pokemaniac
 import android.app.Application
 import com.shodo.android.billing.di.billingModule
 import com.shodo.android.dashboard.di.dashboardModule
-import com.shodo.android.dependencyinjection.cleanArchiModules
 import com.shodo.android.di.trackingModule
+import com.shodo.android.pokemaniac.di.appCoreArchiModules
 import com.shodo.android.myfriends.di.myFriendsModule
 import com.shodo.android.myprofile.di.myProfileModule
 import com.shodo.android.pokemaniac.welcome.di.welcomeModule
@@ -22,8 +22,8 @@ class PokeManiacApplication : Application() {
             androidLogger()
             androidContext(this@PokeManiacApplication)
 
-            // Clean Archi Modules
-            modules(cleanArchiModules)
+            // Core archi: Room (Android) + `:shared:di` (`commonMain` Koin modules)
+            modules(appCoreArchiModules())
 
             // Third Party Modules
             modules(trackingModule)

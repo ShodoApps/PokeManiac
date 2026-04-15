@@ -78,7 +78,8 @@ Data Access Layer
 
 Cross-Cutting Concerns
 ├── shared:tracking (KMP — `TrackingRepository` impl + Koin `trackingModule`)
-└── dependencyinjection (Koin configuration aggregator)
+├── shared:di (KMP — Koin `apiModule` / `dataModule` in `commonMain`)
+└── app (`startKoin`, `DatabaseModule`, feature Koin modules)
 ```
 
 ---
@@ -283,26 +284,14 @@ val myFeatureModule = module {
 }
 ```
 
-**In aggregator** (`dependencyinjection/CleanArchiModules.kt`):
-```kotlin
-val dataModule = module {
-    factory<MyRepository> { MyRepositoryImpl(get(), get()) }
-}
-
-val apiModule = module {
-    factory<MyRequest> { MyRequestImpl(get()) }
-}
-
-val databaseModule = module {
-    single<MyDataStore> { MyDataStoreImpl(get()) }
-}
-```
+**`commonMain` Koin modules** (`shared/di/.../SharedKoinArchiModules.kt`) define `apiModule` / `dataModule`; **Android edge** (`app/.../di/DatabaseModule.kt`) defines `databaseModule` (Room + DataStores). **`appCoreArchiModules()`** concatenates `databaseModule` + **`sharedKoinArchiModules`**.
 
 **In app** (`PokeManiacApplication.kt`):
 ```kotlin
 startKoin {
     androidContext(this@PokeManiacApplication)
-    modules(cleanArchiModules, myFeatureModule, ...)
+    modules(appCoreArchiModules())
+    modules(myFeatureModule)
 }
 ```
 

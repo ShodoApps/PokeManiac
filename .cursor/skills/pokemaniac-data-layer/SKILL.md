@@ -368,19 +368,25 @@ abstract class PokeManiacDatabase : RoomDatabase() {
 
 ## Step 9: Register Koin Bindings
 
-**In `dependencyinjection/src/main/java/.../CleanArchiModules.kt`:**
+**In `shared/di/src/commonMain/.../SharedKoinArchiModules.kt` (repositories) and `app/.../di/DatabaseModule.kt` (Room / DataStores):**
+
+`SharedKoinArchiModules.kt` (`commonMain`):
 
 ```kotlin
 val dataModule = module {
     factory<MyRepository> { MyRepositoryImpl(get(), get()) }
 }
-
 val apiModule = module {
     factory<MyRequest> { MyRequestImpl(get()) }
 }
+```
 
+`app/.../di/DatabaseModule.kt` (Android — Room):
+
+```kotlin
 val databaseModule = module {
-    single<MyDataStore> { MyDataStoreImpl(get<PokeManiacDatabase>().myEntityDao()) }
+    single { Room.databaseBuilder(androidApplication(), PokeManiacDatabase::class.java, "db").build() }
+    single<MyDataStore> { MyDataStoreImpl(get()) }
 }
 ```
 

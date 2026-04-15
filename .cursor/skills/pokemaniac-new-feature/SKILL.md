@@ -352,6 +352,10 @@ val myNewFeatureModule = module {
 }
 ```
 
+### Optional: shared `ScreenModel` in `:shared:presentation`
+
+If the feature uses a KMP **`MyNewFeatureScreenModel`**, follow **`viewmodel-patterns.mdc`** (Shared ScreenModel + Koin): add **`fun interface MyNewFeatureScreenModelFactory`**, **`factory { … }`** in this module, and a thin **`MyNewFeatureViewModel`** that calls **`factory.create(viewModelScope)`**. Reference: **`SearchFriendScreenModelFactory`** + **`SearchFriendModule`**.
+
 ---
 
 ## Step 8: Add to Gradle
@@ -396,22 +400,23 @@ dependencies {
 
 **In `app/src/main/java/com/shodo/android/pokemaniac/PokeManiacApplication.kt`:**
 ```kotlin
-val modules = listOf(
-    cleanArchiModules,
-    trackingModule,
-    welcomeModule,
-    dashboardModule,
-    searchfriendModule,
-    myfriends,
-    myprofileModule,
-    posttransactionModule,
-    billingModule,
-    myNewFeatureModule  // ADD THIS
-)
+import com.shodo.android.pokemaniac.di.appCoreArchiModules
 
 startKoin {
+    androidLogger()
     androidContext(this@PokeManiacApplication)
-    modules(modules)
+    modules(appCoreArchiModules())
+    modules(trackingModule)
+    modules(
+        welcomeModule,
+        dashboardModule,
+        searchFriendModule,
+        myFriendsModule,
+        postTransactionModule,
+        myProfileModule,
+        billingModule,
+        myNewFeatureModule,  // ADD THIS
+    )
 }
 ```
 

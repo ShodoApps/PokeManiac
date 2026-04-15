@@ -104,7 +104,7 @@ Use these checklists before starting work to ensure nothing is missed.
 - [ ] Entities properly mapped to/from domain models
 
 ### Koin Registration
-- [ ] Updated `dependencyinjection/CleanArchiModules.kt`:
+- [ ] Updated **`:shared:di`** (`SharedKoinArchiModules.kt`) and/or **`app/di/DatabaseModule.kt`**:
   - [ ] `dataModule`: Add `factory<MyRepository> { MyRepositoryImpl(...) }`
   - [ ] `apiModule`: Add `factory<MyRequest> { MyRequestImpl(...) }`
   - [ ] `databaseModule`: Add `single<MyDataStore> { MyDataStoreImpl(...) }`
