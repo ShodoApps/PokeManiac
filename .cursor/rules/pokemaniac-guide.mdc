@@ -434,12 +434,13 @@ See **`docs/kmp-migration-plan.md`** for phased status (**Phase D — data layer
 - ✅ **Phase D** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`** (`androidTarget()` + `commonMain` per module)
 - ✅ **`ImageSource.FileSource`** — opaque string in domain; platform resolves URIs / identifiers in features
 - ✅ **Domain `NewActivity`** — uses **`kotlinx.datetime.LocalDateTime`** (not `java.time`)
-- ✅ **Phase E (Android)** — **`:shared:di`** + **`app`** `startKoin` / **`DatabaseModule`**; **`sharedKoinArchiModules`** ready to reuse from a future iOS `startKoin` (**Phase F**).
-- ⏳ **Phase F** — Apple targets, SwiftUI, **`startKoin` on iOS** + platform Koin modules; **Compose** remains the Android UI surface until then
+- ✅ **Phase E (Android)** — **`:shared:di`** + **`app`** `startKoin` / **`DatabaseModule`**; **`sharedKoinArchiModules`** ready to reuse from a future iOS `startKoin` (**Phase G**).
+- ⏳ **Phase F** — Migrate **all** features to **`:shared:presentation`** (Search Friend pattern); **last step:** one Android deployable module (layout **TBD** — see **`docs/kmp-migration-plan.md`** §7).
+- ⏳ **Phase G** — Apple targets, SwiftUI, **`startKoin` on iOS** + platform Koin modules; **Compose** remains the Android UI surface until then
 
 When adding **iOS**:
-1. Add Apple targets to the shared modules that need them (plan: **§7 Phase F**).
-2. Keep **Android** UI in **`feature:*`** / **`app`** (Compose).
+1. Add Apple targets to the shared modules that need them (plan: **§7 Phase G**).
+2. Keep **Android** UI in **Compose** until then (Gradle layout may consolidate in **§7 Phase F** — see **`docs/kmp-migration-plan.md`**).
 3. Add an **`:iosApp`** (or equivalent) consuming **`ScreenModel` + `UiState`** from **`:shared:presentation`**.
 
 ### Platform-specific capability: Local image capture (`FileSource`)

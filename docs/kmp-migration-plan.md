@@ -13,7 +13,7 @@ It complements `.cursor/rules/pokemaniac-architecture.mdc` and `.cursor/rules/po
 - Use a **KMP-shaped project**: `commonMain` for shared Kotlin, **`androidTarget()` only** on shared data modules — **no Apple targets** on those modules until iOS work starts (**`:shared:domain`** already declares Apple targets for future parity).
 - Keep **Gradle health**: `./gradlew testDebugUnitTest` and `./gradlew assembleRelease` stay green after each incremental change.
 - Avoid **big-bang** refactors; migrate **one vertical slice or one layer** per meaningful PR.
-- **Phase D** and **Phase E (Android)** are **done** for the current app scope — see **§7**. **Next near-term focus:** **§7 Phase F** (iOS) and any **new** vertical slices (extra HTTP APIs, Apple targets on shared modules where needed, etc.).
+- **Phase D** and **Phase E (Android)** are **done** for the current app scope — see **§7**. **Next near-term focus:** **§7 Phase F** (shared presentation for **all** features + Android app module shape), then **§7 Phase G** (iOS). New data/API slices can land anytime using the same patterns as Phase D.
 
 ### 1.2 Long term
 
@@ -51,7 +51,7 @@ Data access — **`:shared:api`** (HTTP + DTOs), **`:shared:data`** (repository 
 | **DI (`commonMain`)** | Koin **`koin-core`** modules (API + repository factories, no `Context`) | **`:shared:di`** |
 | **DI (Android edge)** | `startKoin`, `androidContext`, `Room.databaseBuilder`, feature `viewModelOf` | **`app`** (`PokeManiacApplication` + `di/`) |
 
-**Note:** Feature modules can remain **thin Android UI shells** that depend on **shared presentation** — a single monolithic `app` module for all screens is **optional**, not required for KMP.
+**Note:** Feature modules can remain **thin Android UI shells** that depend on **shared presentation** until **§7 Phase F** (final step) refactors the Android surface into **one deployable module** (exact layout **TBD**).
 
 ### 2.2 “App” vs “presentation”
 
@@ -143,10 +143,10 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 
 1. Convert **`:shared:domain`** (path `shared/domain/`) to **`kotlin-multiplatform`** + **`com.android.library`**.
 2. Move pure Kotlin sources to **`commonMain/kotlin`** (same packages).
-3. Ship **`androidTarget()`** first; **Apple targets** on **`:shared:domain`** are optional early prep for **Phase F** (other shared modules still **`androidTarget()`-only** until iOS work).
+3. Ship **`androidTarget()`** first; **Apple targets** on **`:shared:domain`** are optional early prep for **Phase G (iOS)** (other shared modules still **`androidTarget()`-only** until iOS work).
 4. Verify **`testDebugUnitTest`** and **`assembleRelease`**.
 
-**Outcome:** Domain is **multiplatform-ready**; shared data/presentation modules can add Apple targets when **Phase F** starts.
+**Outcome:** Domain is **multiplatform-ready**; shared data/presentation modules can add Apple targets when **Phase G** starts.
 
 **Status — done:** **`:shared:domain`** uses **`org.jetbrains.kotlin.multiplatform`** + **`com.android.library`**, sources in **`src/commonMain/kotlin`**, manifest in **`src/androidMain`**, **`androidTarget()`** plus **`iosArm64()`** / **`iosSimulatorArm64()`**. Version catalog: **`kotlin-multiplatform`** plugin; root `build.gradle.kts` applies it with **`apply false`**.
 
@@ -156,7 +156,7 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 2. Migrate **one feature**: shared **`XxxScreenModel`** + **`XxxUiState`**, Android feature module keeps **Compose + thin `ViewModel` + wiring** as needed.
 3. Define **minimal** navigation / error ports as interfaces implemented on Android.
 
-**Outcome:** Pattern proven before wide migration.
+**Outcome:** Pattern proven before **§7 Phase F** (wide feature migration).
 
 **Status — done (spike):** **`:shared:presentation`** added; **Search Friend** logic lives in **`com.shodo.android.presentation.searchfriend`** as **`SearchFriendScreenModel`**, plus **`SearchFriendUiState`**, **`SearchFriendUiModel`**, mappers. **`PresentationError`** is the shared user-facing error type. **`feature:searchfriend`** exposes **`SearchFriendViewModel`** (AndroidX) that forwards to **`SearchFriendScreenModel`** using **`viewModelScope`**. Compose imports **`UiState` / `UiModel`** from the shared module.
 
@@ -176,7 +176,7 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 1. Add **`:shared:application`** (or fold use cases into **`:shared:domain`** if you prefer fewer modules — both are acceptable).
 2. **Extract incrementally** from `ScreenModel`s / Android wrappers where a use case clearly clarifies reuse or tests; do **not** create a mandatory “every screen has a use case” layer.
 
-**For PokeManiac today:** Phase C can remain **theoretical** until a concrete need appears; **A → B → D** (and later E/F) do **not** require a use-case module first.
+**For PokeManiac today:** Phase C can remain **theoretical** until a concrete need appears; **A → B → D** (and later **E → F → G**) do **not** require a use-case module first.
 
 ### Phase D — Data layer (per vertical slice)
 
@@ -203,21 +203,35 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 
 1. Evolve **Koin** (or chosen DI) toward **KMP**: split **what can live in `commonMain`** from **what must stay on the platform edge** (Android `Context`, `Room.databaseBuilder`, feature `viewModelOf`, etc.).
 
-**Agreement:** **iOS `startKoin` and platform-specific Koin modules** are **deferred to Phase F** — they require an **iOS app / entrypoint**, which does not exist yet. Phase E is **complete for the current Android-only product** once the split below is in place.
+**Agreement:** **iOS `startKoin` and platform-specific Koin modules** are **deferred to Phase G** — they require an **iOS app / entrypoint**, which does not exist yet. Phase E is **complete for the current Android-only product** once the split below is in place.
 
 **Status — done (Android, current repo):**
 
-- **`:shared:di`** (KMP, `commonMain` + `androidTarget()`): **`apiModule`** + **`dataModule`** in `commonMain` (`koin-core` only); **`sharedKoinArchiModules`** list intended for **reuse from any future platform** `startKoin` (see Phase F).
+- **`:shared:di`** (KMP, `commonMain` + `androidTarget()`): **`apiModule`** + **`dataModule`** in `commonMain` (`koin-core` only); **`sharedKoinArchiModules`** list intended for **reuse from any future platform** `startKoin` (see **Phase G**).
 - **`app`**: **`startKoin`** + **`databaseModule`** (`Room.databaseBuilder`, DataStore singletons) + **`appCoreArchiModules()`** = `databaseModule` + **`sharedKoinArchiModules`**; feature modules unchanged.
 
 **Validation (Phase E closure — Android):** run **`./gradlew testDebugUnitTest`** and **`./gradlew assembleRelease`**; both should stay green (same bar as §1.1).
 
-**ScreenModel + Koin (Android):** shared **`ScreenModel`**s are **not** constructed with a bare `factory { ScreenModel(get(), …) }` — they need a **`CoroutineScope`**. Use a **`fun interface` factory** registered as **`factory`** in the feature `di` module; the AndroidX **`ViewModel`** takes that factory and calls **`create(viewModelScope)`** (see **`.cursor/rules/viewmodel-patterns.mdc`** — “Shared ScreenModel + Koin”). On iOS (Phase F), the same **`ScreenModel`** receives a scope from SwiftUI / Kotlin entry; **Koin wiring for that path** lands with the iOS project.
+**ScreenModel + Koin (Android):** shared **`ScreenModel`**s are **not** constructed with a bare `factory { ScreenModel(get(), …) }` — they need a **`CoroutineScope`**. Use a **`fun interface` factory** registered as **`factory`** in the feature `di` module; the AndroidX **`ViewModel`** takes that factory and calls **`create(viewModelScope)`** (see **`.cursor/rules/viewmodel-patterns.mdc`** — “Shared ScreenModel + Koin”). On iOS (**Phase G**), the same **`ScreenModel`** receives a scope from SwiftUI / Kotlin entry; **Koin wiring for that path** lands with the iOS project.
 
-### Phase F — iOS
+### Phase F — Shared presentation (all features) + Android app shape
 
-1. Add Apple targets to relevant shared modules.
-2. SwiftUI screens consume **same `ScreenModel` + `UiState`**; platform code provides **expect/actual** capabilities (e.g. local image capture per project guide).
+**Goal:** Every user-facing feature follows the **Search Friend** reference: **`XxxScreenModel`**, **`XxxUiState`**, **`XxxUiModel`** in **`:shared:presentation`**, thin **`XxxViewModel`** on Android, and Koin **`fun interface` factories** where a **`CoroutineScope`** is required (see **`.cursor/rules/viewmodel-patterns.mdc`**). **Last step of this phase:** consolidate the **Android deployable surface** into **one application module** that owns all feature UI — exact Gradle layout **TBD** (e.g. nested **`:androidApp:feature:searchfriend`**-style modules **or** a single **`:app`** with feature source sets / packages; decide before execution).
+
+**Steps (incremental — prefer one feature or one structural PR at a time):**
+
+1. **Per feature** (dashboard, my friends, my profile, post transaction, billing, welcome, …): move coordinator logic to **`commonMain`** in **`:shared:presentation`**; keep Compose, Activities, and navigators on Android; align Koin with **Phase E** (feature `di` modules, **`viewModelOf`** where applicable).
+2. **Ports:** keep navigation and one-shot errors as **small interfaces** (e.g. in **`coreui`**) or shared presentation, same spirit as the Search Friend spike.
+3. **Final step — Android module shape:** perform the **single-module (or single-tree) Android app** refactor; update **`settings.gradle.kts`**, **`app`** dependencies, and **`startKoin`** module lists as needed. **Validate** **`./gradlew testDebugUnitTest`** and **`./gradlew assembleRelease`** after each meaningful structural change.
+
+**Status — not started.**
+
+**Deferred to Phase G:** Apple targets, SwiftUI, iOS **`startKoin`**.
+
+### Phase G — iOS
+
+1. Add Apple targets to relevant shared modules (when not already present).
+2. SwiftUI screens consume the **same `ScreenModel` + `UiState`**; platform code provides **`expect`/`actual`** capabilities (e.g. local image capture per project guide).
 3. **Koin on iOS:** from the iOS Kotlin entry (or equivalent), call **`startKoin { modules(sharedKoinArchiModules + iosDatabaseModule + …) }`** — reuse **`sharedKoinArchiModules`** from **`:shared:di`**; add **`iosDatabaseModule`** (and other **`actual`** bindings) for Room / paths / HTTP engines that differ from Android.
 
 ---
@@ -248,6 +262,9 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 | **DTO → domain (repo impl) → ScreenModel → UiModel in UiState** pipeline | Yes |
 | **`XxxUiState` + `XxxUiModel` + `XxxScreenModel` in shared** | Yes — MVVM/MVI friendly for Compose & SwiftUI |
 | **Incremental** migration, green CI | Yes |
-| **iOS** | Deferred; structure stays **easy to add** |
+| **iOS** | **Phase G** — deferred; structure stays **easy to add** |
 | **Use cases** | **Optional** — no layer for one-liners; add only when reuse, policy, or real orchestration justify it (**§7 Phase C**, **§8**) |
 | **Phase D — data layer (Android)** | **Done** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`** (**§7 Phase D**) |
+| **Phase E — DI (Android)** | **Done** — **`:shared:di`** + **`app`** bootstrap (**§7 Phase E**) |
+| **Phase F — presentation + Android app shape** | **Not started** — all features like Search Friend; last step: one Android deployable module (layout **TBD**) |
+| **Phase G — iOS** | **Not started** — Apple targets, SwiftUI, **`startKoin`** on iOS (**§7 Phase G**) |
