@@ -246,7 +246,8 @@ Authoritative plan: **`docs/kmp-migration-plan.md`**.
 - ✅ **Domain** — **`:shared:domain`** (KMP `commonMain`; repository interfaces + entities).
 - ✅ **Phase D (Android)** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`**: remote, repositories, Room, and tracking are KMP-shaped with **`androidTarget()`**; see **§7 Phase D** in the plan (status **done**).
 - ✅ **Presentation (spike)** — **`:shared:presentation`** + Search Friend **ScreenModel** (**§7 Phase B**).
-- ⏳ **Next** — **Phase E** (Koin / DI for multiplatform), **Phase F** (iOS + Apple targets on shared modules where needed); UI stays Compose on Android until then.
+- ✅ **Phase E (Android)** — **`:shared:di`** (`commonMain` Koin) + **`app`** bootstrap; iOS **`startKoin`** deferred to **Phase F** (see **`docs/kmp-migration-plan.md`** §7).
+- ⏳ **Next** — **Phase F** (iOS app, Apple targets on shared modules, SwiftUI, iOS Koin graph).
 
 ## Maintenance
 

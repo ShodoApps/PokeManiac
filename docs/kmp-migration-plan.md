@@ -13,7 +13,7 @@ It complements `.cursor/rules/pokemaniac-architecture.mdc` and `.cursor/rules/po
 - Use a **KMP-shaped project**: `commonMain` for shared Kotlin, **`androidTarget()` only** on shared data modules — **no Apple targets** on those modules until iOS work starts (**`:shared:domain`** already declares Apple targets for future parity).
 - Keep **Gradle health**: `./gradlew testDebugUnitTest` and `./gradlew assembleRelease` stay green after each incremental change.
 - Avoid **big-bang** refactors; migrate **one vertical slice or one layer** per meaningful PR.
-- **Phase D (Android KMP data layer)** is **done** for the current app scope — see **§7 Phase D**. Next near-term focus is **§7 Phase E** (DI) and any **new** vertical slices (extra HTTP APIs, Apple targets on `:shared:database` / `:shared:api`, etc.).
+- **Phase D** and **Phase E (Android)** are **done** for the current app scope — see **§7**. **Next near-term focus:** **§7 Phase F** (iOS) and any **new** vertical slices (extra HTTP APIs, Apple targets on shared modules where needed, etc.).
 
 ### 1.2 Long term
 
@@ -201,21 +201,24 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 
 ### Phase E — DI for multiplatform
 
-1. Evolve **Koin** (or chosen DI) toward **KMP** so iOS can assemble the same graph for shared code.
+1. Evolve **Koin** (or chosen DI) toward **KMP**: split **what can live in `commonMain`** from **what must stay on the platform edge** (Android `Context`, `Room.databaseBuilder`, feature `viewModelOf`, etc.).
 
-**Status — in progress (step 1 done):**
+**Agreement:** **iOS `startKoin` and platform-specific Koin modules** are **deferred to Phase F** — they require an **iOS app / entrypoint**, which does not exist yet. Phase E is **complete for the current Android-only product** once the split below is in place.
 
-- **`:shared:di`** (KMP, `commonMain` + `androidTarget()`): **`apiModule`** + **`dataModule`** in `commonMain` (`koin-core` only); **`sharedKoinArchiModules`** list for reuse from any platform entrypoint.
+**Status — done (Android, current repo):**
+
+- **`:shared:di`** (KMP, `commonMain` + `androidTarget()`): **`apiModule`** + **`dataModule`** in `commonMain` (`koin-core` only); **`sharedKoinArchiModules`** list intended for **reuse from any future platform** `startKoin` (see Phase F).
 - **`app`**: **`startKoin`** + **`databaseModule`** (`Room.databaseBuilder`, DataStore singletons) + **`appCoreArchiModules()`** = `databaseModule` + **`sharedKoinArchiModules`**; feature modules unchanged.
 
-**Next steps (incremental):** duplicate **`startKoin { modules(sharedKoinArchiModules + …) }`** on iOS with **`actual`** platform bindings.
+**Validation (Phase E closure — Android):** run **`./gradlew testDebugUnitTest`** and **`./gradlew assembleRelease`**; both should stay green (same bar as §1.1).
 
-**ScreenModel + Koin (Android):** shared **`ScreenModel`**s are **not** constructed with a bare `factory { ScreenModel(get(), …) }` — they need a **`CoroutineScope`**. Use a **`fun interface` factory** registered as **`factory`** in the feature `di` module; the AndroidX **`ViewModel`** takes that factory and calls **`create(viewModelScope)`** (see **`.cursor/rules/viewmodel-patterns.mdc`** — “Shared ScreenModel + Koin”). Same **`ScreenModel`** type on iOS receives a scope from the platform entrypoint.
+**ScreenModel + Koin (Android):** shared **`ScreenModel`**s are **not** constructed with a bare `factory { ScreenModel(get(), …) }` — they need a **`CoroutineScope`**. Use a **`fun interface` factory** registered as **`factory`** in the feature `di` module; the AndroidX **`ViewModel`** takes that factory and calls **`create(viewModelScope)`** (see **`.cursor/rules/viewmodel-patterns.mdc`** — “Shared ScreenModel + Koin”). On iOS (Phase F), the same **`ScreenModel`** receives a scope from SwiftUI / Kotlin entry; **Koin wiring for that path** lands with the iOS project.
 
 ### Phase F — iOS
 
 1. Add Apple targets to relevant shared modules.
 2. SwiftUI screens consume **same `ScreenModel` + `UiState`**; platform code provides **expect/actual** capabilities (e.g. local image capture per project guide).
+3. **Koin on iOS:** from the iOS Kotlin entry (or equivalent), call **`startKoin { modules(sharedKoinArchiModules + iosDatabaseModule + …) }`** — reuse **`sharedKoinArchiModules`** from **`:shared:di`**; add **`iosDatabaseModule`** (and other **`actual`** bindings) for Room / paths / HTTP engines that differ from Android.
 
 ---
 

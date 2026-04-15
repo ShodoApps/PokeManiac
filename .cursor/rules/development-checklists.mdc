@@ -109,6 +109,7 @@ Use these checklists before starting work to ensure nothing is missed.
   - [ ] `apiModule`: Add `factory<MyRequest> { MyRequestImpl(...) }`
   - [ ] `databaseModule`: Add `single<MyDataStore> { MyDataStoreImpl(...) }`
 - [ ] DAO added to Room database entity list
+- [ ] After DI graph changes: `./gradlew testDebugUnitTest` and `./gradlew assembleRelease` (Phase E bar — `docs/kmp-migration-plan.md` §7)
 
 ### ViewModel Integration
 - [ ] ViewModel constructor accepts `MyRepository`
