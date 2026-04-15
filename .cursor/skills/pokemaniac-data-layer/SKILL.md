@@ -23,11 +23,13 @@ Data Layer (Implementations)
             └── FriendsDataStoreImpl (Room persistence)
 ```
 
+**Module layout (Phase D — done):** interfaces and entities in **`:shared:domain`** (`shared/domain/src/commonMain/kotlin/...`); repository implementations + DataStore *interfaces* in **`:shared:data`**; Ktor + DTOs + `*RequestImpl` in **`:shared:api`**; Room + DataStore *implementations* in **`:shared:database`**. Authoritative narrative: **`docs/kmp-migration-plan.md`** §7 Phase D.
+
 ---
 
 ## Step 1: Define Repository Interface (Domain Layer)
 
-**File:** `domain/src/main/java/com/shodo/android/domain/repositories/MyRepository.kt`
+**File:** `shared/domain/src/commonMain/kotlin/com/shodo/android/domain/repositories/MyRepository.kt`
 
 ```kotlin
 package com.shodo.android.domain.repositories

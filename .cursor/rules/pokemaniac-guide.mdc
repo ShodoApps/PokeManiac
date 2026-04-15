@@ -74,7 +74,7 @@ Domain Layer
 Data Access Layer
 ├── shared:data (KMP — repository implementations, DataStore interfaces)
 ├── shared:api (KMP — remote clients, DTOs, e.g. Ktor)
-└── database (Room DAOs, DataStore implementations)
+└── shared:database (KMP — Room, DataStore implementations)
 
 Cross-Cutting Concerns
 ├── shared:tracking (KMP — `TrackingRepository` impl + Koin `trackingModule`)
@@ -438,20 +438,20 @@ Currently mocked locally; can be connected to Firebase, Segment, etc.
 
 ## Next Steps for KMP Migration
 
-Currently preparing for future Kotlin Multiplatform (KMP) migration:
+See **`docs/kmp-migration-plan.md`** for phased status (**Phase D — data layer** is **done** on Android).
 
 - ✅ Clean architecture separation (ready for sharing)
-- ✅ Domain layer pure Kotlin (no Android imports)
-- ✅ `ImageSource.FileSource(val localIdentifier: String)` — opaque string, no Android type in domain
-- ✅ Data layer abstracted via interfaces
-- ❌ UI layer Compose-based (Android-specific)
-- ❌ `NewActivity.kt` uses `java.time.LocalDateTime` — must be replaced with `kotlinx-datetime` before sharing
+- ✅ **`:shared:domain`** — KMP `commonMain` (repository interfaces + entities; no Android in domain types)
+- ✅ **Phase D** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`** (`androidTarget()` + `commonMain` per module)
+- ✅ **`ImageSource.FileSource`** — opaque string in domain; platform resolves URIs / identifiers in features
+- ✅ **Domain `NewActivity`** — uses **`kotlinx.datetime.LocalDateTime`** (not `java.time`)
+- ⏳ **Phase E** — Koin (or chosen DI) usable from **non-Android** entry points when iOS starts
+- ⏳ **Phase F** — Apple targets on shared modules + SwiftUI; **Compose** remains the Android UI surface until then
 
-When moving to KMP:
-1. Migrate domain + data to `:shared` module
-2. Keep `:android` for UI/Compose
-3. Create `:ios` module using SwiftUI
-4. Share business logic, state management
+When adding **iOS**:
+1. Add Apple targets to the shared modules that need them (plan: **§7 Phase F**).
+2. Keep **Android** UI in **`feature:*`** / **`app`** (Compose).
+3. Add an **`:iosApp`** (or equivalent) consuming **`ScreenModel` + `UiState`** from **`:shared:presentation`**.
 
 ### Platform-specific capability: Local image capture (`FileSource`)
 

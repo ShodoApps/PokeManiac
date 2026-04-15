@@ -1,5 +1,5 @@
 // Kotlin Multiplatform shared data layer (`:shared:data`): repository implementations + datastore interfaces (commonMain).
-// Room / platform I/O stay in `:shared:database` behind these contracts. See docs/kmp-migration-plan.md — Phase D.
+// Room / platform I/O stay in `:shared:database` behind these contracts. See docs/kmp-migration-plan.md — §7 Phase D (done).
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {

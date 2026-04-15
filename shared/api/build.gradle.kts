@@ -1,4 +1,4 @@
-// Shared KMP remote layer (Ktor, DTOs). Phase D — see docs/kmp-migration-plan.md.
+// Shared KMP remote layer (Ktor, DTOs). docs/kmp-migration-plan.md — §7 Phase D (done).
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {

@@ -1,4 +1,4 @@
-// Kotlin Multiplatform tracking layer (`:shared:tracking`): `TrackingRepository` implementation + Koin module.
+// Kotlin Multiplatform tracking layer (`:shared:tracking`): `TrackingRepository` implementation + Koin module. docs/kmp-migration-plan.md §7 Phase D (done).
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {

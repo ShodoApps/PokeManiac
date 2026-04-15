@@ -241,12 +241,12 @@ Skills are used by telling the AI:
 
 ## Future: KMP Migration
 
-This project is architected to support Kotlin Multiplatform (KMP) migration in the future:
+Authoritative plan: **`docs/kmp-migration-plan.md`**.
 
-- ✅ Domain layer: Pure Kotlin, no Android imports
-- ✅ Data layer: Abstracted behind interfaces
-- ❌ Presentation layer: Currently Android/Compose specific
-- 📋 Plan: Share domain + data on iOS, keep platform-specific UI
+- ✅ **Domain** — **`:shared:domain`** (KMP `commonMain`; repository interfaces + entities).
+- ✅ **Phase D (Android)** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`**: remote, repositories, Room, and tracking are KMP-shaped with **`androidTarget()`**; see **§7 Phase D** in the plan (status **done**).
+- ✅ **Presentation (spike)** — **`:shared:presentation`** + Search Friend **ScreenModel** (**§7 Phase B**).
+- ⏳ **Next** — **Phase E** (Koin / DI for multiplatform), **Phase F** (iOS + Apple targets on shared modules where needed); UI stays Compose on Android until then.
 
 ## Maintenance
 

@@ -1,4 +1,4 @@
-// Kotlin Multiplatform Room (`:shared:database`): entities, DAOs, DataStore implementations. `androidTarget()` only for now.
+// Kotlin Multiplatform Room (`:shared:database`): entities, DAOs, DataStore implementations. `androidTarget()` only for now — docs/kmp-migration-plan.md §7 Phase D (done).
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {

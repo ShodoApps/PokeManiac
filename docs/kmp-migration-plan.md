@@ -10,9 +10,10 @@ It complements `.cursor/rules/pokemaniac-architecture.mdc` and `.cursor/rules/po
 
 ### 1.1 Near term (current phase)
 
-- Use a **KMP-shaped project**: `commonMain` for shared Kotlin, **`androidTarget()` only** — **no Apple targets** until iOS work starts.
+- Use a **KMP-shaped project**: `commonMain` for shared Kotlin, **`androidTarget()` only** on shared data modules — **no Apple targets** on those modules until iOS work starts (**`:shared:domain`** already declares Apple targets for future parity).
 - Keep **Gradle health**: `./gradlew testDebugUnitTest` and `./gradlew assembleRelease` stay green after each incremental change.
 - Avoid **big-bang** refactors; migrate **one vertical slice or one layer** per meaningful PR.
+- **Phase D (Android KMP data layer)** is **done** for the current app scope — see **§7 Phase D**. Next near-term focus is **§7 Phase E** (DI) and any **new** vertical slices (extra HTTP APIs, Apple targets on `:shared:database` / `:shared:api`, etc.).
 
 ### 1.2 Long term
 
@@ -32,17 +33,22 @@ Android UI (Compose, navigation, Activities)
         → shared application / use cases (orchestration; optional per feature)
         → shared domain (entities, repository interfaces, errors)
         ↑ implemented by ↑
-Data access (network, DB, platform I/O) — Android first; KMP or expect/actual later per slice
+Data access — **`:shared:api`** (HTTP + DTOs), **`:shared:data`** (repository impls + datastore interfaces), **`:shared:database`** (Room + datastore impls), **`:shared:tracking`** (`TrackingRepository` impl + Koin module); all use **`commonMain` + `androidTarget()`** today unless noted below.
 ```
 
 ### 2.1 Recommended module roles
 
-| Layer | Responsibility | Typical module name (to introduce incrementally) |
-|--------|----------------|--------------------------------------------------|
-| **Domain** | Entities, value types, **repository interfaces**, domain errors | **`:shared:domain`** (KMP; lives under `shared/domain/`) |
-| **Application** | Use cases / orchestration (no UI, no platform APIs) | `:shared:application` or part of domain if you want fewer modules |
-| **Presentation** | **`ScreenModel`** (shared KMP), **UiState**, user events, `StateFlow`/`Flow`; Android may add thin **`ViewModel`** | **`:shared:presentation`** (KMP; first spike: Search Friend) |
+| Layer | Responsibility | Module in this repo |
+|--------|----------------|---------------------|
+| **Domain** | Entities, value types, **repository interfaces**, domain errors | **`:shared:domain`** (`shared/domain/`); **`androidTarget()`** + **Apple targets** (early iOS prep) |
+| **Application** | Use cases / orchestration (no UI, no platform APIs) | *Optional* — `:shared:application` or fold into domain (**§7 Phase C**); not used yet |
+| **Presentation** | **`ScreenModel`**, **UiState**, `StateFlow`/`Flow`; Android may add thin **`ViewModel`** | **`:shared:presentation`** (`shared/presentation/`) |
+| **Remote HTTP** | Ktor clients, DTOs, `*RequestImpl` | **`:shared:api`** (`shared/api/`) |
+| **Repository orchestration** | Repository implementations; **DataStore** *interfaces* consumed by repos | **`:shared:data`** (`shared/data/`) |
+| **Local DB** | Room entities, DAOs, **DataStore** *implementations* | **`:shared:database`** (`shared/database/`) |
+| **Analytics wiring** | **`TrackingRepository`** implementation + **`trackingModule`** (Koin) | **`:shared:tracking`** (`shared/tracking/`) |
 | **Android UI** | Composables, Activities, navigators, Android-specific I/O edges | `:app`, `:feature:*`, `:coreui` |
+| **DI aggregator** | Koin modules wiring implementations (Android `Application` today) | `:dependencyinjection` |
 
 **Note:** Feature modules can remain **thin Android UI shells** that depend on **shared presentation** — a single monolithic `app` module for all screens is **optional**, not required for KMP.
 
@@ -123,7 +129,7 @@ This is an **accepted** tradeoff: less magic than AndroidX `ViewModel`, more **e
 ## 6. Dependency rules (KMP-aware)
 
 - **Presentation** depends on **`:shared:domain`** (and **application** if split), never on **`:shared:data` / `:shared:api` / `:shared:database`**.
-- **Android UI** depends on **presentation** + **coreui** + **tracking** (tracking may stay Android-only initially or gain a KMP interface later).
+- **Android UI** depends on **presentation** + **coreui**; add **`implementation(project(":shared:tracking"))`** only when the feature needs **`TrackingRepository`** on the classpath. Feature code imports **`TrackingRepository`** from **`:shared:domain`** only — not implementation types from **`:shared:tracking`** (see architecture rules).
 - **Data** implements **domain** repository interfaces; **dependency injection** wires implementations (Koin KMP or equivalent when iOS joins).
 
 Existing golden rule **Presentation → Domain → Data** remains; **shared presentation** is still “presentation” for dependency purposes.
@@ -132,16 +138,16 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 
 ## 7. Phased migration plan
 
-### Phase A — KMP foundation (Android target only)
+### Phase A — KMP foundation
 
 1. Convert **`:shared:domain`** (path `shared/domain/`) to **`kotlin-multiplatform`** + **`com.android.library`**.
 2. Move pure Kotlin sources to **`commonMain/kotlin`** (same packages).
-3. **`androidTarget()` only** — no iOS targets.
+3. Ship **`androidTarget()`** first; **Apple targets** on **`:shared:domain`** are optional early prep for **Phase F** (other shared modules still **`androidTarget()`-only** until iOS work).
 4. Verify **`testDebugUnitTest`** and **`assembleRelease`**.
 
-**Outcome:** Domain is **multiplatform-ready**; adding `iosArm64()` / `iosSimulatorArm64()` later is mostly Gradle/CI work.
+**Outcome:** Domain is **multiplatform-ready**; shared data/presentation modules can add Apple targets when **Phase F** starts.
 
-**Status — done:** **`:shared:domain`** uses **`org.jetbrains.kotlin.multiplatform`** + **`com.android.library`**, sources in **`src/commonMain/kotlin`**, manifest in **`src/androidMain`**, **`androidTarget()`** only. Version catalog: **`kotlin-multiplatform`** plugin; root `build.gradle.kts` applies it with **`apply false`**.
+**Status — done:** **`:shared:domain`** uses **`org.jetbrains.kotlin.multiplatform`** + **`com.android.library`**, sources in **`src/commonMain/kotlin`**, manifest in **`src/androidMain`**, **`androidTarget()`** plus **`iosArm64()`** / **`iosSimulatorArm64()`**. Version catalog: **`kotlin-multiplatform`** plugin; root `build.gradle.kts` applies it with **`apply false`**.
 
 ### Phase B — Shared presentation module (spike)
 
@@ -174,13 +180,23 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 ### Phase D — Data layer (per vertical slice)
 
 1. For each feature: move or wrap **network/DB** behind **domain** contracts using **KMP-friendly** stacks or **`expect`/`actual`**, as pragmatic per slice.
-2. Keep **Android Retrofit/Room** behind **`actual`** until a slice justifies **common** networking/storage.
+2. Prefer **shared `commonMain`** for wire formats and repository orchestration when the stack supports it; keep **platform-only** code (e.g. `Room.databaseBuilder(Context)`) at the **Android edge** (`:dependencyinjection`, future `expect`/`actual`).
 
-**Status — in progress:**
+**Status — done (Android KMP data stack, current app scope):**
 
-- **Remote (friends search):** **`:shared:api`** — KMP (`commonMain` + platform engines), Ktor + DTOs; **`FriendsRequest`** implementation lives there.
-- **Repository orchestration:** **`:shared:data`** — KMP (`commonMain` + `androidTarget()` only, same pattern as **`:shared:presentation`**). Repository implementations and **datastore interfaces** (`FriendsDataStore`, `MyActivitiesDataStore`, `TrackingDataStore`) are in **`commonMain`**; **`:shared:database`** is KMP (`commonMain` + `androidTarget()`): Room entities, DAOs, and DataStore **implementations** (SQLite driver: **`androidx.sqlite:sqlite-bundled`** in `commonMain` today).
-- **Next slices (when you pick them):** e.g. add **Apple targets** to **`:shared:database`** when iOS persistence is needed, with platform-specific DB builders per [Room KMP](https://developer.android.com/kotlin/multiplatform/room).
+| Slice | Module | Notes |
+|--------|--------|--------|
+| **Friends / hero search (HTTP)** | **`:shared:api`** | KMP `commonMain` + platform engines; **Ktor**; DTOs + **`FriendsRequestImpl`**; domain **`FriendsRequest`** stays in **`:shared:domain`**. |
+| **Repositories** | **`:shared:data`** | **`UserRepositoryImpl`**, **`NewsFeedRepositoryImpl`**, **`MyProfileRepositoryImpl`**; **DataStore interfaces** (`FriendsDataStore`, `MyActivitiesDataStore`, `TrackingDataStore`) in **`commonMain`**. |
+| **Room + DataStore impls** | **`:shared:database`** | KMP **`commonMain`** + **`androidTarget()`**; **Room** plugin + **`kspAndroid`**; **`androidx.sqlite:sqlite-bundled`**; type converters use **`kotlinx.serialization`**. **`Room.databaseBuilder`** remains in **`:dependencyinjection`**. |
+| **Tracking repository** | **`:shared:tracking`** | **`TrackingRepositoryImpl`** + **`trackingModule`** (Koin); depends on **`:shared:data`** / **`:shared:domain`**. |
+
+**Verification (agreed in §1.1):** `./gradlew testDebugUnitTest` and `./gradlew assembleRelease` should stay **green** after data-layer changes.
+
+**Deferred (not part of “Phase D done”):**
+
+- **Apple targets** on **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`** — when iOS ships; persistence needs platform DB builders per [Room KMP](https://developer.android.com/kotlin/multiplatform/room).
+- **New vertical slices** — additional HTTP backends or persistence when new features require them (same patterns as above).
 
 ### Phase E — DI for multiplatform
 
@@ -221,3 +237,4 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 | **Incremental** migration, green CI | Yes |
 | **iOS** | Deferred; structure stays **easy to add** |
 | **Use cases** | **Optional** — no layer for one-liners; add only when reuse, policy, or real orchestration justify it (**§7 Phase C**, **§8**) |
+| **Phase D — data layer (Android)** | **Done** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`** (**§7 Phase D**) |
