@@ -17,11 +17,11 @@ import com.shodo.android.coreui.theme.PokeManiacTheme
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.ui.GenericEmptyScreen
 import com.shodo.android.coreui.ui.GenericLoader
-import com.shodo.android.myfriends.myfriendlist.MyFriendListUiState
-import com.shodo.android.myfriends.myfriendlist.MyFriendListUiState.Data
-import com.shodo.android.myfriends.myfriendlist.MyFriendListUiState.Empty
-import com.shodo.android.myfriends.myfriendlist.MyFriendListUiState.Loading
-import com.shodo.android.myfriends.uimodel.MyFriendUI
+import com.shodo.android.presentation.myfriends.MyFriendListUiState
+import com.shodo.android.presentation.myfriends.MyFriendListUiState.Data
+import com.shodo.android.presentation.myfriends.MyFriendListUiState.Empty
+import com.shodo.android.presentation.myfriends.MyFriendListUiState.Loading
+import com.shodo.android.presentation.myfriends.MyFriendUiModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -182,22 +182,22 @@ fun PreviewMyFriendsListView_Data_DarkTheme() {
     }
 }
 
-private fun previewFriends(): PersistentList<MyFriendUI> = persistentListOf(
-    MyFriendUI(
+private fun previewFriends(): PersistentList<MyFriendUiModel> = persistentListOf(
+    MyFriendUiModel(
         id = "friendId",
         name = "friendName",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
         description = "description",
         pokemonCards = persistentListOf()
     ),
-    MyFriendUI(
+    MyFriendUiModel(
         id = "friendId1",
         name = "friendName1",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/891.jpg",
         description = "description",
         pokemonCards = persistentListOf()
     ),
-    MyFriendUI(
+    MyFriendUiModel(
         id = "friendId2",
         name = "friendName2",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/1345.jpg",

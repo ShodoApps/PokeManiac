@@ -13,13 +13,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.shodo.android.coreui.theme.PokeManiacTheme
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
-import com.shodo.android.myfriends.uimodel.MyFriendUI
+import com.shodo.android.presentation.myfriends.MyFriendUiModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun MyFriendsListContent(
-    friends: PersistentList<MyFriendUI>,
+    friends: PersistentList<MyFriendUiModel>,
     onFriendClicked: (id: String) -> Unit,
     onUnsubscribeFriend: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -76,22 +76,22 @@ fun PreviewMyFriendsListContent_DarkTheme() {
     }
 }
 
-private fun previewFriends(): PersistentList<MyFriendUI> = persistentListOf(
-    MyFriendUI(
+private fun previewFriends(): PersistentList<MyFriendUiModel> = persistentListOf(
+    MyFriendUiModel(
         id = "friendId",
         name = "friendName",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
         description = "description",
         pokemonCards = persistentListOf()
     ),
-    MyFriendUI(
+    MyFriendUiModel(
         id = "friendId1",
         name = "friendName1",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/891.jpg",
         description = "description",
         pokemonCards = persistentListOf()
     ),
-    MyFriendUI(
+    MyFriendUiModel(
         id = "friendId2",
         name = "friendName2",
         imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/1345.jpg",

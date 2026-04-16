@@ -218,15 +218,15 @@ Optimization has a cost in code complexity. Apply the full set of optimizations 
 
 ### ✅ Recomposition Scope — Pass Only Used Fields to Leaf Composables
 
-Every parameter a composable reads is a **recomposition dependency**. If a card receives a full `MyFriendUI` object but only displays `name` and `imageUrl`, it will still recompose when `pokemonCards` changes — even though it never touched that field.
+Every parameter a composable reads is a **recomposition dependency**. If a card receives a full `MyFriendUiModel` object but only displays `name` and `imageUrl`, it will still recompose when `pokemonCards` changes — even though it never touched that field.
 
 **Rule:** Leaf composables (cards, list items) must receive only the fields they actually display. Pass individual primitives/Strings, not the whole model object.
 
 ```kotlin
-// ❌ BAD — card receives MyFriendUI but only uses id, name, imageUrl.
+// ❌ BAD — card receives MyFriendUiModel but only uses id, name, imageUrl.
 //         If pokemonCards or description changes, the card recomposes for nothing.
 @Composable
-fun MyFriendCard(friend: MyFriendUI, onFriendPressed: () -> Unit) {
+fun MyFriendCard(friend: MyFriendUiModel, onFriendPressed: () -> Unit) {
     Text(friend.name)    // uses name
     AsyncImage(friend.imageUrl)  // uses imageUrl
     // friend.pokemonCards and friend.description are never read — but still a dependency
@@ -273,14 +273,14 @@ Use `remember(param) { ... }` to run the computation only when the input changes
 ```kotlin
 // ❌ BAD — sumOf runs on every recomposition
 @Composable
-fun MyDescription(pokemonCards: PersistentList<MyFriendPokemonCardUI>) {
+fun MyDescription(pokemonCards: PersistentList<MyFriendPokemonCardUiModel>) {
     val totalVotes = pokemonCards.sumOf { it.totalVotes }  // recomputed every time
     Text("Total votes: $totalVotes")
 }
 
 // ✅ GOOD — sumOf runs only when pokemonCards changes
 @Composable
-fun MyContent(friend: MyFriendUI) {
+fun MyContent(friend: MyFriendUiModel) {
     val totalVotes = remember(friend.pokemonCards) { friend.pokemonCards.sumOf { it.totalVotes } }
     MyDescription(totalVotes)
 }
@@ -330,7 +330,7 @@ When a `LazyVerticalGrid` contains multiple sections (header, descriptions, sepa
 
 ```kotlin
 @Composable
-fun FriendDetailContent(friend: MyFriendUI, onUnsubscribePressed: () -> Unit) {
+fun FriendDetailContent(friend: MyFriendUiModel, onUnsubscribePressed: () -> Unit) {
     val totalVotes = remember(friend.pokemonCards) { friend.pokemonCards.sumOf { it.totalVotes } }
 
     LazyVerticalGrid(columns = GridCells.Adaptive(minSize = dimens.minGridUserCellSize)) {
@@ -352,7 +352,7 @@ private fun LazyGridScope.friendHeader(imageUrl: String, name: String, onUnsubsc
     }
 }
 
-private fun LazyGridScope.friendCards(cards: PersistentList<MyFriendPokemonCardUI>) {
+private fun LazyGridScope.friendCards(cards: PersistentList<MyFriendPokemonCardUiModel>) {
     items(items = cards, key = { it.id }) { card ->
         CardThumbnail(card.imageUrl, card.name)
     }
@@ -379,7 +379,7 @@ Without annotations, the Compose compiler treats `sealed class`, `data class`, a
 ```kotlin
 // ✅ All fields are stable — use @Immutable
 @Immutable
-data class MyFriendPokemonCardUI(
+data class MyFriendPokemonCardUiModel(
     val id: String,
     val name: String,
     val totalVotes: Int
@@ -387,10 +387,10 @@ data class MyFriendPokemonCardUI(
 
 // ✅ PersistentList fields are fine — use @Immutable
 @Immutable
-data class MyFriendUI(
+data class MyFriendUiModel(
     val id: String,
     val name: String,
-    val pokemonCards: PersistentList<MyFriendPokemonCardUI>
+    val pokemonCards: PersistentList<MyFriendPokemonCardUiModel>
 )
 
 // ✅ Contains Uri (no @Immutable annotation in framework) — use @Stable

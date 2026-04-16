@@ -14,10 +14,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.shodo.android.coreui.theme.PokeManiacTheme
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.ui.GenericLoader
-import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailUiState
-import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailUiState.Data
-import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailUiState.Loading
-import com.shodo.android.myfriends.uimodel.MyFriendUI
+import com.shodo.android.presentation.myfriends.MyFriendDetailUiState
+import com.shodo.android.presentation.myfriends.MyFriendDetailUiState.Data
+import com.shodo.android.presentation.myfriends.MyFriendDetailUiState.Loading
+import com.shodo.android.presentation.myfriends.MyFriendUiModel
 import kotlinx.collections.immutable.persistentListOf
 
 /**
@@ -109,7 +109,7 @@ fun PreviewMyFriendDetailView_Loading_DarkTheme() {
 fun PreviewMyFriendDetailView_Data_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
         MyFriendDetailView(
-            uiState = Data(MyFriendUI(
+            uiState = Data(MyFriendUiModel(
                 id = "friendId",
                 name = "friendName",
                 imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
@@ -129,7 +129,7 @@ fun PreviewMyFriendDetailView_Data_LightTheme() {
 fun PreviewMyFriendDetailView_Data_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
         MyFriendDetailView(
-            uiState = Data(MyFriendUI(
+            uiState = Data(MyFriendUiModel(
                 id = "friendId",
                 name = "friendName",
                 imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",

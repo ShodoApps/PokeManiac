@@ -247,7 +247,7 @@ Authoritative plan: **`docs/kmp-migration-plan.md`**.
 - ✅ **Phase D (Android)** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`**: remote, repositories, Room, and tracking are KMP-shaped with **`androidTarget()`**; see **§7 Phase D** in the plan (status **done**).
 - ✅ **Presentation (spike)** — **`:shared:presentation`** + Search Friend **ScreenModel** (**§7 Phase B**).
 - ✅ **Phase E (Android)** — **`:shared:di`** (`commonMain` Koin) + **`app`** bootstrap; iOS **`startKoin`** deferred to **Phase G** (see **`docs/kmp-migration-plan.md`** §7).
-- ⏳ **Next** — **Phase F** (all features → shared `ScreenModel` pattern; then single Android app module shape, **TBD**), then **Phase G** (iOS app, Apple targets, SwiftUI, iOS Koin).
+- ⏳ **Next** — **Phase F** (in progress: Search Friend + **My Friends** migrated; remaining features → shared `ScreenModel`; then single Android app module shape, **TBD**), then **Phase G** (iOS app, Apple targets, SwiftUI, iOS Koin).
 
 ## Maintenance
 

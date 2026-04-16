@@ -39,14 +39,14 @@ import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
 import com.shodo.android.coreui.theme.PokeManiacTheme.typography
 import com.shodo.android.coreui.ui.GenericEmptyScreen
 import com.shodo.android.coreui.ui.SecondaryButton
-import com.shodo.android.myfriends.uimodel.MyFriendPokemonCardUI
-import com.shodo.android.myfriends.uimodel.MyFriendUI
+import com.shodo.android.presentation.myfriends.MyFriendPokemonCardUiModel
+import com.shodo.android.presentation.myfriends.MyFriendUiModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun FriendDetailContent(
-    friend: MyFriendUI,
+    friend: MyFriendUiModel,
     onUnsubscribePressed: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -102,7 +102,7 @@ private fun LazyGridScope.friendCardsSeparator() {
     }
 }
 
-private fun LazyGridScope.friendCards(pokemonCards: PersistentList<MyFriendPokemonCardUI>) {
+private fun LazyGridScope.friendCards(pokemonCards: PersistentList<MyFriendPokemonCardUiModel>) {
     items(items = pokemonCards, key = { it.id }) { card ->
         AsyncImage(
             modifier = Modifier
@@ -218,10 +218,10 @@ fun PreviewFriendDetailContent_NoPosts_DarkTheme() {
 }
 
 @Composable
-private fun PreviewFriendDetailContent(darkTheme: Boolean, pokemonCards: PersistentList<MyFriendPokemonCardUI>) {
+private fun PreviewFriendDetailContent(darkTheme: Boolean, pokemonCards: PersistentList<MyFriendPokemonCardUiModel>) {
     PokeManiacTheme(darkTheme = darkTheme) {
         FriendDetailContent(
-            friend = MyFriendUI(
+            friend = MyFriendUiModel(
                 id = "friendId",
                 name = "friendName",
                 imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
@@ -305,7 +305,7 @@ private fun PreviewFriendDescriptions(darkTheme: Boolean, description: String, t
 //endregion FriendDescriptions
 
 private fun previewPokemonCards() = persistentListOf(
-    MyFriendPokemonCardUI(
+    MyFriendPokemonCardUiModel(
         id = "Ivysaur" + "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png",
         pokemonId = 2,
         totalVotes = 19,
@@ -313,7 +313,7 @@ private fun previewPokemonCards() = persistentListOf(
         name = "Ivysaur",
         imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png",
     ),
-    MyFriendPokemonCardUI(
+    MyFriendPokemonCardUiModel(
         id = "Squirtle" + "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",
         pokemonId = 7,
         totalVotes = 4,

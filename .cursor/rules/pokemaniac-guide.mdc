@@ -435,7 +435,7 @@ See **`docs/kmp-migration-plan.md`** for phased status (**Phase D — data layer
 - ✅ **`ImageSource.FileSource`** — opaque string in domain; platform resolves URIs / identifiers in features
 - ✅ **Domain `NewActivity`** — uses **`kotlinx.datetime.LocalDateTime`** (not `java.time`)
 - ✅ **Phase E (Android)** — **`:shared:di`** + **`app`** `startKoin` / **`DatabaseModule`**; **`sharedKoinArchiModules`** ready to reuse from a future iOS `startKoin` (**Phase G**).
-- ⏳ **Phase F** — Migrate **all** features to **`:shared:presentation`** (Search Friend pattern); **last step:** one Android deployable module (layout **TBD** — see **`docs/kmp-migration-plan.md`** §7).
+- ⏳ **Phase F** — Migrate **all** features to **`:shared:presentation`** (Search Friend pattern); **done so far:** Search Friend, **My Friends**; **last step:** one Android deployable module (layout **TBD** — see **`docs/kmp-migration-plan.md`** §7).
 - ⏳ **Phase G** — Apple targets, SwiftUI, **`startKoin` on iOS** + platform Koin modules; **Compose** remains the Android UI surface until then
 
 When adding **iOS**:

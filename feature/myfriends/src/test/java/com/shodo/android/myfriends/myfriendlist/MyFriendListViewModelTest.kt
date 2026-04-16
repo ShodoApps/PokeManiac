@@ -2,9 +2,11 @@ package com.shodo.android.myfriends.myfriendlist
 
 import app.cash.turbine.test
 import com.shodo.android.coreui.navigator.SearchFriendNavigator
-import com.shodo.android.domain.repositories.entities.ImageSource
 import com.shodo.android.domain.repositories.entities.User
 import com.shodo.android.domain.repositories.friends.UserRepository
+import com.shodo.android.myfriends.di.MyFriendListScreenModelFactory
+import com.shodo.android.presentation.myfriends.MyFriendListScreenModel
+import com.shodo.android.presentation.myfriends.MyFriendListUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -37,7 +39,10 @@ class MyFriendListViewModelTest {
         MockitoAnnotations.openMocks(this)
         dispatcher = UnconfinedTestDispatcher()
         Dispatchers.setMain(dispatcher)
-        viewModel = MyFriendListViewModel(userRepository, searchFriendNavigator)
+        val screenModelFactory = MyFriendListScreenModelFactory { scope ->
+            MyFriendListScreenModel(userRepository, scope)
+        }
+        viewModel = MyFriendListViewModel(screenModelFactory, searchFriendNavigator)
     }
 
     @After

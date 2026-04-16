@@ -173,7 +173,7 @@ Use `ON_RESUME` when data can change while the user is in another Activity (e.g.
 
 ### ✅ Put Mappers in the `uimodel` Package — Not in the ViewModel
 
-Extension functions that convert domain entities → UI models belong in the `uimodel/` package alongside the UI data classes (e.g., `MyFeatureUI.kt`). This follows the same pattern as `MyFriendUI.kt`.
+Extension functions that convert domain entities → UI models belong in the `uimodel/` package alongside the UI data classes (e.g., `MyFeatureUI.kt`). **Shared presentation** uses **`com.shodo.android.presentation.*`** (e.g. **`MyFriendsUiModels.kt`** for My Friends).
 
 ```kotlin
 // ✅ GOOD: Mapper in uimodel/MyFeatureUI.kt

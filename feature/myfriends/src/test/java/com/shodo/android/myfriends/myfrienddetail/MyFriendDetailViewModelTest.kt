@@ -3,6 +3,9 @@ package com.shodo.android.myfriends.myfrienddetail
 import app.cash.turbine.test
 import com.shodo.android.domain.repositories.entities.User
 import com.shodo.android.domain.repositories.friends.UserRepository
+import com.shodo.android.myfriends.di.MyFriendDetailScreenModelFactory
+import com.shodo.android.presentation.myfriends.MyFriendDetailScreenModel
+import com.shodo.android.presentation.myfriends.MyFriendDetailUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -34,7 +37,10 @@ class MyFriendDetailViewModelTest {
         MockitoAnnotations.openMocks(this)
         dispatcher = UnconfinedTestDispatcher()
         Dispatchers.setMain(dispatcher)
-        viewModel = MyFriendDetailViewModel(userRepository)
+        val screenModelFactory = MyFriendDetailScreenModelFactory { scope ->
+            MyFriendDetailScreenModel(userRepository, scope)
+        }
+        viewModel = MyFriendDetailViewModel(screenModelFactory)
     }
 
     @After
