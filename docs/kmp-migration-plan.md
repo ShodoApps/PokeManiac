@@ -1,6 +1,6 @@
 # PokeManiac — Kotlin Multiplatform migration (strategy & plan)
 
-This document records the **agreed rules** and **step-by-step plan** for moving PokeManiac toward Kotlin Multiplatform (KMP), while shipping **Android only** for now and keeping the structure **easy to extend with iOS** later.
+This document records the **agreed rules** and **step-by-step plan** for moving PokeManiac toward Kotlin Multiplatform (KMP). **Android** stays the primary shipped UI (**Compose** in `feature:*` / `coreui`). **iOS** (**Phase G**) proceeds **in parallel**: Apple targets and `iosMain` code land on shared modules as needed; Android-only screens can keep evolving without blocking iOS integration work.
 
 It complements `.cursor/rules/pokemaniac-architecture.mdc` and `.cursor/rules/pokemaniac-guide.mdc`. When KMP modules land, those rules should be updated to reference this document where layering differs.
 
@@ -10,10 +10,10 @@ It complements `.cursor/rules/pokemaniac-architecture.mdc` and `.cursor/rules/po
 
 ### 1.1 Near term (current phase)
 
-- Use a **KMP-shaped project**: `commonMain` for shared Kotlin, **`androidTarget()` only** on shared data modules — **no Apple targets** on those modules until iOS work starts (**`:shared:domain`** already declares Apple targets for future parity).
-- Keep **Gradle health**: `./gradlew testDebugUnitTest` and `./gradlew assembleRelease` stay green after each incremental change.
+- Use a **KMP-shaped project**: `commonMain` for shared Kotlin; **`androidTarget()`** on shared modules today; **Apple targets** (`iosArm64`, `iosSimulatorArm64`, …) are added **incrementally** on each shared module as **§7 Phase G** work touches it (**`:shared:domain`** already declares Apple targets).
+- Keep **Gradle health**: `./gradlew testDebugUnitTest` and `./gradlew assembleRelease` stay green after each incremental change; add **iOS compile/link** (or Xcode) checks when Apple targets exist so `iosMain` does not rot.
 - Avoid **big-bang** refactors; migrate **one vertical slice or one layer** per meaningful PR.
-- **Phase D** and **Phase E (Android)** are **done** for the current app scope — see **§7**. **Next near-term focus:** **§7 Phase F** (shared presentation for **all** features + Android app module shape), then **§7 Phase G** (iOS). New data/API slices can land anytime using the same patterns as Phase D.
+- **Phase D** and **Phase E (Android)** are **done** for the current app scope — see **§7**. **Phase F** (shared **`ScreenModel`** / **`UiState`** for features) and **Phase G** (iOS app + shared `iosMain`) may **overlap**: Android UI stays in Android modules; **Phase F’s last step** (single Android deployable module shape — **TBD**) is **not** a hard gate to **start** Phase G. New data/API slices can land anytime using the same patterns as Phase D.
 
 ### 1.2 Long term
 
@@ -222,21 +222,25 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 
 ### Phase F — Shared presentation (all features) + Android app shape
 
-**Goal:** Every user-facing feature follows the **Search Friend** reference: **`XxxScreenModel`**, **`XxxUiState`**, **`XxxUiModel`** in **`:shared:presentation`**, thin **`XxxViewModel`** on Android, and Koin **`fun interface` factories** where a **`CoroutineScope`** is required (see **`.cursor/rules/viewmodel-patterns.mdc`**). **Last step of this phase:** consolidate the **Android deployable surface** into **one application module** that owns all feature UI — exact Gradle layout **TBD** (e.g. nested **`:androidApp:feature:searchfriend`**-style modules **or** a single **`:app`** with feature source sets / packages; decide before execution).
+**Goal:** Every user-facing feature follows the **Search Friend** reference: **`XxxScreenModel`**, **`XxxUiState`**, **`XxxUiModel`** in **`:shared:presentation`**, thin **`XxxViewModel`** on Android, and Koin **`fun interface` factories** where a **`CoroutineScope`** is required (see **`.cursor/rules/viewmodel-patterns.mdc`**). **Android** keeps **Compose**, Activities, navigators, and Android-specific I/O in **`feature:*`** / **`coreui`** — that code can evolve **while** **Phase G** adds iOS.
+
+**Last step of this phase (optional timing vs Phase G):** consolidate the **Android deployable surface** into **one application module** (or one agreed tree) — exact Gradle layout **TBD** (e.g. nested **`:androidApp:feature:searchfriend`**-style modules **or** a single **`:app`** with feature source sets / packages). **Decision:** this refactor **does not block** starting **Phase G**; schedule it when it reduces Android maintenance cost.
 
 **Steps (incremental — prefer one feature or one structural PR at a time):**
 
 1. **Per feature** (dashboard, my friends, my profile, post transaction, billing, welcome, …): move coordinator logic to **`commonMain`** in **`:shared:presentation`**; keep Compose, Activities, and navigators on Android; align Koin with **Phase E** (feature `di` modules, **`viewModelOf`** where applicable).
 2. **Ports:** keep navigation and one-shot errors as **small interfaces** (e.g. in **`coreui`**) or shared presentation, same spirit as the Search Friend spike.
-3. **Final step — Android module shape:** perform the **single-module (or single-tree) Android app** refactor; update **`settings.gradle.kts`**, **`app`** dependencies, and **`startKoin`** module lists as needed. **Validate** **`./gradlew testDebugUnitTest`** and **`./gradlew assembleRelease`** after each meaningful structural change.
+3. **Final step — Android module shape:** perform the **single-module (or single-tree) Android app** refactor when useful; update **`settings.gradle.kts`**, **`app`** dependencies, and **`startKoin`** module lists as needed. **Validate** **`./gradlew testDebugUnitTest`** and **`./gradlew assembleRelease`** after each meaningful structural change. **Not** required before **Phase G** kickoff.
 
 **Status — in progress.** **Dashboard**, **Post Transaction** (`com.shodo.android.presentation.posttransaction`), **Billing** (`BillingScreenModel`, **`BillingUiState`** in **`com.shodo.android.presentation.billing`**), **Search Friend**, **My Friends**, **My Profile**. Remaining: welcome/placeholder flows if any; then **final Android app module shape** (§7 Phase F last step).
 
-**Deferred to Phase G:** Apple targets, SwiftUI, iOS **`startKoin`**.
+**Phase G can start in parallel** once shared presentation (and any feature **`ScreenModel`** you want on iOS first) is stable enough; remaining Phase F tidy-up (welcome flows, app module shape) continues on the Android side as needed.
+
+**Deferred to Phase G:** SwiftUI app shell, iOS **`startKoin`**, and **`iosMain` / `actual`** bindings for HTTP, persistence, and other platform edges — added **per module** as integration proceeds.
 
 ### Phase G — iOS
 
-1. Add Apple targets to relevant shared modules (when not already present).
+1. Add Apple targets to relevant shared modules (when not already present); prefer **incremental** rollout (`:shared:presentation` → **`:shared:api`** → **`:shared:data`** → **`:shared:database`**, etc.) with **CI** covering iOS compilation.
 2. SwiftUI screens consume the **same `ScreenModel` + `UiState`**; platform code provides **`expect`/`actual`** capabilities (e.g. local image capture per project guide).
 3. **Koin on iOS:** from the iOS Kotlin entry (or equivalent), call **`startKoin { modules(sharedKoinArchiModules + iosDatabaseModule + …) }`** — reuse **`sharedKoinArchiModules`** from **`:shared:di`**; add **`iosDatabaseModule`** (and other **`actual`** bindings) for Room / paths / HTTP engines that differ from Android.
 
@@ -272,5 +276,5 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 | **Use cases** | **Optional** — no layer for one-liners; add only when reuse, policy, or real orchestration justify it (**§7 Phase C**, **§8**) |
 | **Phase D — data layer (Android)** | **Done** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`** (**§7 Phase D**) |
 | **Phase E — DI (Android)** | **Done** — **`:shared:di`** + **`app`** bootstrap (**§7 Phase E**) |
-| **Phase F — presentation + Android app shape** | **In progress** — feature **`ScreenModel`**s done for **Search Friend**, **Dashboard**, **My Friends**, **My Profile**, **Post Transaction**, **Billing**; **last step:** one Android deployable module (layout **TBD**) |
-| **Phase G — iOS** | **Not started** — Apple targets, SwiftUI, **`startKoin`** on iOS (**§7 Phase G**) |
+| **Phase F — presentation + Android app shape** | **In progress** — feature **`ScreenModel`**s done for **Search Friend**, **Dashboard**, **My Friends**, **My Profile**, **Post Transaction**, **Billing**; **last step:** one Android deployable module (layout **TBD**, **not** a gate for Phase G) |
+| **Phase G — iOS** | **Next / parallel** — Apple targets + **`iosMain`** on shared modules incrementally; SwiftUI, **`startKoin`** on iOS (**§7 Phase G**); Android Compose in **`feature:*`** continues in parallel |
