@@ -1,6 +1,5 @@
 package com.shodo.android.posttransaction.step1.ui
 
-import android.content.Context
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,8 +22,8 @@ import java.io.File
  *
  * @param modifier                      Modifier to customize the root layout.
  * @param onNextStep                    Callback to navigate to the next PostTransaction's step.
- * @param createImageFile               Callback to trigger the local ImageFile creation.
- * @param getUriForImageFile            Callback to get the Uri for the local ImageFile.
+ * @param createImageFile               Callback to create the local image file.
+ * @param getUriForImageFile            Callback to get the Uri for the file (context unused; kept for call-site symmetry).
  * @param onBackPressed                 Callback to navigate back.
  * @param onCameraPermissionDenied      Callback triggered when the user denies the Camera Permission.
  * @param snackbarHostState             State of the `SnackbarHost` to display temporary messages.
@@ -34,8 +33,8 @@ import java.io.File
 fun PostTransactionStep1View(
     modifier: Modifier = Modifier,
     onNextStep: (Uri) -> Unit,
-    createImageFile: (Context) -> File?,
-    getUriForImageFile: (Context, File?) -> Uri?,
+    createImageFile: () -> File?,
+    getUriForImageFile: (File?) -> Uri?,
     onBackPressed: () -> Unit,
     onCameraPermissionDenied: () -> Unit,
     snackbarHostState: SnackbarHostState
@@ -67,7 +66,7 @@ fun PreviewPostTransactionStep1View_NoPhoto_LightTheme() {
         PostTransactionStep1View(
             onNextStep = {},
             createImageFile = { null },
-            getUriForImageFile = { _, _ -> null },
+            getUriForImageFile = { null },
             onBackPressed = {},
             onCameraPermissionDenied = {},
             snackbarHostState = SnackbarHostState()
@@ -83,7 +82,7 @@ fun PreviewPostTransactionStep1View_NoPhoto_DarkTheme() {
         PostTransactionStep1View(
             onNextStep = {},
             createImageFile = { null },
-            getUriForImageFile = { _, _ -> null },
+            getUriForImageFile = { null },
             onBackPressed = {},
             onCameraPermissionDenied = {},
             snackbarHostState = SnackbarHostState()

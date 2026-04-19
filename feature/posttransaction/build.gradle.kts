@@ -30,6 +30,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":shared:presentation"))
     implementation(project(":shared:domain"))
     implementation(project(":coreui"))
     implementation(project(":shared:tracking"))
@@ -60,6 +61,7 @@ dependencies {
     // Testing
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockito.core)
+    testImplementation(libs.robolectric)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.turbine)
 }

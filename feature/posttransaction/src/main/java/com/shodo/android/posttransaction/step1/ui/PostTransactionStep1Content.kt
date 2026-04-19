@@ -46,8 +46,8 @@ import java.io.File
 fun PostTransactionStep1Content(
     innerPadding: PaddingValues,
     onNextStep: (Uri) -> Unit,
-    createImageFile: (Context) -> File?,
-    getUriForImageFile: (Context, File?) -> Uri?,
+    createImageFile: () -> File?,
+    getUriForImageFile: (File?) -> Uri?,
     onCameraPermissionDenied: () -> Unit
 ) {
     var capturedImageUri by remember { mutableStateOf<Uri>(Uri.EMPTY) }
@@ -90,8 +90,8 @@ fun PostTransactionStep1Content(
 @Composable
 private fun ColumnScope.CapturedImageView(
     capturedImageUri: Uri,
-    createImageFile: (Context) -> File?,
-    getUriForImageFile: (Context, File?) -> Uri?,
+    createImageFile: () -> File?,
+    getUriForImageFile: (File?) -> Uri?,
     onSetUri: (Uri) -> Unit,
     onNextStep: (Uri) -> Unit,
     onCameraPermissionDenied: () -> Unit
@@ -127,8 +127,8 @@ private fun ColumnScope.CapturedImageView(
 @Composable
 private fun ColumnScope.NoCapturedImageView(
     onSetUri: (Uri) -> Unit,
-    createImageFile: (Context) -> File?,
-    getUriForImageFile: (Context, File?) -> Uri?,
+    createImageFile: () -> File?,
+    getUriForImageFile: (File?) -> Uri?,
     onCameraPermissionDenied: () -> Unit
 ) {
     Spacer(modifier = Modifier.weight(1f))
@@ -157,14 +157,14 @@ private fun ColumnScope.SnapPhotoButton(
     modifier: Modifier = Modifier,
     text: String,
     onSetUri: (Uri) -> Unit,
-    createImageFile: (Context) -> File?,
-    getUriForImageFile: (Context, File?) -> Uri?,
+    createImageFile: () -> File?,
+    getUriForImageFile: (File?) -> Uri?,
     onCameraPermissionDenied: () -> Unit
 ) {
     val context = LocalContext.current
 
-    val imageFile = remember { createImageFile(context) }
-    val uri = getUriForImageFile(context, imageFile)
+    val imageFile = remember { createImageFile() }
+    val uri = getUriForImageFile(imageFile)
 
     val launcher = rememberLauncherForActivityResult(contract = TakePicture()) { success ->
         if (success) { uri?.let(onSetUri) }
