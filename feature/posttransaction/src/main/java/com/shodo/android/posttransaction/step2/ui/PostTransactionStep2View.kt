@@ -18,9 +18,9 @@ import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.ui.GenericLoader
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.posttransaction.PostTransactionStepTopBar
-import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState
-import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Filling
-import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Loading
+import com.shodo.android.presentation.posttransaction.PostTransactionStep2UiState
+import com.shodo.android.presentation.posttransaction.PostTransactionStep2UiState.Filling
+import com.shodo.android.presentation.posttransaction.PostTransactionStep2UiState.Loading
 
 /**
  * Main Composable displaying the application's PostTransactionStep2 screen.

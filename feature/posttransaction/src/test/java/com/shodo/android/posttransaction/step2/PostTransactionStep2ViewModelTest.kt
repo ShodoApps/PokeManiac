@@ -5,6 +5,8 @@ import app.cash.turbine.test
 import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
+import com.shodo.android.posttransaction.di.PostTransactionStep2ScreenModelFactory
+import com.shodo.android.presentation.posttransaction.PostTransactionStep2UiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -26,10 +28,8 @@ class PostTransactionStep2ViewModelTest {
 
     private lateinit var dispatcher: TestDispatcher
 
-    // Uri is an Android type — Mockito.mock() creates a safe JVM proxy without invoking Android stubs
     private val mockUri: Uri = mock(Uri::class.java)
 
-    // Inline fake used for the error path: Kotlin objects are cleaner than Mockito for suspend funs
     private val failingRepository = object : NewsFeedRepository {
         override fun getNewActivities(): Flow<List<NewActivity>> = flow { emit(emptyList()) }
         override suspend fun saveNewActivity(newActivity: NewActivity) {
@@ -37,10 +37,13 @@ class PostTransactionStep2ViewModelTest {
         }
     }
 
-    // Inline fake for the success path: does nothing (saveNewActivity returns Unit)
     private val successRepository = object : NewsFeedRepository {
         override fun getNewActivities(): Flow<List<NewActivity>> = flow { emit(emptyList()) }
         override suspend fun saveNewActivity(newActivity: NewActivity) = Unit
+    }
+
+    private fun factoryFor(repo: NewsFeedRepository) = PostTransactionStep2ScreenModelFactory { scope ->
+        com.shodo.android.presentation.posttransaction.PostTransactionStep2ScreenModel(repo, scope)
     }
 
     @Before
@@ -54,11 +57,10 @@ class PostTransactionStep2ViewModelTest {
         Dispatchers.resetMain()
     }
 
-    // ===== saveActivity() — success path =====
-
     @Test
     fun `saveActivity emits success=true on repository success`() = runTest {
-        val viewModel = PostTransactionStep2ViewModel(successRepository)
+        // Given
+        val viewModel = PostTransactionStep2ViewModel(factoryFor(successRepository))
 
         // Subscriber must be set up BEFORE triggering (SharedFlow replay=0 drops events before subscription)
         viewModel.success.test {
@@ -72,25 +74,26 @@ class PostTransactionStep2ViewModelTest {
 
     @Test
     fun `saveActivity transitions to Loading while saving`() = runTest {
-        val viewModel = PostTransactionStep2ViewModel(successRepository)
+        // Given
+        val viewModel = PostTransactionStep2ViewModel(factoryFor(successRepository))
 
         viewModel.uiState.test {
-            assertEquals(PostTransactionStep2UiState.Filling, awaitItem()) // initial
+            // Then — initial
+            assertEquals(PostTransactionStep2UiState.Filling, awaitItem())
 
             // When
             viewModel.saveActivity("Pikachu", 25, NewActivityType.Purchase, 50, mockUri)
 
-            // Then — Loading is emitted during the save
+            // Then — Loading while saving
             assertEquals(PostTransactionStep2UiState.Loading, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
     }
 
-    // ===== saveActivity() — error path =====
-
     @Test
-    fun `saveActivity emits UiError and reverts to Filling on repository failure`() = runTest {
-        val viewModel = PostTransactionStep2ViewModel(failingRepository)
+    fun `saveActivity emits error and reverts to Filling on repository failure`() = runTest {
+        // Given
+        val viewModel = PostTransactionStep2ViewModel(factoryFor(failingRepository))
 
         viewModel.error.test {
             // When
@@ -100,13 +103,14 @@ class PostTransactionStep2ViewModelTest {
             assertEquals("Save failed", awaitItem().message)
         }
 
-        // State reverted to Filling
+        // Then — state reverted to Filling
         assertEquals(PostTransactionStep2UiState.Filling, viewModel.uiState.value)
     }
 
     @Test
     fun `saveActivity does not emit success on repository failure`() = runTest {
-        val viewModel = PostTransactionStep2ViewModel(failingRepository)
+        // Given
+        val viewModel = PostTransactionStep2ViewModel(factoryFor(failingRepository))
 
         // When
         viewModel.saveActivity("Pikachu", 25, NewActivityType.Purchase, 50, mockUri)

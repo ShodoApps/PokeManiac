@@ -46,9 +46,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
 
-    // KMP-ready date/time
-    implementation(libs.kotlinx.datetime)
-
     // Koin - Dependency injection
     implementation(libs.koin.androidx.compose)
 

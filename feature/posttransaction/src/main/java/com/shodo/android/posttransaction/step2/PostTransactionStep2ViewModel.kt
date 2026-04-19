@@ -1,79 +1,34 @@
 package com.shodo.android.posttransaction.step2
 
 import android.net.Uri
-import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shodo.android.domain.repositories.entities.ImageSource.FileSource
-import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
-import com.shodo.android.domain.repositories.entities.UserPokemonCard
-import com.shodo.android.domain.repositories.news.NewsFeedRepository
-import com.shodo.android.coreui.UiError
-import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Filling
-import com.shodo.android.posttransaction.step2.PostTransactionStep2UiState.Loading
-import kotlin.time.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
-@Immutable
-sealed class PostTransactionStep2UiState {
-    data object Filling : PostTransactionStep2UiState()
-    data object Loading : PostTransactionStep2UiState()
-}
-
+import com.shodo.android.posttransaction.di.PostTransactionStep2ScreenModelFactory
+import com.shodo.android.presentation.posttransaction.PostTransactionStep2ScreenModel
 class PostTransactionStep2ViewModel(
-    private val newsFeedRepository: NewsFeedRepository
+    screenModelFactory: PostTransactionStep2ScreenModelFactory
 ) : ViewModel() {
 
-    private val _error = MutableSharedFlow<UiError>()
-    val error = _error.asSharedFlow()
-
-    private val _success = MutableSharedFlow<Boolean>()
-    val success = _success.asSharedFlow()
-
-    private val _uiState: MutableStateFlow<PostTransactionStep2UiState> = MutableStateFlow(Filling)
-    val uiState: StateFlow<PostTransactionStep2UiState> = _uiState.asStateFlow()
-
-    fun saveActivity(pokemonName: String, pokemonNumber: Int, transactionType: NewActivityType, transactionPrice: Int, uri: Uri) {
-        viewModelScope.launch {
-            _uiState.update { Loading }
-            try {
-                withContext(Dispatchers.IO) {
-                    newsFeedRepository.saveNewActivity(
-                        NewActivity(
-                            userName = "Super Collectionneur",
-                            userImageUrl = null,
-                            date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-                            pokemonCard = UserPokemonCard(
-                                pokemonId = pokemonNumber,
-                                name = pokemonName,
-                                imageSource = FileSource(uri.toString()),
-                                totalVotes = 0,
-                                hasMyVote = false
-                            ),
-                            activityType = transactionType,
-                            price = transactionPrice
-                        )
-                    )
-                }
-                _success.emit(true)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update { Filling }
-                _error.emit(UiError.from(e))
-            }
-        }
+    private val screenModel: PostTransactionStep2ScreenModel by lazy {
+        screenModelFactory.create(viewModelScope)
     }
+
+    val error get() = screenModel.error
+    val success get() = screenModel.success
+    val uiState get() = screenModel.uiState
+
+    fun saveActivity(
+        pokemonName: String,
+        pokemonNumber: Int,
+        transactionType: NewActivityType,
+        transactionPrice: Int,
+        uri: Uri
+    ) = screenModel.saveActivity(
+        pokemonName,
+        pokemonNumber,
+        transactionType,
+        transactionPrice,
+        uri.toString()
+    )
 }
