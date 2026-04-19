@@ -8,6 +8,9 @@ import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import com.shodo.android.domain.repositories.myprofile.MyProfileRepository
+import com.shodo.android.myprofile.di.MyProfileScreenModelFactory
+import com.shodo.android.presentation.myprofile.MyProfileScreenModel
+import com.shodo.android.presentation.myprofile.MyProfileUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -16,13 +19,13 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDateTime
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import kotlinx.datetime.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -42,7 +45,10 @@ class MyProfileViewModelTest {
         MockitoAnnotations.openMocks(this)
         dispatcher = UnconfinedTestDispatcher()
         Dispatchers.setMain(dispatcher)
-        viewModel = MyProfileViewModel(myProfileRepository, postTransactionNavigator, billingNavigator)
+        val factory = MyProfileScreenModelFactory { scope ->
+            MyProfileScreenModel(myProfileRepository, scope)
+        }
+        viewModel = MyProfileViewModel(factory, postTransactionNavigator, billingNavigator)
     }
 
     @After
@@ -127,8 +133,6 @@ class MyProfileViewModelTest {
             assertEquals("Storage error", awaitItem().message)
         }
     }
-
-    // ===== Helpers =====
 
     private fun activityWithFileSource(fileUri: String, cardName: String, date: LocalDateTime) = NewActivity(
         userName = "Ash",

@@ -14,11 +14,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.shodo.android.coreui.theme.PokeManiacTheme
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.ui.GenericLoader
-import com.shodo.android.myprofile.MyProfileUiState
-import com.shodo.android.myprofile.MyProfileUiState.Data
-import com.shodo.android.myprofile.MyProfileUiState.Loading
-import com.shodo.android.myprofile.uimodel.MyProfilePokemonCardUI
-import com.shodo.android.myprofile.uimodel.MyProfileUI
+import com.shodo.android.presentation.myprofile.MyProfilePokemonCardUiModel
+import com.shodo.android.presentation.myprofile.MyProfileUiModel
+import com.shodo.android.presentation.myprofile.MyProfileUiState
+import com.shodo.android.presentation.myprofile.MyProfileUiState.Data
+import com.shodo.android.presentation.myprofile.MyProfileUiState.Loading
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -112,7 +112,7 @@ fun PreviewMyProfileView_Data_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
         MyProfileView(
             onBackPressed = {},
-            uiState = Data(MyProfileUI(
+            uiState = Data(MyProfileUiModel(
                 name = "Ash Ketchum",
                 imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
                 pokemonCards = previewPokemonCards()
@@ -131,7 +131,7 @@ fun PreviewMyFriendsListView_Data_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
         MyProfileView(
             onBackPressed = {},
-            uiState = Data(MyProfileUI(
+            uiState = Data(MyProfileUiModel(
                 name = "Ash Ketchum",
                 imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
                 pokemonCards = previewPokemonCards()
@@ -143,10 +143,10 @@ fun PreviewMyFriendsListView_Data_DarkTheme() {
     }
 }
 
-private fun previewPokemonCards(): PersistentList<MyProfilePokemonCardUI> = persistentListOf(
-    MyProfilePokemonCardUI(id = "1", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png", totalVotes = 10, name = "pokemonName1"),
-    MyProfilePokemonCardUI(id = "2", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png", totalVotes = 5, name = "pokemonName4"),
-    MyProfilePokemonCardUI(id = "3", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png", totalVotes = 2, name = "pokemonName2")
+private fun previewPokemonCards(): PersistentList<MyProfilePokemonCardUiModel> = persistentListOf(
+    MyProfilePokemonCardUiModel(id = "1", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png", totalVotes = 10, name = "pokemonName1"),
+    MyProfilePokemonCardUiModel(id = "2", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png", totalVotes = 5, name = "pokemonName4"),
+    MyProfilePokemonCardUiModel(id = "3", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png", totalVotes = 2, name = "pokemonName2")
 )
 
 //endregion Previews

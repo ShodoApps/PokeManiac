@@ -37,13 +37,13 @@ import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
 import com.shodo.android.coreui.theme.PokeManiacTheme.typography
 import com.shodo.android.coreui.ui.GenericEmptyScreen
-import com.shodo.android.myprofile.uimodel.MyProfilePokemonCardUI
-import com.shodo.android.myprofile.uimodel.MyProfileUI
+import com.shodo.android.presentation.myprofile.MyProfilePokemonCardUiModel
+import com.shodo.android.presentation.myprofile.MyProfileUiModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun MyProfileContent(profile: MyProfileUI, modifier: Modifier = Modifier) {
+fun MyProfileContent(profile: MyProfileUiModel, modifier: Modifier = Modifier) {
     val totalVotes = remember(profile.pokemonCards) { profile.pokemonCards.sumOf { it.totalVotes } }
     Column(
         modifier = modifier.fillMaxSize().background(colors.backgroundApp),
@@ -110,7 +110,7 @@ private fun ColumnScope.MyProfileDescription(totalVotes: Int, name: String?) {
 }
 
 @Composable
-private fun ColumnScope.MyProfileCardsContent(pokemonCards: PersistentList<MyProfilePokemonCardUI>) {
+private fun ColumnScope.MyProfileCardsContent(pokemonCards: PersistentList<MyProfilePokemonCardUiModel>) {
     if (pokemonCards.isEmpty()) {
         GenericEmptyScreen(stringResource(R.string.my_profile_no_activity_yet))
     } else {
@@ -132,7 +132,7 @@ private fun ColumnScope.MyProfileCardsContent(pokemonCards: PersistentList<MyPro
 }
 
 @Composable
-private fun MyActivitiesContent(modifier: Modifier = Modifier, pokemonCards: PersistentList<MyProfilePokemonCardUI>) {
+private fun MyActivitiesContent(modifier: Modifier = Modifier, pokemonCards: PersistentList<MyProfilePokemonCardUiModel>) {
     LazyVerticalGrid(
         modifier = modifier,
         columns = GridCells.Adaptive(minSize = dimens.minGridUserCellSize),
@@ -263,22 +263,22 @@ private fun PreviewMyProfileCardsContent_WithPokemonCards_LightTheme() {
 
 //region Preview Data Helpers
 
-private fun previewProfileWithPosts() = MyProfileUI(
+private fun previewProfileWithPosts() = MyProfileUiModel(
     name = "Ash Ketchum",
     imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
     pokemonCards = previewPokemonCards()
 )
 
-private fun previewProfileNoPosts() = MyProfileUI(
+private fun previewProfileNoPosts() = MyProfileUiModel(
     name = "Ash Ketchum",
     imageUrl = null,
     pokemonCards = persistentListOf()
 )
 
-private fun previewPokemonCards(): PersistentList<MyProfilePokemonCardUI> = persistentListOf(
-    MyProfilePokemonCardUI(id = "1", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png", totalVotes = 10, name = "pokemonName1"),
-    MyProfilePokemonCardUI(id = "2", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png", totalVotes = 5, name = "pokemonName4"),
-    MyProfilePokemonCardUI(id = "3", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png", totalVotes = 2, name = "pokemonName2")
+private fun previewPokemonCards(): PersistentList<MyProfilePokemonCardUiModel> = persistentListOf(
+    MyProfilePokemonCardUiModel(id = "1", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png", totalVotes = 10, name = "pokemonName1"),
+    MyProfilePokemonCardUiModel(id = "2", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png", totalVotes = 5, name = "pokemonName4"),
+    MyProfilePokemonCardUiModel(id = "3", imageUri = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png", totalVotes = 2, name = "pokemonName2")
 )
 
 //endregion Preview Data Helpers

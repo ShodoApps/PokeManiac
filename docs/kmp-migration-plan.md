@@ -77,6 +77,12 @@ Long term, if the project drops AndroidX `ViewModel` entirely, the Android wrapp
 - **`XxxUiModel`** — **presentation data** the UI renders: labels, flags, formatted fields, row/card content. These types live inside **`XxxUiState`** branches (e.g. a `Data` state holding `List<FriendUiModel>`).
 - **Legacy / existing code** may still use **`XxxUI` / `XxxUi`** under feature **`uimodel/`**; new **shared presentation** code should prefer **`XxxUiModel`** where it matches this pipeline.
 
+### 3.2b Compose stability (`@Immutable` / `@Stable`) — Android habit vs shared `commonMain`
+
+- **Goal:** Keep **recomposition-friendly** types on the **Android / Compose** side where possible.
+- **Phase F (current):** **`XxxUiModel` / `XxxUiState` in `:shared:presentation`** stay **plain Kotlin** (no Compose runtime in shared). **Do not** add `@Immutable` / `@Stable` in `commonMain` for this migration step.
+- **Hygiene:** On **Android** (`feature:*`, `coreui`), continue to use **`@Immutable` / `@Stable`** on types that **Composables** consume directly when it helps the compiler — **feature-local** wrappers or existing feature `uimodel` types if you split them from shared. Mitigate with **primitives in leaf composables** and **`PersistentList`** (see **`compose-patterns.mdc`**).
+
 ### 3.3 Types across layers — mapping pipeline (agreed)
 
 End-to-end shape (DTO inward → UI outward):
@@ -224,7 +230,7 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 2. **Ports:** keep navigation and one-shot errors as **small interfaces** (e.g. in **`coreui`**) or shared presentation, same spirit as the Search Friend spike.
 3. **Final step — Android module shape:** perform the **single-module (or single-tree) Android app** refactor; update **`settings.gradle.kts`**, **`app`** dependencies, and **`startKoin`** module lists as needed. **Validate** **`./gradlew testDebugUnitTest`** and **`./gradlew assembleRelease`** after each meaningful structural change.
 
-**Status — in progress.** **My Friends** (`feature:myfriends`) migrated: **`MyFriendListScreenModel`**, **`MyFriendDetailScreenModel`**, **`MyFriend*UiState` / `MyFriendUiModel`** in **`com.shodo.android.presentation.myfriends`**, thin AndroidX **`ViewModel`s**, Koin **`MyFriendListScreenModelFactory`** / **`MyFriendDetailScreenModelFactory`**. Remaining features: dashboard, my profile, post transaction, billing, welcome, …; then final Android app module shape.
+**Status — in progress.** **My Friends** + **My Profile** migrated (`MyProfileScreenModel`, **`MyProfileUiState` / `MyProfileUiModel`** in **`com.shodo.android.presentation.myprofile`**). **My Friends:** **`MyFriendListScreenModel`**, **`MyFriendDetailScreenModel`**, factories as above. Remaining features: dashboard, post transaction, billing, welcome, …; then final Android app module shape.
 
 **Deferred to Phase G:** Apple targets, SwiftUI, iOS **`startKoin`**.
 
@@ -266,5 +272,5 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 | **Use cases** | **Optional** — no layer for one-liners; add only when reuse, policy, or real orchestration justify it (**§7 Phase C**, **§8**) |
 | **Phase D — data layer (Android)** | **Done** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`** (**§7 Phase D**) |
 | **Phase E — DI (Android)** | **Done** — **`:shared:di`** + **`app`** bootstrap (**§7 Phase E**) |
-| **Phase F — presentation + Android app shape** | **In progress** — **Search Friend** + **My Friends** on shared **`ScreenModel`**; other features + one Android deployable module (layout **TBD**) remain |
+| **Phase F — presentation + Android app shape** | **In progress** — **Search Friend**, **My Friends**, **My Profile** on shared **`ScreenModel`**; other features + one Android deployable module (layout **TBD**) remain |
 | **Phase G — iOS** | **Not started** — Apple targets, SwiftUI, **`startKoin`** on iOS (**§7 Phase G**) |

@@ -393,12 +393,12 @@ data class MyFriendUiModel(
     val pokemonCards: PersistentList<MyFriendPokemonCardUiModel>
 )
 
-// ✅ Contains Uri (no @Immutable annotation in framework) — use @Stable
-@Stable
-data class MyProfilePokemonCardUI(
+// ✅ My Profile card row uses String URI (opaque local / URL) — @Immutable OK in Android feature if you annotate there; shared `:shared:presentation` types stay plain (see project guide)
+@Immutable
+data class MyProfilePokemonCardUiModel(
     val id: String,
     val name: String,
-    val imageUri: Uri,  // Uri has correct equals() but is not @Immutable
+    val imageUri: String,
     val totalVotes: Int
 )
 
@@ -414,6 +414,19 @@ sealed class MyFeatureUiState {
 sealed class MyFeatureUiState { ... }
 data class ItemUI(val name: String) // Compose cannot infer stability
 ```
+
+### KMP Phase F — `UiModel` / `UiState` in `:shared:presentation` vs Compose stability
+
+**Agreed hygiene (keep in mind):**
+
+- **`@Immutable` / `@Stable` are Compose-runtime contracts.** They help the Compose compiler skip recomposition. They belong on types that **Compose reads as parameters**.
+- **During Phase F (first KMP step),** `XxxUiModel` / `XxxUiState` often live in **`commonMain`** as **plain `data class` / `sealed class`** — **no** `androidx.compose.runtime` dependency in `:shared:presentation` (stay UI-framework-agnostic). **Do not** add `@Immutable` there in this step.
+- **On Android,** good habit: apply **`@Immutable` or `@Stable`** where it still makes sense **without** polluting shared code, for example:
+  - **Feature-only** mirror/wrapper types used directly by `@Composable` functions (if duplication is justified by stability or clarity), or
+  - **Leaf composables** already taking only **primitives + `PersistentList`** (often enough; see recomposition-scope section above).
+- **Later options** (if profiling shows unnecessary recompositions): thin Android-side adapters, `remember` on mapped snapshots, or revisiting whether a small Compose-runtime dependency in shared is worth it — **decide explicitly**, not by accident.
+
+See also **`docs/kmp-migration-plan.md`** §3.2b and **`pokemaniac-testing`** skill (tests keep **Given / When / Then** comments when refactoring).
 
 ### ✅ Always Use PersistentList for Collection Fields in UI Models
 

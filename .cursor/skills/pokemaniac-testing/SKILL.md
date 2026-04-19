@@ -1,6 +1,6 @@
 ---
 name: pokemaniac-testing
-description: Write tests for PokeManiac ViewModels, repositories, and composables. Covers unit tests with Mockito, Turbine flow testing, Koin test setup, and Compose preview testing. Use when adding tests for new features.
+description: Write tests for PokeManiac ViewModels, repositories, and composables. Covers unit tests with Mockito, Turbine flow testing, Koin test setup, Compose preview testing, and Given/When/Then comments in tests. Use when adding or refactoring tests (including shared ScreenModel + factory pattern).
 ---
 
 # PokeManiac Testing Patterns
@@ -121,13 +121,27 @@ class MyFeatureViewModelTest {
 
 ### Key rules
 
+- **Given / When / Then** — keep `// Given`, `// When`, `// Then` comments in each test method (and short `// Given — …` notes where context helps). **Do not drop them** when refactoring (e.g. moving logic to `:shared:presentation`, introducing `XxxScreenModelFactory`, switching errors to `PresentationError`).
 - Use `UnconfinedTestDispatcher` — coroutines execute eagerly, `delay()` is skipped automatically
 - Use `Dispatchers.setMain` / `resetMain` in `@Before` / `@After`
 - Use `@Mock` + `MockitoAnnotations.openMocks(this)` for all dependencies
-- Error flows emit `UiError`, not raw `Exception` — assert on `error.message`, not the exception itself
+- Error flows: feature may expose `UiError` **or** shared `PresentationError` from `:shared:presentation` — assert on **`error.message`**, not the exception type
 - Use **Turbine** (`viewModel.uiState.test {}`) for Flow assertions
 - Use `skipItems(n)` to skip known intermediate states
 - Use `persistentListOf()` (not `listOf()`) in fixtures for `PersistentList<>` fields
+
+### Shared `ScreenModel` + `XxxScreenModelFactory` in tests
+
+When the AndroidX `ViewModel` wraps a shared **`ScreenModel`**, tests still use **Given / When / Then**. Build the factory manually (no Koin):
+
+```kotlin
+val factory = MyFeatureScreenModelFactory { scope ->
+    MyFeatureScreenModel(mockRepository, scope)
+}
+viewModel = MyFeatureViewModel(factory, /* other Android deps */)
+```
+
+See **`SearchFriendViewModelTest`**, **`MyFriendListViewModelTest`**, **`MyProfileViewModelTest`**.
 
 ### Critical: subscribe to SharedFlow BEFORE triggering the action
 

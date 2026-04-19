@@ -173,7 +173,7 @@ Use `ON_RESUME` when data can change while the user is in another Activity (e.g.
 
 ### ✅ Put Mappers in the `uimodel` Package — Not in the ViewModel
 
-Extension functions that convert domain entities → UI models belong in the `uimodel/` package alongside the UI data classes (e.g., `MyFeatureUI.kt`). **Shared presentation** uses **`com.shodo.android.presentation.*`** (e.g. **`MyFriendsUiModels.kt`** for My Friends).
+Extension functions that convert domain entities → UI models belong in the `uimodel/` package alongside the UI data classes (e.g., `MyFeatureUI.kt`). **Shared presentation** uses **`com.shodo.android.presentation.*`** (e.g. **`MyFriendsUiModels.kt`**, **`MyProfileUiModels.kt`**).
 
 ```kotlin
 // ✅ GOOD: Mapper in uimodel/MyFeatureUI.kt
@@ -344,6 +344,8 @@ val viewModel = MyFeatureViewModel(factory)
 ```
 
 **iOS later:** the same **`ScreenModel`** constructor takes a **`CoroutineScope`** from SwiftUI / Kotlin entry; register an **`actual`** factory or build the `ScreenModel` in the iOS coordinator — **no `viewModelScope`**, same shape.
+
+**Compose stability:** types emitted from **`ScreenModel`** (`UiState`, `UiModel`) live in **`commonMain`** as plain Kotlin during Phase F — **no** `@Immutable` / `@Stable` there. On **Android**, keep recomposition hygiene: **`@Immutable` / `@Stable`** on **feature/coreui** types Composables read, or primitives + `PersistentList` in leaves — see **`compose-patterns.mdc`** (KMP Phase F subsection) and **`docs/kmp-migration-plan.md`** §3.2b.
 
 ### ViewModel Constructor (legacy / non–ScreenModel screens)
 
