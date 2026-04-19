@@ -65,9 +65,9 @@ fun MyProfileView(
                 .background(colors.backgroundApp)
                 .padding(innerPadding),
         ) {
-            when (val state = uiState) {
+            when (uiState) {
                 Loading -> GenericLoader()
-                is Data -> MyProfileContent(profile = state.profile)
+                is Data -> MyProfileContent(profile = uiState.profile)
             }
         }
     }

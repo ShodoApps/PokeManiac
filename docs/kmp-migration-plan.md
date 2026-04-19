@@ -230,7 +230,7 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 2. **Ports:** keep navigation and one-shot errors as **small interfaces** (e.g. in **`coreui`**) or shared presentation, same spirit as the Search Friend spike.
 3. **Final step — Android module shape:** perform the **single-module (or single-tree) Android app** refactor; update **`settings.gradle.kts`**, **`app`** dependencies, and **`startKoin`** module lists as needed. **Validate** **`./gradlew testDebugUnitTest`** and **`./gradlew assembleRelease`** after each meaningful structural change.
 
-**Status — in progress.** **My Friends** + **My Profile** migrated (`MyProfileScreenModel`, **`MyProfileUiState` / `MyProfileUiModel`** in **`com.shodo.android.presentation.myprofile`**). **My Friends:** **`MyFriendListScreenModel`**, **`MyFriendDetailScreenModel`**, factories as above. Remaining features: dashboard, post transaction, billing, welcome, …; then final Android app module shape.
+**Status — in progress.** **Dashboard** (`DashboardScreenModel`, **`DashboardUiState`**, feed **`NewActivityUiModel`** in **`com.shodo.android.presentation.dashboard`**). **My Friends** + **My Profile** as before. Remaining features: post transaction, billing, welcome, …; then final Android app module shape.
 
 **Deferred to Phase G:** Apple targets, SwiftUI, iOS **`startKoin`**.
 
@@ -272,5 +272,5 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 | **Use cases** | **Optional** — no layer for one-liners; add only when reuse, policy, or real orchestration justify it (**§7 Phase C**, **§8**) |
 | **Phase D — data layer (Android)** | **Done** — **`:shared:api`**, **`:shared:data`**, **`:shared:database`**, **`:shared:tracking`** (**§7 Phase D**) |
 | **Phase E — DI (Android)** | **Done** — **`:shared:di`** + **`app`** bootstrap (**§7 Phase E**) |
-| **Phase F — presentation + Android app shape** | **In progress** — **Search Friend**, **My Friends**, **My Profile** on shared **`ScreenModel`**; other features + one Android deployable module (layout **TBD**) remain |
+| **Phase F — presentation + Android app shape** | **In progress** — **Search Friend**, **Dashboard**, **My Friends**, **My Profile** on shared **`ScreenModel`**; other features + one Android deployable module (layout **TBD**) remain |
 | **Phase G — iOS** | **Not started** — Apple targets, SwiftUI, **`startKoin`** on iOS (**§7 Phase G**) |

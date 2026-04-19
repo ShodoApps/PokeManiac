@@ -141,7 +141,7 @@ val factory = MyFeatureScreenModelFactory { scope ->
 viewModel = MyFeatureViewModel(factory, /* other Android deps */)
 ```
 
-See **`SearchFriendViewModelTest`**, **`MyFriendListViewModelTest`**, **`MyProfileViewModelTest`**.
+See **`SearchFriendViewModelTest`**, **`DashboardViewModelTest`**, **`MyFriendListViewModelTest`**, **`MyProfileViewModelTest`**.
 
 ### Critical: subscribe to SharedFlow BEFORE triggering the action
 

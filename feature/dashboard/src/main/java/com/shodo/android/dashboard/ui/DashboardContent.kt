@@ -17,15 +17,15 @@ import com.shodo.android.coreui.theme.PokeManiacTheme
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
 import com.shodo.android.coreui.theme.PokeManiacTheme.typography
-import com.shodo.android.dashboard.uimodel.ImageSourceUI
-import com.shodo.android.dashboard.uimodel.NewActivityTypeUI
-import com.shodo.android.dashboard.uimodel.NewActivityUI
-import com.shodo.android.dashboard.uimodel.PokemonCardUI
+import com.shodo.android.presentation.dashboard.DashboardImageSourceUiModel
+import com.shodo.android.presentation.dashboard.NewActivityTypeUiModel
+import com.shodo.android.presentation.dashboard.NewActivityUiModel
+import com.shodo.android.presentation.dashboard.PokemonCardUiModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun DashboardContent(newActivies: PersistentList<NewActivityUI>, modifier: Modifier = Modifier) {
+fun DashboardContent(newActivities: PersistentList<NewActivityUiModel>, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -34,7 +34,7 @@ fun DashboardContent(newActivies: PersistentList<NewActivityUI>, modifier: Modif
         horizontalAlignment = CenterHorizontally
     ) {
         items(
-            items = newActivies,
+            items = newActivities,
             key = { it.id }
         ) { newActivity ->
             NewActivityCard(newActivity)
@@ -62,7 +62,7 @@ fun DashboardContent(newActivies: PersistentList<NewActivityUI>, modifier: Modif
 fun PreviewDashboardContent_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
         DashboardContent(
-            newActivies = previewNewActivities(),
+            newActivities = previewNewActivities(),
             modifier = Modifier
                 .fillMaxSize()
                 .background(colors.backgroundApp)
@@ -77,7 +77,7 @@ fun PreviewDashboardContent_LightTheme() {
 fun PreviewDashboardContent_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
         DashboardContent(
-            newActivies = previewNewActivities(),
+            newActivities = previewNewActivities(),
             modifier = Modifier
                 .fillMaxSize()
                 .background(colors.backgroundApp)
@@ -87,27 +87,27 @@ fun PreviewDashboardContent_DarkTheme() {
 }
 
 private fun previewNewActivities() = persistentListOf(
-    NewActivityUI(
+    NewActivityUiModel(
         id = "friendName" + "01/06/2025 18:30",
         friendName = "friendName",
         friendImageUrl = null,
         date = "01/06/2025 18:30",
-        activityType = NewActivityTypeUI.Sale,
-        pokemonCard = PokemonCardUI(
+        activityType = NewActivityTypeUiModel.Sale,
+        pokemonCard = PokemonCardUiModel(
             name = "pokemonName",
-            imageSource = ImageSourceUI.UrlSource("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png")
+            imageSource = DashboardImageSourceUiModel.UrlSource("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png")
         ),
         price = 30
     ),
-    NewActivityUI(
+    NewActivityUiModel(
         id = "friendName2" + "01/06/2025 12:30",
         friendName = "friendName2",
         friendImageUrl = null,
         date = "01/06/2025 12:30",
-        activityType = NewActivityTypeUI.Purchase,
-        pokemonCard = PokemonCardUI(
+        activityType = NewActivityTypeUiModel.Purchase,
+        pokemonCard = PokemonCardUiModel(
             name = "pokemonName",
-            imageSource = ImageSourceUI.UrlSource("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png")
+            imageSource = DashboardImageSourceUiModel.UrlSource("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png")
         ),
         price = 30
     )

@@ -5,11 +5,14 @@ import com.shodo.android.coreui.navigator.MyFriendsNavigator
 import com.shodo.android.coreui.navigator.MyProfileNavigator
 import com.shodo.android.coreui.navigator.PostTransactionNavigator
 import com.shodo.android.coreui.navigator.SearchFriendNavigator
+import com.shodo.android.dashboard.di.DashboardScreenModelFactory
 import com.shodo.android.domain.repositories.entities.ImageSource
 import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
+import com.shodo.android.presentation.dashboard.DashboardScreenModel
+import com.shodo.android.presentation.dashboard.DashboardUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
@@ -18,13 +21,13 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDateTime
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import kotlinx.datetime.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -46,12 +49,15 @@ class DashboardViewModelTest {
         MockitoAnnotations.openMocks(this)
         dispatcher = UnconfinedTestDispatcher()
         Dispatchers.setMain(dispatcher)
+        val factory = DashboardScreenModelFactory { scope ->
+            DashboardScreenModel(newsFeedRepository, scope)
+        }
         viewModel = DashboardViewModel(
-            newsFeedRepository,
+            factory,
             searchFriendNavigator,
             myFriendsNavigator,
             myProfileNavigator,
-            postTransactionNavigator
+            postTransactionNavigator,
         )
     }
 

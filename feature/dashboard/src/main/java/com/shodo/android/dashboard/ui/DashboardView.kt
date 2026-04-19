@@ -18,14 +18,14 @@ import com.shodo.android.coreui.theme.PokeManiacTheme
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.ui.GenericEmptyScreen
 import com.shodo.android.coreui.ui.GenericLoader
-import com.shodo.android.dashboard.DashboardUiState
-import com.shodo.android.dashboard.DashboardUiState.Data
-import com.shodo.android.dashboard.DashboardUiState.EmptyResult
-import com.shodo.android.dashboard.DashboardUiState.Loading
-import com.shodo.android.dashboard.uimodel.ImageSourceUI
-import com.shodo.android.dashboard.uimodel.NewActivityTypeUI
-import com.shodo.android.dashboard.uimodel.NewActivityUI
-import com.shodo.android.dashboard.uimodel.PokemonCardUI
+import com.shodo.android.presentation.dashboard.DashboardImageSourceUiModel
+import com.shodo.android.presentation.dashboard.DashboardUiState
+import com.shodo.android.presentation.dashboard.DashboardUiState.Data
+import com.shodo.android.presentation.dashboard.DashboardUiState.EmptyResult
+import com.shodo.android.presentation.dashboard.DashboardUiState.Loading
+import com.shodo.android.presentation.dashboard.NewActivityTypeUiModel
+import com.shodo.android.presentation.dashboard.NewActivityUiModel
+import com.shodo.android.presentation.dashboard.PokemonCardUiModel
 import kotlinx.collections.immutable.persistentListOf
 
 /**
@@ -83,7 +83,7 @@ fun DashboardView(
             when (uiState) {
                 Loading -> GenericLoader()
                 EmptyResult -> GenericEmptyScreen(stringResource(R.string.no_friends_yet))
-                is Data -> DashboardContent(uiState.news)
+                is Data -> DashboardContent(newActivities = uiState.news)
             }
         }
     }
@@ -193,27 +193,27 @@ fun PreviewDashboardView_Data_DarkTheme() {
 }
 
 private fun previewNewActivities() = persistentListOf(
-    NewActivityUI(
+    NewActivityUiModel(
         id = "friendName" + "01/06/2025 18:30",
         friendName = "friendName",
         friendImageUrl = null,
         date = "01/06/2025 18:30",
-        activityType = NewActivityTypeUI.Sale,
-        pokemonCard = PokemonCardUI(
+        activityType = NewActivityTypeUiModel.Sale,
+        pokemonCard = PokemonCardUiModel(
             name = "pokemonName",
-            imageSource = ImageSourceUI.UrlSource("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png")
+            imageSource = DashboardImageSourceUiModel.UrlSource("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png")
         ),
         price = 30
     ),
-    NewActivityUI(
+    NewActivityUiModel(
         id = "friendName2" + "01/06/2025 12:30",
         friendName = "friendName2",
         friendImageUrl = null,
         date = "01/06/2025 12:30",
-        activityType = NewActivityTypeUI.Purchase,
-        pokemonCard = PokemonCardUI(
+        activityType = NewActivityTypeUiModel.Purchase,
+        pokemonCard = PokemonCardUiModel(
             name = "pokemonName",
-            imageSource = ImageSourceUI.UrlSource("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png")
+            imageSource = DashboardImageSourceUiModel.UrlSource("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png")
         ),
         price = 30
     )

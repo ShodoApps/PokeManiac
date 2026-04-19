@@ -30,6 +30,7 @@ android {
 
 dependencies {
     implementation(project(":shared:domain"))
+    implementation(project(":shared:presentation"))
     implementation(project(":coreui"))
     implementation(project(":shared:tracking"))
 
@@ -42,9 +43,6 @@ dependencies {
 
     // Kotlin Immutable collections - PersistentList
     implementation(libs.kotlinx.collections.immutable)
-
-    // KMP-ready date/time
-    implementation(libs.kotlinx.datetime)
 
     // Koin - Dependency injection
     implementation(libs.koin.androidx.compose)

@@ -35,15 +35,15 @@ import com.shodo.android.coreui.theme.PokeManiacTheme
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.theme.PokeManiacTheme.dimens
 import com.shodo.android.coreui.theme.PokeManiacTheme.typography
-import com.shodo.android.dashboard.uimodel.ImageSourceUI.FileSource
-import com.shodo.android.dashboard.uimodel.ImageSourceUI.UrlSource
-import com.shodo.android.dashboard.uimodel.NewActivityTypeUI.Purchase
-import com.shodo.android.dashboard.uimodel.NewActivityTypeUI.Sale
-import com.shodo.android.dashboard.uimodel.NewActivityUI
-import com.shodo.android.dashboard.uimodel.PokemonCardUI
+import com.shodo.android.presentation.dashboard.DashboardImageSourceUiModel.FileSource
+import com.shodo.android.presentation.dashboard.DashboardImageSourceUiModel.UrlSource
+import com.shodo.android.presentation.dashboard.NewActivityTypeUiModel.Purchase
+import com.shodo.android.presentation.dashboard.NewActivityTypeUiModel.Sale
+import com.shodo.android.presentation.dashboard.NewActivityUiModel
+import com.shodo.android.presentation.dashboard.PokemonCardUiModel
 
 @Composable
-fun NewActivityCard(newActivity: NewActivityUI) {
+fun NewActivityCard(newActivity: NewActivityUiModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -130,15 +130,15 @@ private fun NewActivityHeader(friendImageUrl: String?, friendName: String, date:
 }
 
 @Composable
-private fun NewActivityImage(pokemonCard: PokemonCardUI) {
-    when (pokemonCard.imageSource) {
+private fun NewActivityImage(pokemonCard: PokemonCardUiModel) {
+    when (val src = pokemonCard.imageSource) {
         is UrlSource -> AsyncImage(
             modifier = Modifier
                 .padding(top = dimens.small)
                 .fillMaxWidth()
                 .aspectRatio(1f),
             model = ImageRequest.Builder(LocalContext.current)
-                .data(pokemonCard.imageSource.imageUrl)
+                .data(src.imageUrl)
                 .crossfade(true)
                 .build(),
             contentScale = Crop,
@@ -150,9 +150,9 @@ private fun NewActivityImage(pokemonCard: PokemonCardUI) {
                 .padding(top = dimens.small)
                 .fillMaxWidth()
                 .aspectRatio(1f),
-            painter = rememberAsyncImagePainter(pokemonCard.imageSource.fileUri),
+            painter = rememberAsyncImagePainter(src.fileUri),
             contentScale = Crop,
-            contentDescription = null
+            contentDescription = pokemonCard.name
         )
     }
 }
@@ -257,7 +257,7 @@ fun PreviewNewActivityImage_NoImage_DarkTheme() {
 fun PreviewNewActivityCard_NoUserImage_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
         NewActivityCard(
-            NewActivityUI(
+            NewActivityUiModel(
                 id = "friendName2" + "01/06/2025 12:30",
                 friendName = "friendName2",
                 friendImageUrl = null,
@@ -276,7 +276,7 @@ fun PreviewNewActivityCard_NoUserImage_LightTheme() {
 fun PreviewNewActivityCard_NoUserImage_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
         NewActivityCard(
-            NewActivityUI(
+            NewActivityUiModel(
                 id = "friendName2" + "01/06/2025 12:30",
                 friendName = "friendName2",
                 friendImageUrl = null,
@@ -295,7 +295,7 @@ fun PreviewNewActivityCard_NoUserImage_DarkTheme() {
 fun PreviewNewActivityCard_WithUserImage_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
         NewActivityCard(
-            NewActivityUI(
+            NewActivityUiModel(
                 id = "friendName2" + "01/06/2025 12:30",
                 friendName = "friendName2",
                 friendImageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
@@ -314,7 +314,7 @@ fun PreviewNewActivityCard_WithUserImage_LightTheme() {
 fun PreviewNewActivityCard_WithUserImage_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
         NewActivityCard(
-            NewActivityUI(
+            NewActivityUiModel(
                 id = "friendName2" + "01/06/2025 12:30",
                 friendName = "friendName2",
                 friendImageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
@@ -329,7 +329,7 @@ fun PreviewNewActivityCard_WithUserImage_DarkTheme() {
 
 //endregion NewActivityCard
 
-private fun previewPokemonCardUI() = PokemonCardUI(
+private fun previewPokemonCardUI() = PokemonCardUiModel(
     name = "pokemonName",
     imageSource = UrlSource("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png")
 )
