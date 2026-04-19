@@ -32,6 +32,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":shared:presentation"))
     implementation(project(":shared:domain"))
     implementation(project(":coreui"))
 
