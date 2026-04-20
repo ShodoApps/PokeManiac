@@ -58,6 +58,7 @@ dependencies {
     implementation(project(":feature:posttransaction"))
     implementation(project(":feature:searchfriend"))
     implementation(project(":feature:billing"))
+    implementation(project(":feature:welcome"))
 
     // Theming
     implementation(libs.material)

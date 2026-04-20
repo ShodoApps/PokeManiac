@@ -7,7 +7,7 @@ import com.shodo.android.di.trackingModule
 import com.shodo.android.pokemaniac.di.appCoreArchiModules
 import com.shodo.android.myfriends.di.myFriendsModule
 import com.shodo.android.myprofile.di.myProfileModule
-import com.shodo.android.pokemaniac.welcome.di.welcomeModule
+import com.shodo.android.welcome.di.welcomeModule
 import com.shodo.android.posttransaction.di.postTransactionModule
 import com.shodo.android.searchfriend.di.searchFriendModule
 import org.koin.android.ext.koin.androidContext

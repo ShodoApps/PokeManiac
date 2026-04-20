@@ -1,4 +1,4 @@
-package com.shodo.android.pokemaniac.welcome.ui
+package com.shodo.android.welcome.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,8 +27,8 @@ import com.shodo.android.coreui.ui.SecondaryButton
 @Composable
 fun WelcomeView(
     modifier: Modifier = Modifier,
-    onSignUpClicked:() -> Unit,
-    onSignInClicked:() -> Unit,
+    onSignUpClicked: () -> Unit,
+    onSignInClicked: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     Scaffold(
@@ -46,7 +46,7 @@ fun WelcomeView(
         ) {
             Text(
                 text = stringResource(R.string.welcome),
-                modifier = modifier,
+                modifier = Modifier.padding(dimens.small),
                 color = colors.primaryText,
                 style = typography.t1
             )
