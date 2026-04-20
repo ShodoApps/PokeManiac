@@ -13,11 +13,17 @@ kotlin {
         }
     }
 
+    iosArm64()
+    iosSimulatorArm64()
+
     sourceSets {
         commonMain.dependencies {
             implementation(project(":shared:data"))
             implementation(project(":shared:domain"))
             implementation(libs.koin.core)
+        }
+        iosMain.dependencies {
+            implementation(project(":shared:database"))
         }
     }
 }

@@ -12,3 +12,6 @@ sealed class SearchFriendUiState {
     data class Data(val people: PersistentList<SearchFriendUiModel>) : SearchFriendUiState()
     data class EmptyResult(val query: String) : SearchFriendUiState()
 }
+
+/** Plain [List] for SwiftUI `ForEach` / NSArray bridging (see iOS SearchFriend screen). */
+fun SearchFriendUiState.Data.peopleList(): List<SearchFriendUiModel> = people.toList()

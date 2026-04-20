@@ -9,8 +9,8 @@ import androidx.room.Query
 interface TrackingEventScreenDao {
 
     @Insert(onConflict = REPLACE)
-    fun sendEvent(event: TrackingEventBase)
+    suspend fun sendEvent(event: TrackingEventBase)
 
     @Query("SELECT * FROM tracking_event_table WHERE eventName = :eventName")
-    fun getEvent(eventName: String): TrackingEventBase?
+    suspend fun getEvent(eventName: String): TrackingEventBase?
 }

@@ -1,4 +1,4 @@
-// Kotlin Multiplatform Room (`:shared:database`): entities, DAOs, DataStore implementations. `androidTarget()` only for now — docs/kmp-migration-plan.md §7 Phase D (done).
+// Kotlin Multiplatform Room (`:shared:database`): entities, DAOs, DataStore implementations. Android + iOS (Room 2.8 KMP).
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -20,9 +20,11 @@ kotlin {
         }
     }
 
+    iosArm64()
+    iosSimulatorArm64()
+
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":shared:data"))
             implementation(project(":shared:domain"))
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
@@ -35,6 +37,8 @@ kotlin {
 
 dependencies {
     add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
 }
 
 android {

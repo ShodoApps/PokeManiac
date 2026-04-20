@@ -10,3 +10,6 @@ sealed class DashboardUiState {
     data object EmptyResult : DashboardUiState()
     data object Loading : DashboardUiState()
 }
+
+/** Plain [List] for SwiftUI `ForEach` (iOS). */
+fun DashboardUiState.Data.newsList(): List<NewActivityUiModel> = news.toList()

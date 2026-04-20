@@ -16,8 +16,8 @@ interface FriendsDao {
     fun getFriendById(friendId: String): Flow<FriendBase?>
 
     @Insert(onConflict = REPLACE)
-    fun insert(character: FriendBase)
+    suspend fun insert(character: FriendBase)
 
     @Query("DELETE FROM friends_table WHERE id = :friendId")
-    fun deleteFriend(friendId: String)
+    suspend fun deleteFriend(friendId: String)
 }

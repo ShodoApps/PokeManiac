@@ -14,11 +14,18 @@ kotlin {
         }
     }
 
+    iosArm64()
+    iosSimulatorArm64()
+
     sourceSets {
         commonMain.dependencies {
             implementation(project(":shared:domain"))
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.koin.core)
+        }
+        iosMain.dependencies {
+            implementation(project(":shared:api"))
+            implementation(project(":shared:database"))
         }
         androidUnitTest.dependencies {
             implementation(libs.junit4)

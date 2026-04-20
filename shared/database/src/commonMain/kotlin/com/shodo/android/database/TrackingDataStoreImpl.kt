@@ -1,6 +1,6 @@
 package com.shodo.android.database
 
-import com.shodo.android.data.tracking.TrackingDataStore
+import com.shodo.android.domain.datastore.TrackingDataStore
 import com.shodo.android.database.tracking.TrackingEventBase
 
 // This TrackingDataStore should send tracking to adequate tracking libs (Firebase, Dynatrace, Segment, DataDog, ... )

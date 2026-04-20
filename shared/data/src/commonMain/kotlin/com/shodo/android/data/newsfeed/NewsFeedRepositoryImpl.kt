@@ -1,7 +1,7 @@
 package com.shodo.android.data.newsfeed
 
-import com.shodo.android.data.myfriends.FriendsDataStore
-import com.shodo.android.data.myprofile.MyActivitiesDataStore
+import com.shodo.android.domain.datastore.FriendsDataStore
+import com.shodo.android.domain.datastore.MyActivitiesDataStore
 import com.shodo.android.domain.repositories.entities.ImageSource
 import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType

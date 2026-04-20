@@ -1,7 +1,9 @@
 package com.shodo.android.database
 
+import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.RoomDatabaseConstructor
 import androidx.room.TypeConverters
 import com.shodo.android.database.converters.Converters
 import com.shodo.android.database.friends.FriendBase
@@ -12,7 +14,13 @@ import com.shodo.android.database.tracking.TrackingEventBase
 import com.shodo.android.database.tracking.TrackingEventClickDao
 import com.shodo.android.database.tracking.TrackingEventScreenDao
 
+@Suppress("NO_ACTUAL_FOR_EXPECT")
+expect object PokeManiacDatabaseConstructor : RoomDatabaseConstructor<PokeManiacDatabase> {
+    override fun initialize(): PokeManiacDatabase
+}
+
 @Database(entities = [FriendBase::class, TrackingEventBase::class, MyActivityBase::class], version = 1, exportSchema = false)
+@ConstructedBy(PokeManiacDatabaseConstructor::class)
 @TypeConverters(Converters::class)
 abstract class PokeManiacDatabase : RoomDatabase() {
 

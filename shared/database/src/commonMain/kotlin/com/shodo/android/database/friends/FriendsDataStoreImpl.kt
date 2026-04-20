@@ -1,6 +1,6 @@
 package com.shodo.android.database.friends
 
-import com.shodo.android.data.myfriends.FriendsDataStore
+import com.shodo.android.domain.datastore.FriendsDataStore
 import com.shodo.android.database.PokeManiacDatabase
 import com.shodo.android.database.friends.FriendBase.PokemonCardBase
 import com.shodo.android.domain.repositories.entities.ImageSource

@@ -2,6 +2,7 @@ import SwiftUI
 
 private enum AppRoute: Hashable {
     case dashboard
+    case searchFriend
 }
 
 struct ContentView: View {
@@ -17,8 +18,13 @@ struct ContentView: View {
             .navigationDestination(for: AppRoute.self) { route in
                 switch route {
                 case .dashboard:
-                    Text("Dashboard (stub)")
-                        .navigationTitle("Home")
+                    DashboardScreen(
+                        onSearchFriends: { path.append(AppRoute.searchFriend) }
+                    )
+                case .searchFriend:
+                    SearchFriendScreen(
+                        onBack: { path.removeLast() }
+                    )
                 }
             }
         }

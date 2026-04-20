@@ -1,4 +1,4 @@
-package com.shodo.android.data.myprofile
+package com.shodo.android.domain.datastore
 
 import com.shodo.android.domain.repositories.entities.NewActivity
 import kotlinx.coroutines.flow.Flow

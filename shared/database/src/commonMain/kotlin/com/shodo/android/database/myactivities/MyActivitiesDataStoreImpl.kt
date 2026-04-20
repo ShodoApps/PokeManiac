@@ -1,6 +1,6 @@
 package com.shodo.android.database.myactivities
 
-import com.shodo.android.data.myprofile.MyActivitiesDataStore
+import com.shodo.android.domain.datastore.MyActivitiesDataStore
 import com.shodo.android.database.PokeManiacDatabase
 import com.shodo.android.database.myactivities.MyActivityBase.NewActivityTypeBase
 import com.shodo.android.domain.repositories.entities.ImageSource

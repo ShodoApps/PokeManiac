@@ -13,5 +13,5 @@ interface MyActivitiesDao {
     fun getAllActivities(): Flow<List<MyActivityBase>>
 
     @Insert(onConflict = REPLACE)
-    fun insert(myActivity: MyActivityBase)
+    suspend fun insert(myActivity: MyActivityBase)
 }

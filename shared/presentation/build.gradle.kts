@@ -23,12 +23,22 @@ kotlin {
         binaries.framework {
             baseName = "PokeManiacPresentation"
             isStatic = true
+            export(project(":shared:domain"))
+            export(project(":shared:data"))
+            export(project(":shared:api"))
+            export(project(":shared:tracking"))
+            export(project(":shared:database"))
         }
     }
     iosSimulatorArm64 {
         binaries.framework {
             baseName = "PokeManiacPresentation"
             isStatic = true
+            export(project(":shared:domain"))
+            export(project(":shared:data"))
+            export(project(":shared:api"))
+            export(project(":shared:tracking"))
+            export(project(":shared:database"))
         }
     }
 
@@ -40,6 +50,12 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
+        }
+        iosMain.dependencies {
+            api(project(":shared:data"))
+            api(project(":shared:api"))
+            api(project(":shared:tracking"))
+            api(project(":shared:database"))
         }
     }
 }

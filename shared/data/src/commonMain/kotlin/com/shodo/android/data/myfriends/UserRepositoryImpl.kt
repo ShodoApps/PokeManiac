@@ -1,9 +1,10 @@
 package com.shodo.android.data.myfriends
 
+import com.shodo.android.data.dataIoDispatcher
+import com.shodo.android.domain.datastore.FriendsDataStore
 import com.shodo.android.domain.repositories.entities.User
 import com.shodo.android.domain.repositories.friends.FriendsRequest
 import com.shodo.android.domain.repositories.friends.UserRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
@@ -30,7 +31,7 @@ class UserRepositoryImpl(
             searchResults.map { searchResult ->
                 searchResult.copy(isSubscribed = searchResult.id in subscribedIds)
             }
-        }.flowOn(Dispatchers.IO)
+        }.flowOn(dataIoDispatcher)
     }
 
     override suspend fun subscribeUser(user: User) {
