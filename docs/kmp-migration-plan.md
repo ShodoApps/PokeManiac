@@ -240,7 +240,9 @@ Existing golden rule **Presentation → Domain → Data** remains; **shared pres
 
 ### Phase G — iOS
 
-1. Add Apple targets to relevant shared modules (when not already present); prefer **incremental** rollout (`:shared:presentation` → **`:shared:api`** → **`:shared:data`** → **`:shared:database`**, etc.) with **CI** covering iOS compilation.
+**Bootstrap:** **`:shared:presentation`** exposes **`PokeManiacPresentation.framework`** (device + simulator). SwiftUI sources under **`iosApp/`**; Xcode wiring steps in **`iosApp/README.md`**. **`IosKmpSmoke`** in shared code is a temporary link test until **`WelcomeScreenModel`** / **`StateFlow`** interop is chosen.
+
+1. Add Apple targets to relevant shared modules (when not already present); prefer **incremental** rollout (`:shared:presentation` ✅ first → **`:shared:api`** → **`:shared:data`** → **`:shared:database`**, etc.) with **CI** covering iOS compilation.
 2. SwiftUI screens consume the **same `ScreenModel` + `UiState`**; platform code provides **`expect`/`actual`** capabilities (e.g. local image capture per project guide).
 3. **Koin on iOS:** from the iOS Kotlin entry (or equivalent), call **`startKoin { modules(sharedKoinArchiModules + iosDatabaseModule + …) }`** — reuse **`sharedKoinArchiModules`** from **`:shared:di`**; add **`iosDatabaseModule`** (and other **`actual`** bindings) for Room / paths / HTTP engines that differ from Android.
 

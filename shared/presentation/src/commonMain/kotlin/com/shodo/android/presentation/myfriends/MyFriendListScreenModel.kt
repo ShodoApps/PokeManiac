@@ -2,6 +2,7 @@ package com.shodo.android.presentation.myfriends
 
 import com.shodo.android.domain.repositories.friends.UserRepository
 import com.shodo.android.presentation.PresentationError
+import com.shodo.android.presentation.presentationIoDispatcher
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -61,7 +62,7 @@ class MyFriendListScreenModel(
     fun unsubscribeFriend(friendId: String) {
         coroutineScope.launch {
             try {
-                withContext(Dispatchers.IO) { userRepository.unsubscribeUser(friendId) }
+                withContext(presentationIoDispatcher) { userRepository.unsubscribeUser(friendId) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

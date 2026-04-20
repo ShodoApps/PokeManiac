@@ -6,12 +6,12 @@ import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
 import com.shodo.android.presentation.PresentationError
+import com.shodo.android.presentation.presentationIoDispatcher
 import com.shodo.android.presentation.posttransaction.PostTransactionStep2UiState.Filling
 import com.shodo.android.presentation.posttransaction.PostTransactionStep2UiState.Loading
 import kotlin.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -46,7 +46,7 @@ class PostTransactionStep2ScreenModel(
         coroutineScope.launch {
             _uiState.update { Loading }
             try {
-                withContext(Dispatchers.IO) {
+                withContext(presentationIoDispatcher) {
                     newsFeedRepository.saveNewActivity(
                         NewActivity(
                             userName = "Super Collectionneur",

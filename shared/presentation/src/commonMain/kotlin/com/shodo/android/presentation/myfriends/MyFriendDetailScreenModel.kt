@@ -2,11 +2,11 @@ package com.shodo.android.presentation.myfriends
 
 import com.shodo.android.domain.repositories.friends.UserRepository
 import com.shodo.android.presentation.PresentationError
+import com.shodo.android.presentation.presentationIoDispatcher
 import com.shodo.android.presentation.myfriends.MyFriendDetailUiState.Data
 import com.shodo.android.presentation.myfriends.MyFriendDetailUiState.Loading
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,7 +64,7 @@ class MyFriendDetailScreenModel(
     fun unsubscribeFriend(friendId: String) {
         coroutineScope.launch {
             try {
-                withContext(Dispatchers.IO) { userRepository.unsubscribeUser(friendId) }
+                withContext(presentationIoDispatcher) { userRepository.unsubscribeUser(friendId) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

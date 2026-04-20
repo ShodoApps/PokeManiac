@@ -24,6 +24,7 @@ room = "2.8.4"
 sqlite = "2.6.2"
 kotlinxSerializationJson = "1.11.0"
 ktor = "3.2.3"
+skie = "0.10.11"
 
 [libraries]
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -86,4 +87,5 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 androidx-room = { id = "androidx.room", version.ref = "room" }
+skie = { id = "co.touchlab.skie", version.ref = "skie" }
 

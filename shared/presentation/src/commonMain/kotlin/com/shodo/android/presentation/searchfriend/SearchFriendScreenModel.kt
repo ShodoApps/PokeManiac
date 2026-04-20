@@ -5,6 +5,7 @@ import com.shodo.android.domain.repositories.tracking.TrackingEventClick
 import com.shodo.android.domain.repositories.tracking.TrackingEventScreen
 import com.shodo.android.domain.repositories.tracking.TrackingRepository
 import com.shodo.android.presentation.PresentationError
+import com.shodo.android.presentation.presentationIoDispatcher
 import com.shodo.android.presentation.searchfriend.SearchFriendUiState.Data
 import com.shodo.android.presentation.searchfriend.SearchFriendUiState.EmptyResult
 import com.shodo.android.presentation.searchfriend.SearchFriendUiState.EmptySearch
@@ -56,7 +57,7 @@ class SearchFriendScreenModel(
 
     init {
         coroutineScope.launch {
-            withContext(Dispatchers.IO) {
+            withContext(presentationIoDispatcher) {
                 trackingRepository.sendEventScreen(TrackingEventScreen(TRACKING_SEARCH_SCREEN))
             }
         }
@@ -106,7 +107,7 @@ class SearchFriendScreenModel(
                 )
             }
             try {
-                withContext(Dispatchers.IO) {
+                withContext(presentationIoDispatcher) {
                     if (subscribe) {
                         trackingRepository.sendEventClick(TrackingEventClick(TRACKING_SUBSCRIBE_CLICK))
                         userRepository.subscribeUser(friend.mapToUser())
