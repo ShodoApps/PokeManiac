@@ -82,10 +82,18 @@ class SearchFriendScreenModel(
                         }
                     }
                 } catch (e: CancellationException) {
+                    println("Error from CancellationException")
+                    println(e.message)
+                    println(e.cause)
+                    println(e.stackTraceToString())
                     throw e
                 } catch (e: Exception) {
                     _uiState.update { EmptyResult(friendName) }
                     _error.emit(PresentationError.from(e))
+                    println("Error from Exception")
+                    println(e.message)
+                    println(e.cause)
+                    println(e.stackTraceToString())
                 }
             }
         }
