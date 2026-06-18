@@ -2,9 +2,9 @@ package com.shodo.android.presentation.myfriends
 
 import com.shodo.android.domain.repositories.friends.UserRepository
 import com.shodo.android.presentation.PresentationError
-import com.shodo.android.presentation.presentationIoDispatcher
 import com.shodo.android.presentation.myfriends.MyFriendDetailUiState.Data
 import com.shodo.android.presentation.myfriends.MyFriendDetailUiState.Loading
+import com.shodo.android.presentation.presentationIoDispatcher
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -26,7 +26,7 @@ import kotlinx.coroutines.withContext
  */
 class MyFriendDetailScreenModel(
     private val userRepository: UserRepository,
-    private val coroutineScope: CoroutineScope,
+    private val coroutineScope: CoroutineScope
 ) {
 
     private val _error = MutableSharedFlow<PresentationError>()

@@ -12,7 +12,6 @@ fun PokeManiacTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-
     val colors = if (darkTheme) {
         darkColors()
     } else {

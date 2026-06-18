@@ -10,5 +10,5 @@ data class SearchCharacterDTO(
     @SerialName("results-for")
     val resultFor: String = "",
     val results: List<SuperheroDTO> = emptyList(),
-    val error: String? = null,
+    val error: String? = null
 )

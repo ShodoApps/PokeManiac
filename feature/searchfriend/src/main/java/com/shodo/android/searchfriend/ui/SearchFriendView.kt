@@ -93,7 +93,6 @@ fun SearchFriendView(
     }
 }
 
-
 //region Previews
 
 @OptIn(ExperimentalMaterial3Api::class)

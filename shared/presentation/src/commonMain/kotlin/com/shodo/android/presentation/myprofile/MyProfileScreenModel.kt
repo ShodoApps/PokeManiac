@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
  */
 class MyProfileScreenModel(
     private val myProfileRepository: MyProfileRepository,
-    private val coroutineScope: CoroutineScope,
+    private val coroutineScope: CoroutineScope
 ) {
 
     private val _uiState: MutableStateFlow<MyProfileUiState> = MutableStateFlow(MyProfileUiState.Loading)

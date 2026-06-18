@@ -10,14 +10,14 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.shodo.android.presentation.billing.BillingUiState
-import com.shodo.android.presentation.billing.BillingUiState.Data
-import com.shodo.android.presentation.billing.BillingUiState.Error
-import com.shodo.android.presentation.billing.BillingUiState.Loading
 import com.shodo.android.coreui.R
 import com.shodo.android.coreui.theme.PokeManiacTheme.colors
 import com.shodo.android.coreui.ui.GenericEmptyScreen
 import com.shodo.android.coreui.ui.GenericLoader
+import com.shodo.android.presentation.billing.BillingUiState
+import com.shodo.android.presentation.billing.BillingUiState.Data
+import com.shodo.android.presentation.billing.BillingUiState.Error
+import com.shodo.android.presentation.billing.BillingUiState.Loading
 
 @Composable
 fun BillingView(

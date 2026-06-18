@@ -21,7 +21,7 @@ val searchFriendModule = module {
             SearchFriendScreenModel(
                 userRepository = get(),
                 trackingRepository = get(),
-                coroutineScope = scope,
+                coroutineScope = scope
             )
         }
     }

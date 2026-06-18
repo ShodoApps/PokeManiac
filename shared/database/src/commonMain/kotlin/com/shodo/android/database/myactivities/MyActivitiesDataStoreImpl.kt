@@ -1,18 +1,18 @@
 package com.shodo.android.database.myactivities
 
-import com.shodo.android.domain.datastore.MyActivitiesDataStore
 import com.shodo.android.database.PokeManiacDatabase
 import com.shodo.android.database.myactivities.MyActivityBase.NewActivityTypeBase
+import com.shodo.android.domain.datastore.MyActivitiesDataStore
 import com.shodo.android.domain.repositories.entities.ImageSource
 import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
-import kotlin.time.Clock
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlin.time.Clock
 
 class MyActivitiesDataStoreImpl(private val database: PokeManiacDatabase) : MyActivitiesDataStore {
     override suspend fun saveNewActivity(newActivity: NewActivity) {
@@ -36,8 +36,8 @@ private fun NewActivity.mapToBase() = MyActivityBase(
         name = pokemonCard.name,
         fileUri = (pokemonCard.imageSource as ImageSource.FileSource).fileUri,
         hasMyVote = pokemonCard.hasMyVote,
-        totalVotes = pokemonCard.totalVotes,
-    ),
+        totalVotes = pokemonCard.totalVotes
+    )
 )
 
 private fun MyActivityBase.mapToModel() = NewActivity(
@@ -54,6 +54,6 @@ private fun MyActivityBase.mapToModel() = NewActivity(
         imageSource = ImageSource.FileSource(pokemonCard.fileUri),
         totalVotes = pokemonCard.totalVotes,
         hasMyVote = pokemonCard.hasMyVote,
-        name = pokemonCard.name,
-    ),
+        name = pokemonCard.name
+    )
 )

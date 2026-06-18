@@ -6,7 +6,7 @@ import com.shodo.android.domain.repositories.tracking.TrackingEventScreen
 import com.shodo.android.domain.repositories.tracking.TrackingRepository
 
 class TrackingRepositoryImpl(
-    private val trackingDataStore: TrackingDataStore,
+    private val trackingDataStore: TrackingDataStore
 ) : TrackingRepository {
 
     override suspend fun sendEventScreen(trackingEventScreen: TrackingEventScreen) {

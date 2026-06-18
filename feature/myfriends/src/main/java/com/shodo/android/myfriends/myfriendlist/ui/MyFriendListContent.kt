@@ -47,7 +47,6 @@ fun MyFriendsListContent(
     }
 }
 
-
 //region Previews
 
 @OptIn(ExperimentalMaterial3Api::class)

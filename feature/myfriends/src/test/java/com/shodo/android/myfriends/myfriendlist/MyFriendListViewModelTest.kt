@@ -30,6 +30,7 @@ class MyFriendListViewModelTest {
     private lateinit var dispatcher: TestDispatcher
 
     @Mock private lateinit var userRepository: UserRepository
+
     @Mock private lateinit var searchFriendNavigator: SearchFriendNavigator
 
     private lateinit var viewModel: MyFriendListViewModel

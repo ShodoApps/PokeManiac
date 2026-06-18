@@ -160,7 +160,7 @@ private fun FriendDescriptions(friendDescription: String, totalVotes: Int) {
             modifier = Modifier.padding(top = dimens.standard, start = dimens.standard, end = dimens.standard),
             color = colors.primaryText,
             style = typography.t8,
-            text = friendDescription,
+            text = friendDescription
         )
     }
     Text(
@@ -169,7 +169,7 @@ private fun FriendDescriptions(friendDescription: String, totalVotes: Int) {
         style = typography.t5,
         text = totalVotes.takeIf { it > 0 }?.let {
             stringResource(R.string.my_friend_detail_total_votes, it)
-        } ?: stringResource(R.string.my_friend_detail_total_votes_none),
+        } ?: stringResource(R.string.my_friend_detail_total_votes_none)
     )
 }
 
@@ -311,7 +311,7 @@ private fun previewPokemonCards() = persistentListOf(
         totalVotes = 19,
         hasMyVote = false,
         name = "Ivysaur",
-        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png",
+        imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/2.png"
     ),
     MyFriendPokemonCardUiModel(
         id = "Squirtle" + "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png",

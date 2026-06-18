@@ -63,7 +63,7 @@ fun MyProfileView(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colors.backgroundApp)
-                .padding(innerPadding),
+                .padding(innerPadding)
         ) {
             when (uiState) {
                 Loading -> GenericLoader()
@@ -85,7 +85,7 @@ fun PreviewMyProfileView_Loading_LightTheme() {
             uiState = Loading,
             onPostTransactionPressed = {},
             onBillingPressed = {},
-            snackbarHostState = SnackbarHostState(),
+            snackbarHostState = SnackbarHostState()
         )
     }
 }
@@ -100,7 +100,7 @@ fun PreviewMyFriendsListView_Loading_DarkTheme() {
             uiState = Loading,
             onPostTransactionPressed = {},
             onBillingPressed = {},
-            snackbarHostState = SnackbarHostState(),
+            snackbarHostState = SnackbarHostState()
         )
     }
 }
@@ -112,14 +112,16 @@ fun PreviewMyProfileView_Data_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
         MyProfileView(
             onBackPressed = {},
-            uiState = Data(MyProfileUiModel(
-                name = "Ash Ketchum",
-                imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
-                pokemonCards = previewPokemonCards()
-            )),
+            uiState = Data(
+                MyProfileUiModel(
+                    name = "Ash Ketchum",
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+                    pokemonCards = previewPokemonCards()
+                )
+            ),
             onPostTransactionPressed = {},
             onBillingPressed = {},
-            snackbarHostState = SnackbarHostState(),
+            snackbarHostState = SnackbarHostState()
         )
     }
 }
@@ -131,14 +133,16 @@ fun PreviewMyFriendsListView_Data_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
         MyProfileView(
             onBackPressed = {},
-            uiState = Data(MyProfileUiModel(
-                name = "Ash Ketchum",
-                imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
-                pokemonCards = previewPokemonCards()
-            )),
+            uiState = Data(
+                MyProfileUiModel(
+                    name = "Ash Ketchum",
+                    imageUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+                    pokemonCards = previewPokemonCards()
+                )
+            ),
             onPostTransactionPressed = {},
             onBillingPressed = {},
-            snackbarHostState = SnackbarHostState(),
+            snackbarHostState = SnackbarHostState()
         )
     }
 }

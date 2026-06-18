@@ -10,7 +10,7 @@ package com.shodo.android.presentation
 data class PresentationError(val message: String) {
     companion object {
         fun from(e: Throwable): PresentationError = PresentationError(
-            message = e.message?.takeIf { it.isNotBlank() } ?: "Something went wrong",
+            message = e.message?.takeIf { it.isNotBlank() } ?: "Something went wrong"
         )
     }
 }

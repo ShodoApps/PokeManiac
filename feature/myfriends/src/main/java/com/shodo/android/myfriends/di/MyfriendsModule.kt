@@ -16,7 +16,7 @@ val myFriendsModule = module {
         MyFriendListScreenModelFactory { scope: CoroutineScope ->
             MyFriendListScreenModel(
                 userRepository = get(),
-                coroutineScope = scope,
+                coroutineScope = scope
             )
         }
     }
@@ -24,7 +24,7 @@ val myFriendsModule = module {
         MyFriendDetailScreenModelFactory { scope: CoroutineScope ->
             MyFriendDetailScreenModel(
                 userRepository = get(),
-                coroutineScope = scope,
+                coroutineScope = scope
             )
         }
     }

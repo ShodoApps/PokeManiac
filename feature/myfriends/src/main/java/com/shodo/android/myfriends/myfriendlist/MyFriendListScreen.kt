@@ -3,7 +3,6 @@ package com.shodo.android.myfriends.myfriendlist
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -11,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shodo.android.coreui.extensions.OnLifecycleEventEffect
 import com.shodo.android.coreui.extensions.observeWithLifecycle
 import com.shodo.android.myfriends.myfriendlist.ui.MyFriendListView

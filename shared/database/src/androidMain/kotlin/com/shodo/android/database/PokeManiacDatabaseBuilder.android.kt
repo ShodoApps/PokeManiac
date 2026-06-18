@@ -10,7 +10,7 @@ fun buildPokeManiacDatabase(context: Context): PokeManiacDatabase {
     val dbFile = context.getDatabasePath(DATABASE_FILE_NAME)
     return Room.databaseBuilder<PokeManiacDatabase>(
         context = context,
-        name = dbFile.absolutePath,
+        name = dbFile.absolutePath
     ).setDriver(BundledSQLiteDriver())
         .fallbackToDestructiveMigration(false)
         .build()

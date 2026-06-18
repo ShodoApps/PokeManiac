@@ -5,7 +5,7 @@ import android.content.Intent
 import com.shodo.android.coreui.navigator.MyFriendsNavigator
 import com.shodo.android.myfriends.MyFriendsActivity
 
-class MyFriendsNavigatorImpl: MyFriendsNavigator {
+class MyFriendsNavigatorImpl : MyFriendsNavigator {
     override fun navigate(context: Context) {
         val intent = Intent(context, MyFriendsActivity::class.java)
         context.startActivity(intent)

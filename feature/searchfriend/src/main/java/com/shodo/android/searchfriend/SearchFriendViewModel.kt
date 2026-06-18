@@ -15,7 +15,7 @@ import com.shodo.android.searchfriend.di.SearchFriendScreenModelFactory
  * - [error] — [com.shodo.android.presentation.PresentationError]
  */
 class SearchFriendViewModel(
-    private val screenModelFactory: SearchFriendScreenModelFactory,
+    private val screenModelFactory: SearchFriendScreenModelFactory
 ) : ViewModel() {
 
     private val screenModel: SearchFriendScreenModel by lazy {

@@ -1,13 +1,13 @@
 package com.shodo.android.posttransaction.di
 
 import com.shodo.android.coreui.navigator.PostTransactionNavigator
+import com.shodo.android.posttransaction.navigator.PostTransactionNavigatorImpl
+import com.shodo.android.posttransaction.step1.PostTransactionStep1ViewModel
+import com.shodo.android.posttransaction.step2.PostTransactionStep2ViewModel
 import com.shodo.android.presentation.posttransaction.PostTransactionStep1ImageCapture
 import com.shodo.android.presentation.posttransaction.PostTransactionStep1ImageCapturePort
 import com.shodo.android.presentation.posttransaction.PostTransactionStep1ScreenModel
 import com.shodo.android.presentation.posttransaction.PostTransactionStep2ScreenModel
-import com.shodo.android.posttransaction.navigator.PostTransactionNavigatorImpl
-import com.shodo.android.posttransaction.step1.PostTransactionStep1ViewModel
-import com.shodo.android.posttransaction.step2.PostTransactionStep2ViewModel
 import kotlinx.coroutines.CoroutineScope
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModelOf

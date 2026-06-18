@@ -7,11 +7,11 @@ import com.shodo.android.domain.repositories.entities.NewActivity
 import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
-import kotlinx.datetime.LocalDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.datetime.LocalDateTime
 
 // This one is mocked, sorry !
 class NewsFeedRepositoryImpl(

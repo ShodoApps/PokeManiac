@@ -9,7 +9,7 @@ import com.shodo.android.presentation.myfriends.MyFriendDetailScreenModel
  * AndroidX [ViewModel] for My Friend detail. Forwards to [MyFriendDetailScreenModel] in `:shared:presentation`.
  */
 class MyFriendDetailViewModel(
-    private val screenModelFactory: MyFriendDetailScreenModelFactory,
+    private val screenModelFactory: MyFriendDetailScreenModelFactory
 ) : ViewModel() {
 
     private val screenModel: MyFriendDetailScreenModel by lazy {

@@ -17,12 +17,12 @@ fun buildPokeManiacDatabase(): PokeManiacDatabase {
             inDomain = NSUserDomainMask,
             appropriateForURL = null,
             create = false,
-            error = null,
+            error = null
         )
     val dirPath = requireNotNull(documentDirectory?.path)
     val dbFilePath = "$dirPath/$DATABASE_FILE_NAME"
     return Room.databaseBuilder<PokeManiacDatabase>(
-        name = dbFilePath,
+        name = dbFilePath
     ).setDriver(BundledSQLiteDriver())
         .fallbackToDestructiveMigration(false)
         .build()

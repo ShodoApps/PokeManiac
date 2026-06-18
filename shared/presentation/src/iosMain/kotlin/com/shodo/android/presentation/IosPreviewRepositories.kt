@@ -19,7 +19,7 @@ import kotlinx.datetime.Month
 fun createDashboardScreenModelForIos(coroutineScope: CoroutineScope): DashboardScreenModel =
     DashboardScreenModel(
         newsFeedRepository = IosPreviewNewsFeedRepository(),
-        coroutineScope = coroutineScope,
+        coroutineScope = coroutineScope
     )
 
 private class IosPreviewNewsFeedRepository : NewsFeedRepository {
@@ -34,11 +34,11 @@ private fun iosPreviewActivities(): List<NewActivity> {
             pokemonId = 25,
             name = "Pikachu",
             imageSource =
-                ImageSource.UrlSource(
-                    "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
-                ),
+            ImageSource.UrlSource(
+                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
+            ),
             totalVotes = 42,
-            hasMyVote = true,
+            hasMyVote = true
         )
     return listOf(
         NewActivity(
@@ -47,7 +47,7 @@ private fun iosPreviewActivities(): List<NewActivity> {
             date = LocalDateTime(2024, Month.JANUARY, 10, 14, 0),
             pokemonCard = card,
             activityType = NewActivityType.Purchase,
-            price = 120,
-        ),
+            price = 120
+        )
     )
 }

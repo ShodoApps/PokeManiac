@@ -1,22 +1,22 @@
 //
-//package com.shodo.android.domain
+// package com.shodo.android.domain
 //
-//import com.shodo.android.domain.repositories.entities.User
-//import com.shodo.android.domain.repositories.friends.UserRepository
-//import com.shodo.android.domain.usecases.SearchFriendUseCase
-//import org.junit.Before
-//import org.junit.Test
-//import org.mockito.Mock
-//import org.mockito.Mockito.`when`
-//import org.mockito.MockitoAnnotations
-//import kotlinx.coroutines.ExperimentalCoroutinesApi
-//import kotlinx.coroutines.flow.first
-//import kotlinx.coroutines.flow.flow
-//import kotlinx.coroutines.test.runTest
-//import kotlin.test.assertEquals
+// import com.shodo.android.domain.repositories.entities.User
+// import com.shodo.android.domain.repositories.friends.UserRepository
+// import com.shodo.android.domain.usecases.SearchFriendUseCase
+// import org.junit.Before
+// import org.junit.Test
+// import org.mockito.Mock
+// import org.mockito.Mockito.`when`
+// import org.mockito.MockitoAnnotations
+// import kotlinx.coroutines.ExperimentalCoroutinesApi
+// import kotlinx.coroutines.flow.first
+// import kotlinx.coroutines.flow.flow
+// import kotlinx.coroutines.test.runTest
+// import kotlin.test.assertEquals
 //
-//@OptIn(ExperimentalCoroutinesApi::class)
-//class SearchFriendUseCaseTest {
+// @OptIn(ExperimentalCoroutinesApi::class)
+// class SearchFriendUseCaseTest {
 //
 //    @Mock
 //    private lateinit var userRepository: UserRepository
@@ -60,4 +60,4 @@
 //            pokemonCards = listOf()
 //        )
 //    }
-//}
+// }

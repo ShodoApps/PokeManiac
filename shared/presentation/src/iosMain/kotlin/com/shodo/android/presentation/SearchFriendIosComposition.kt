@@ -10,5 +10,5 @@ fun createSearchFriendScreenModelForIos(coroutineScope: CoroutineScope): SearchF
     SearchFriendScreenModel(
         userRepository = createUserRepositoryForIos(),
         trackingRepository = createTrackingRepositoryForIos(),
-        coroutineScope = coroutineScope,
+        coroutineScope = coroutineScope
     )

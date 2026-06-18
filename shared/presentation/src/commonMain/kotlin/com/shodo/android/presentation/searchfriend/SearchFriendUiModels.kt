@@ -14,7 +14,7 @@ import kotlinx.collections.immutable.toPersistentList
 enum class SubscriptionState {
     Subscribed,
     NotSubscribed,
-    UpdatingSubscribe,
+    UpdatingSubscribe
 }
 
 /** One user row in Search Friend results ([SearchFriendUiState.Data]). */
@@ -24,7 +24,7 @@ data class SearchFriendUiModel(
     val imageUrl: String,
     val description: String,
     val subscriptionState: SubscriptionState,
-    val pokemonCards: PersistentList<SearchFriendPokemonCardUiModel>,
+    val pokemonCards: PersistentList<SearchFriendPokemonCardUiModel>
 )
 
 /** Simplified card line item shown under a user row. */
@@ -33,7 +33,7 @@ data class SearchFriendPokemonCardUiModel(
     val totalVotes: Int,
     val hasMyVote: Boolean,
     val name: String,
-    val imageUrl: String,
+    val imageUrl: String
 )
 
 /** Maps a domain user to UI; [ImageSource] is reduced to a display URL string for list rows. */
@@ -43,7 +43,7 @@ fun User.mapToSearchFriendUiModel(): SearchFriendUiModel = SearchFriendUiModel(
     imageUrl = imageUrl,
     description = description,
     subscriptionState = if (isSubscribed) SubscriptionState.Subscribed else SubscriptionState.NotSubscribed,
-    pokemonCards = pokemonCards.map { it.mapToSearchFriendPokemonCardUiModel() }.toPersistentList(),
+    pokemonCards = pokemonCards.map { it.mapToSearchFriendPokemonCardUiModel() }.toPersistentList()
 )
 
 /** Rebuilds a domain [User] for subscribe/unsubscribe calls (uses [ImageSource.UrlSource] for card images). */
@@ -53,7 +53,7 @@ fun SearchFriendUiModel.mapToUser(): User = User(
     imageUrl = imageUrl,
     description = description,
     isSubscribed = subscriptionState == SubscriptionState.Subscribed,
-    pokemonCards = pokemonCards.map { it.mapToUserPokemonCard() },
+    pokemonCards = pokemonCards.map { it.mapToUserPokemonCard() }
 )
 
 private fun UserPokemonCard.mapToSearchFriendPokemonCardUiModel(): SearchFriendPokemonCardUiModel =
@@ -62,7 +62,7 @@ private fun UserPokemonCard.mapToSearchFriendPokemonCardUiModel(): SearchFriendP
         totalVotes = totalVotes,
         hasMyVote = hasMyVote,
         name = name,
-        imageUrl = (imageSource as? ImageSource.UrlSource)?.imageUrl ?: "",
+        imageUrl = (imageSource as? ImageSource.UrlSource)?.imageUrl ?: ""
     )
 
 private fun SearchFriendPokemonCardUiModel.mapToUserPokemonCard(): UserPokemonCard = UserPokemonCard(
@@ -70,5 +70,5 @@ private fun SearchFriendPokemonCardUiModel.mapToUserPokemonCard(): UserPokemonCa
     totalVotes = totalVotes,
     hasMyVote = hasMyVote,
     name = name,
-    imageSource = ImageSource.UrlSource(imageUrl),
+    imageSource = ImageSource.UrlSource(imageUrl)
 )

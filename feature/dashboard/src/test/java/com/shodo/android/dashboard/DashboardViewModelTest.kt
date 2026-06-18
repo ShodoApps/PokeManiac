@@ -37,9 +37,13 @@ class DashboardViewModelTest {
     private lateinit var dispatcher: TestDispatcher
 
     @Mock private lateinit var newsFeedRepository: NewsFeedRepository
+
     @Mock private lateinit var searchFriendNavigator: SearchFriendNavigator
+
     @Mock private lateinit var myFriendsNavigator: MyFriendsNavigator
+
     @Mock private lateinit var myProfileNavigator: MyProfileNavigator
+
     @Mock private lateinit var postTransactionNavigator: PostTransactionNavigator
 
     private lateinit var viewModel: DashboardViewModel
@@ -57,7 +61,7 @@ class DashboardViewModelTest {
             searchFriendNavigator,
             myFriendsNavigator,
             myProfileNavigator,
-            postTransactionNavigator,
+            postTransactionNavigator
         )
     }
 

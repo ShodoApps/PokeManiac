@@ -12,7 +12,7 @@ data class SuperheroDTO(
     val appearance: AppearanceDTO,
     val work: WorkDTO,
     val connections: ConnectionsDTO,
-    val image: ImageDTO,
+    val image: ImageDTO
 )
 
 @Serializable
@@ -22,7 +22,7 @@ data class PowerStatsDTO(
     val speed: String,
     val durability: String,
     val power: String,
-    val combat: String,
+    val combat: String
 )
 
 @Serializable
@@ -37,7 +37,7 @@ data class BiographyDTO(
     @SerialName("first-appearance")
     val firstAppearance: String,
     val publisher: String,
-    val alignment: String,
+    val alignment: String
 )
 
 @Serializable
@@ -49,23 +49,23 @@ data class AppearanceDTO(
     @SerialName("eye-color")
     val eyeColor: String,
     @SerialName("hair-color")
-    val hairColor: String,
+    val hairColor: String
 )
 
 @Serializable
 data class WorkDTO(
     val occupation: String,
-    val base: String,
+    val base: String
 )
 
 @Serializable
 data class ConnectionsDTO(
     @SerialName("group-affiliation")
     val groupAffiliation: String,
-    val relatives: String,
+    val relatives: String
 )
 
 @Serializable
 data class ImageDTO(
-    val url: String,
+    val url: String
 )

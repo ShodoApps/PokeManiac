@@ -92,7 +92,7 @@ private fun ColumnScope.MyProfileDescription(totalVotes: Int, name: String?) {
         ),
         color = colors.primaryText,
         style = typography.t4,
-        text = name ?: stringResource(R.string.default_username),
+        text = name ?: stringResource(R.string.default_username)
     )
 
     Text(
@@ -105,7 +105,7 @@ private fun ColumnScope.MyProfileDescription(totalVotes: Int, name: String?) {
         style = typography.t5,
         text = totalVotes.takeIf { it > 0 }?.let {
             stringResource(R.string.my_profile_total_votes, it)
-        } ?: stringResource(R.string.my_profile_total_votes_none),
+        } ?: stringResource(R.string.my_profile_total_votes_none)
     )
 }
 

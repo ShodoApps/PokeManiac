@@ -70,9 +70,11 @@ fun PreviewSearchFriendContent_WithUsersFound_DarkTheme() {
 @Composable
 private fun PreviewSearchFriendContent(darkTheme: Boolean) {
     PokeManiacTheme(darkTheme = darkTheme) {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(color = colors.backgroundApp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = colors.backgroundApp)
+        ) {
             SearchFriendContent(
                 users = previewUsers(),
                 onSubscribeUserPressed = { },

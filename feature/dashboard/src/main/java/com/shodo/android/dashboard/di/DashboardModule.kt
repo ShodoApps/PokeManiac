@@ -14,7 +14,7 @@ val dashboardModule = module {
         DashboardScreenModelFactory { scope: CoroutineScope ->
             DashboardScreenModel(
                 newsFeedRepository = get(),
-                coroutineScope = scope,
+                coroutineScope = scope
             )
         }
     }

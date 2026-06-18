@@ -44,7 +44,7 @@ import kotlinx.coroutines.withContext
 class SearchFriendScreenModel(
     private val userRepository: UserRepository,
     private val trackingRepository: TrackingRepository,
-    private val coroutineScope: CoroutineScope,
+    private val coroutineScope: CoroutineScope
 ) {
 
     private val _uiState: MutableStateFlow<SearchFriendUiState> = MutableStateFlow(EmptySearch)
@@ -103,7 +103,7 @@ class SearchFriendScreenModel(
                 Data(
                     people = data.people.map { f ->
                         if (f.id == friendId) f.copy(subscriptionState = UpdatingSubscribe) else f
-                    }.toPersistentList(),
+                    }.toPersistentList()
                 )
             }
             try {
@@ -124,7 +124,7 @@ class SearchFriendScreenModel(
                             } else {
                                 f
                             }
-                        }.toPersistentList(),
+                        }.toPersistentList()
                     ) ?: currentState
                 }
             } catch (e: CancellationException) {
@@ -138,7 +138,7 @@ class SearchFriendScreenModel(
                             } else {
                                 f
                             }
-                        }.toPersistentList(),
+                        }.toPersistentList()
                     ) ?: currentState
                 }
                 _error.emit(PresentationError.from(e))

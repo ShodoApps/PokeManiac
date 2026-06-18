@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
  */
 class MyFriendListScreenModel(
     private val userRepository: UserRepository,
-    private val coroutineScope: CoroutineScope,
+    private val coroutineScope: CoroutineScope
 ) {
 
     private val _uiState: MutableStateFlow<MyFriendListUiState> = MutableStateFlow(MyFriendListUiState.Loading)

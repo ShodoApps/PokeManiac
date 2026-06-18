@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
  */
 class DashboardScreenModel(
     private val newsFeedRepository: NewsFeedRepository,
-    private val coroutineScope: CoroutineScope,
+    private val coroutineScope: CoroutineScope
 ) {
 
     private val _error = MutableSharedFlow<PresentationError>()

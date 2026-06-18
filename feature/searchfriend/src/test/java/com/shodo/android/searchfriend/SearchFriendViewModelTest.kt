@@ -7,10 +7,10 @@ import com.shodo.android.domain.repositories.tracking.TrackingRepository
 import com.shodo.android.presentation.searchfriend.SearchFriendScreenModel
 import com.shodo.android.presentation.searchfriend.SearchFriendUiModel
 import com.shodo.android.presentation.searchfriend.SearchFriendUiState
-import com.shodo.android.searchfriend.di.SearchFriendScreenModelFactory
 import com.shodo.android.presentation.searchfriend.SubscriptionState.NotSubscribed
 import com.shodo.android.presentation.searchfriend.SubscriptionState.Subscribed
 import com.shodo.android.presentation.searchfriend.SubscriptionState.UpdatingSubscribe
+import com.shodo.android.searchfriend.di.SearchFriendScreenModelFactory
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

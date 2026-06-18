@@ -109,13 +109,15 @@ fun PreviewMyFriendDetailView_Loading_DarkTheme() {
 fun PreviewMyFriendDetailView_Data_LightTheme() {
     PokeManiacTheme(darkTheme = false) {
         MyFriendDetailView(
-            uiState = Data(MyFriendUiModel(
-                id = "friendId",
-                name = "friendName",
-                imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
-                description = "description",
-                pokemonCards = persistentListOf()
-            )),
+            uiState = Data(
+                MyFriendUiModel(
+                    id = "friendId",
+                    name = "friendName",
+                    imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
+                    description = "description",
+                    pokemonCards = persistentListOf()
+                )
+            ),
             onUnsubscribePressed = {},
             onBackPressed = {},
             snackbarHostState = SnackbarHostState()
@@ -129,13 +131,15 @@ fun PreviewMyFriendDetailView_Data_LightTheme() {
 fun PreviewMyFriendDetailView_Data_DarkTheme() {
     PokeManiacTheme(darkTheme = true) {
         MyFriendDetailView(
-            uiState = Data(MyFriendUiModel(
-                id = "friendId",
-                name = "friendName",
-                imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
-                description = "description",
-                pokemonCards = persistentListOf()
-            )),
+            uiState = Data(
+                MyFriendUiModel(
+                    id = "friendId",
+                    name = "friendName",
+                    imageUrl = "https://www.superherodb.com/pictures2/portraits/10/100/10831.jpg",
+                    description = "description",
+                    pokemonCards = persistentListOf()
+                )
+            ),
             onUnsubscribePressed = {},
             onBackPressed = {},
             snackbarHostState = SnackbarHostState()

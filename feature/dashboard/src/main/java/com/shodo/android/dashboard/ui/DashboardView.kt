@@ -158,6 +158,7 @@ fun PreviewDashboardView_EmptyResult_DarkTheme() {
         )
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true, name = "DashboardView - Data - LightTheme")
 @Composable

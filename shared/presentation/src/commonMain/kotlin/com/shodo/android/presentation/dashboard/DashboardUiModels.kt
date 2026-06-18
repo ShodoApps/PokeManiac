@@ -16,17 +16,17 @@ data class NewActivityUiModel(
     val date: String,
     val activityType: NewActivityTypeUiModel,
     val pokemonCard: PokemonCardUiModel,
-    val price: Int,
+    val price: Int
 )
 
 enum class NewActivityTypeUiModel {
     Purchase,
-    Sale,
+    Sale
 }
 
 data class PokemonCardUiModel(
     val name: String,
-    val imageSource: DashboardImageSourceUiModel,
+    val imageSource: DashboardImageSourceUiModel
 )
 
 sealed class DashboardImageSourceUiModel {
@@ -45,9 +45,9 @@ fun NewActivity.mapToNewActivityUiModel(): NewActivityUiModel = NewActivityUiMod
         imageSource = when (val source = pokemonCard.imageSource) {
             is ImageSource.UrlSource -> DashboardImageSourceUiModel.UrlSource(source.imageUrl)
             is ImageSource.FileSource -> DashboardImageSourceUiModel.FileSource(source.fileUri)
-        },
+        }
     ),
-    price = price,
+    price = price
 )
 
 private fun NewActivityType.mapToUiModel(): NewActivityTypeUiModel = when (this) {

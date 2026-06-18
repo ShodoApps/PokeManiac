@@ -1,7 +1,6 @@
 package com.shodo.android.posttransaction.step1.ui
 
 import android.Manifest.permission.CAMERA
-import android.content.Context
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult

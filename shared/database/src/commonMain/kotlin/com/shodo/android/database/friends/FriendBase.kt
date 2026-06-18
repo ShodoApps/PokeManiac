@@ -7,12 +7,14 @@ import kotlinx.serialization.Serializable
 
 @Entity(tableName = "friends_table")
 data class FriendBase(
-    @PrimaryKey @ColumnInfo(name = "id") val id: String,
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    val id: String,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "imageUrl") val imageUrl: String,
     @ColumnInfo(name = "isSubscribed") val isSubscribed: Boolean,
-    @ColumnInfo(name = "pokemonCards") val pokemonCards: List<PokemonCardBase>,
+    @ColumnInfo(name = "pokemonCards") val pokemonCards: List<PokemonCardBase>
 ) {
     @Serializable
     data class PokemonCardBase(
@@ -20,6 +22,6 @@ data class FriendBase(
         val name: String,
         val imageUrl: String,
         val totalVotes: Int,
-        val hasMyVote: Boolean,
+        val hasMyVote: Boolean
     )
 }

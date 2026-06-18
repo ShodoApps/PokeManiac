@@ -21,8 +21,8 @@ import com.shodo.android.posttransaction.Routes.Step1
 import com.shodo.android.posttransaction.Routes.Step2
 import com.shodo.android.posttransaction.step1.PostTransactionStep1Screen
 import com.shodo.android.posttransaction.step2.PostTransactionStep2Screen
-import org.koin.androidx.compose.koinViewModel
 import kotlinx.serialization.Serializable
+import org.koin.androidx.compose.koinViewModel
 
 class PostTransactionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,10 +44,10 @@ fun PostTransactionFeature(onBackPressed: () -> Unit, onActivitySaved: () -> Uni
 
 sealed class Routes {
     @Serializable
-    data object Step1: Routes()
+    data object Step1 : Routes()
 
     @Serializable
-    data class Step2(val uri: String): Routes()
+    data class Step2(val uri: String) : Routes()
 }
 
 @Composable

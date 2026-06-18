@@ -1,10 +1,10 @@
 package com.shodo.android.welcome
 
 import app.cash.turbine.test
+import com.shodo.android.presentation.welcome.WelcomeScreenModel
 import com.shodo.android.presentation.welcome.WelcomeUiEvent
 import com.shodo.android.presentation.welcome.WelcomeUiState
 import com.shodo.android.welcome.di.WelcomeScreenModelFactory
-import com.shodo.android.presentation.welcome.WelcomeScreenModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

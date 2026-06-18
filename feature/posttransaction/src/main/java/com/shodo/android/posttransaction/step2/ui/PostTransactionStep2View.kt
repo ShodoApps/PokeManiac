@@ -78,7 +78,7 @@ fun PreviewPostTransactionStep2View_Loading_LightTheme() {
             imageUri = "".toUri(),
             uiState = Loading,
             onBackPressed = {},
-            onSaveActivity = {_,_,_,_,_ ->  },
+            onSaveActivity = { _, _, _, _, _ -> },
             snackbarHostState = SnackbarHostState()
         )
     }
@@ -93,7 +93,7 @@ fun PreviewPostTransactionStep2View_Loading_DarkTheme() {
             imageUri = "".toUri(),
             uiState = Loading,
             onBackPressed = {},
-            onSaveActivity = {_,_,_,_,_ ->  },
+            onSaveActivity = { _, _, _, _, _ -> },
             snackbarHostState = SnackbarHostState()
         )
     }
@@ -108,7 +108,7 @@ fun PreviewMyFriendsListContent_Filling_LightTheme() {
             imageUri = "".toUri(),
             uiState = Filling,
             onBackPressed = {},
-            onSaveActivity = {_,_,_,_,_ ->  },
+            onSaveActivity = { _, _, _, _, _ -> },
             snackbarHostState = SnackbarHostState()
         )
     }
@@ -123,7 +123,7 @@ fun PreviewMyFriendsListContent_Filling_DarkTheme() {
             imageUri = "".toUri(),
             uiState = Filling,
             onBackPressed = {},
-            onSaveActivity = {_,_,_,_,_ ->  },
+            onSaveActivity = { _, _, _, _, _ -> },
             snackbarHostState = SnackbarHostState()
         )
     }

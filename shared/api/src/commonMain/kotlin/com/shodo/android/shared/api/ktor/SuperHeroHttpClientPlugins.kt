@@ -15,7 +15,7 @@ internal fun HttpClientConfig<*>.installSuperHeroApiDefaults() {
             Json {
                 ignoreUnknownKeys = true
                 isLenient = true
-            },
+            }
         )
     }
     install(HttpTimeout) {

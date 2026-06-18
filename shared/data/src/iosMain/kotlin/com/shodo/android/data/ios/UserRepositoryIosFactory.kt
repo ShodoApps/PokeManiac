@@ -16,10 +16,10 @@ fun createUserRepositoryForIos(): UserRepository {
         SuperHerosApiService(
             httpClient = HttpClientFactory.create(),
             baseUrlProvider = BaseUrlProvider(),
-            apiToken = getSuperHeroApiToken(),
+            apiToken = getSuperHeroApiToken()
         )
     return UserRepositoryImpl(
         friendsRequest = FriendsRequestImpl(apiService),
-        friendsDataStore = FriendsDataStoreImpl(sharedPokeManiacDatabase()),
+        friendsDataStore = FriendsDataStoreImpl(sharedPokeManiacDatabase())
     )
 }

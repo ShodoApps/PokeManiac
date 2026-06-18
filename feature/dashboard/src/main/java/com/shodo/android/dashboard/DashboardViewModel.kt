@@ -18,7 +18,7 @@ class DashboardViewModel(
     private val searchFriendNavigator: SearchFriendNavigator,
     private val myFriendsNavigator: MyFriendsNavigator,
     private val myProfileNavigator: MyProfileNavigator,
-    private val postTransactionNavigator: PostTransactionNavigator,
+    private val postTransactionNavigator: PostTransactionNavigator
 ) : ViewModel() {
 
     private val screenModel: DashboardScreenModel by lazy {

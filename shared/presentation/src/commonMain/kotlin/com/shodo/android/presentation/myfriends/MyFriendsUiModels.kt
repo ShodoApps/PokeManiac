@@ -16,7 +16,7 @@ data class MyFriendUiModel(
     val name: String,
     val imageUrl: String,
     val description: String,
-    val pokemonCards: PersistentList<MyFriendPokemonCardUiModel>,
+    val pokemonCards: PersistentList<MyFriendPokemonCardUiModel>
 )
 
 /** One Pokémon card tile on the friend detail screen. */
@@ -26,7 +26,7 @@ data class MyFriendPokemonCardUiModel(
     val totalVotes: Int,
     val hasMyVote: Boolean,
     val name: String,
-    val imageUrl: String,
+    val imageUrl: String
 )
 
 fun User.mapToMyFriendUiModel(): MyFriendUiModel = MyFriendUiModel(
@@ -34,7 +34,7 @@ fun User.mapToMyFriendUiModel(): MyFriendUiModel = MyFriendUiModel(
     name = name,
     imageUrl = imageUrl,
     description = description,
-    pokemonCards = pokemonCards.map { it.mapToMyFriendPokemonCardUiModel() }.toPersistentList(),
+    pokemonCards = pokemonCards.map { it.mapToMyFriendPokemonCardUiModel() }.toPersistentList()
 )
 
 private fun UserPokemonCard.mapToMyFriendPokemonCardUiModel(): MyFriendPokemonCardUiModel =
@@ -44,5 +44,5 @@ private fun UserPokemonCard.mapToMyFriendPokemonCardUiModel(): MyFriendPokemonCa
         totalVotes = totalVotes,
         hasMyVote = hasMyVote,
         name = name,
-        imageUrl = (imageSource as? ImageSource.UrlSource)?.imageUrl.orEmpty(),
+        imageUrl = (imageSource as? ImageSource.UrlSource)?.imageUrl.orEmpty()
     )

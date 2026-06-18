@@ -5,5 +5,4 @@ import com.shodo.android.presentation.billing.BillingUiState
 
 @Composable
 fun BillingContent(data: BillingUiState.Data) {
-
 }

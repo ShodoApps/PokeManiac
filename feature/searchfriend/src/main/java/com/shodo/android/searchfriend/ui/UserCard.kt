@@ -55,7 +55,7 @@ fun UserCard(
             .fillMaxWidth()
             .padding(horizontal = dimens.xxSmall),
         shape = RoundedCornerShape(dimens.small),
-        colors = CardDefaults.cardColors(containerColor = colors.backgroundCell),
+        colors = CardDefaults.cardColors(containerColor = colors.backgroundCell)
     ) {
         Column(
             modifier = Modifier
@@ -74,7 +74,7 @@ fun UserCard(
                     .crossfade(true)
                     .build(),
                 contentScale = Crop,
-                contentDescription = name,
+                contentDescription = name
             )
 
             Text(

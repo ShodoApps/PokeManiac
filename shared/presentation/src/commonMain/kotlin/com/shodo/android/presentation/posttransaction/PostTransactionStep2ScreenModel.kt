@@ -6,10 +6,9 @@ import com.shodo.android.domain.repositories.entities.NewActivityType
 import com.shodo.android.domain.repositories.entities.UserPokemonCard
 import com.shodo.android.domain.repositories.news.NewsFeedRepository
 import com.shodo.android.presentation.PresentationError
-import com.shodo.android.presentation.presentationIoDispatcher
 import com.shodo.android.presentation.posttransaction.PostTransactionStep2UiState.Filling
 import com.shodo.android.presentation.posttransaction.PostTransactionStep2UiState.Loading
-import kotlin.time.Clock
+import com.shodo.android.presentation.presentationIoDispatcher
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,10 +20,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 class PostTransactionStep2ScreenModel(
     private val newsFeedRepository: NewsFeedRepository,
-    private val coroutineScope: CoroutineScope,
+    private val coroutineScope: CoroutineScope
 ) {
 
     private val _error = MutableSharedFlow<PresentationError>()

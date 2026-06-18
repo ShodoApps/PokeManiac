@@ -14,7 +14,7 @@ val myProfileModule = module {
         MyProfileScreenModelFactory { scope: CoroutineScope ->
             MyProfileScreenModel(
                 myProfileRepository = get(),
-                coroutineScope = scope,
+                coroutineScope = scope
             )
         }
     }

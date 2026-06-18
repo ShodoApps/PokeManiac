@@ -35,7 +35,9 @@ class MyProfileViewModelTest {
     private lateinit var dispatcher: TestDispatcher
 
     @Mock private lateinit var myProfileRepository: MyProfileRepository
+
     @Mock private lateinit var postTransactionNavigator: PostTransactionNavigator
+
     @Mock private lateinit var billingNavigator: BillingNavigator
 
     private lateinit var viewModel: MyProfileViewModel

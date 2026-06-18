@@ -1,14 +1,14 @@
 package com.shodo.android.pokemaniac.di
 
 import android.app.Application
-import com.shodo.android.domain.datastore.FriendsDataStore
-import com.shodo.android.domain.datastore.MyActivitiesDataStore
-import com.shodo.android.domain.datastore.TrackingDataStore
 import com.shodo.android.database.PokeManiacDatabase
 import com.shodo.android.database.TrackingDataStoreImpl
 import com.shodo.android.database.buildPokeManiacDatabase
 import com.shodo.android.database.friends.FriendsDataStoreImpl
 import com.shodo.android.database.myactivities.MyActivitiesDataStoreImpl
+import com.shodo.android.domain.datastore.FriendsDataStore
+import com.shodo.android.domain.datastore.MyActivitiesDataStore
+import com.shodo.android.domain.datastore.TrackingDataStore
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 

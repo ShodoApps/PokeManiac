@@ -61,7 +61,7 @@ fun MyFriendCard(
                     .crossfade(true)
                     .build(),
                 contentScale = Crop,
-                contentDescription = name,
+                contentDescription = name
             )
 
             Text(

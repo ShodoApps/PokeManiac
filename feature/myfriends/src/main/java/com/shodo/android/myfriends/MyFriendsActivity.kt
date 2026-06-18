@@ -20,8 +20,8 @@ import com.shodo.android.myfriends.Routes.MyFriendDetail
 import com.shodo.android.myfriends.Routes.MyFriendList
 import com.shodo.android.myfriends.myfrienddetail.MyFriendDetailScreen
 import com.shodo.android.myfriends.myfriendlist.MyFriendListScreen
-import org.koin.androidx.compose.koinViewModel
 import kotlinx.serialization.Serializable
+import org.koin.androidx.compose.koinViewModel
 
 class MyFriendsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,10 +43,10 @@ fun MyFriendsFeature(onBackPressed: () -> Unit) {
 
 sealed class Routes {
     @Serializable
-    data object MyFriendList: Routes()
+    data object MyFriendList : Routes()
 
     @Serializable
-    data class MyFriendDetail(val id: String): Routes()
+    data class MyFriendDetail(val id: String) : Routes()
 }
 
 @Composable

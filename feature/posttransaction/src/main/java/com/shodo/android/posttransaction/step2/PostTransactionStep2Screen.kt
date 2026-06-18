@@ -4,11 +4,11 @@ import android.net.Uri
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shodo.android.coreui.extensions.observeWithLifecycle
 import com.shodo.android.posttransaction.step2.ui.PostTransactionStep2View
 
@@ -34,7 +34,6 @@ fun PostTransactionStep2Screen(
     onBackPressed: () -> Unit,
     onActivitySaved: () -> Unit
 ) {
-
     val snackbarHostState = remember { SnackbarHostState() }
     viewModel.error.observeWithLifecycle { error ->
         snackbarHostState.showSnackbar(error.message)

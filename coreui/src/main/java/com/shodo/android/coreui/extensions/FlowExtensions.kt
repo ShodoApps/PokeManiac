@@ -1,11 +1,11 @@
 package com.shodo.android.coreui.extensions
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
-import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.flow.Flow
 
 /**

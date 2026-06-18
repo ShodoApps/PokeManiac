@@ -102,7 +102,6 @@ fun darkColors() = PokeManiacColors(
     accentDark = redDark
 )
 
-
 val black = Color(0xFF000000)
 val white = Color(0xFFFFFFFF)
 val brokenWhite = Color(0xFFB0BEC5)

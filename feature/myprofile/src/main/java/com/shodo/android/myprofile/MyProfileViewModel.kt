@@ -14,7 +14,7 @@ import com.shodo.android.presentation.myprofile.MyProfileScreenModel
 class MyProfileViewModel(
     private val screenModelFactory: MyProfileScreenModelFactory,
     private val postTransactionNavigator: PostTransactionNavigator,
-    private val billingNavigator: BillingNavigator,
+    private val billingNavigator: BillingNavigator
 ) : ViewModel() {
 
     private val screenModel: MyProfileScreenModel by lazy {

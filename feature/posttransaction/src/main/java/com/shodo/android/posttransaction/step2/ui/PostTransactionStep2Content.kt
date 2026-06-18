@@ -18,9 +18,9 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -110,7 +110,7 @@ fun PostTransactionStep2Content(
             textFieldColors = textFieldColors,
             currentFocus = numberFocusRequester,
             keyboardOptions = Default.copy(keyboardType = Number, imeAction = Next),
-            keyboardActions = KeyboardActions(onNext = { nameFocusRequester.requestFocus() }),
+            keyboardActions = KeyboardActions(onNext = { nameFocusRequester.requestFocus() })
         ) { if (it.all { char -> char.isDigit() }) pokemonNumber = it }
 
         // Pokemon Name
@@ -262,7 +262,8 @@ private fun ColumnScope.SaveTransactionButton(
     onSaveActivity: (pokemonName: String, pokemonNumber: Int, transactionType: NewActivityType, transactionPrice: Int, uri: Uri) -> Unit,
     pokemonName: String,
     pokemonNumber: Int,
-    transactionType: NewActivityType, transactionPrice: Int,
+    transactionType: NewActivityType,
+    transactionPrice: Int,
     imageUri: Uri
 ) {
     PrimaryButton(

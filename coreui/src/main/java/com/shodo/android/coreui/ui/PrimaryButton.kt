@@ -14,7 +14,7 @@ import com.shodo.android.coreui.theme.PokeManiacTheme
 fun PrimaryButton(
     onClick: () -> Unit,
     text: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Button(
         onClick = onClick,

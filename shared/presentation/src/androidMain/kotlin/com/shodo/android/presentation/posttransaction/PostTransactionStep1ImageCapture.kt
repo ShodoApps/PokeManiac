@@ -15,7 +15,7 @@ class PostTransactionStep1ImageCapture(
 
     override fun createTempJpegFileAbsolutePath(): Result<String> = runCatching {
         val timeStamp = SimpleDateFormat(DATE_PATTERN, Locale.US).format(Date())
-        val file = File.createTempFile("${FILE_PREFIX}_${timeStamp}", FILE_SUFFIX, context.filesDir)
+        val file = File.createTempFile("${FILE_PREFIX}_$timeStamp", FILE_SUFFIX, context.filesDir)
         file.absolutePath
     }
 

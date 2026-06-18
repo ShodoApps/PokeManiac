@@ -8,8 +8,8 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.encodeURLPathPart
-import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlin.coroutines.coroutineContext
 
 /**
  * Typed SuperHero HTTP API — same responsibility as the former Retrofit `SuperHerosApiService` interface.
@@ -18,7 +18,7 @@ import kotlinx.coroutines.ensureActive
 class SuperHerosApiService(
     private val httpClient: HttpClient,
     private val baseUrlProvider: BaseUrlProvider,
-    private val apiToken: String,
+    private val apiToken: String
 ) {
 
     suspend fun searchCharacter(superHeroName: String): SearchCharacterDTO {

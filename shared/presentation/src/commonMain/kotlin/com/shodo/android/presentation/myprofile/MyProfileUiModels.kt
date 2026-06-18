@@ -13,7 +13,7 @@ import kotlinx.collections.immutable.toPersistentList
 data class MyProfileUiModel(
     val name: String?,
     val imageUrl: String?,
-    val pokemonCards: PersistentList<MyProfilePokemonCardUiModel>,
+    val pokemonCards: PersistentList<MyProfilePokemonCardUiModel>
 )
 
 data class MyProfilePokemonCardUiModel(
@@ -21,7 +21,7 @@ data class MyProfilePokemonCardUiModel(
     val name: String,
     /** Local file / content URI string for Coil on Android. */
     val imageUri: String,
-    val totalVotes: Int,
+    val totalVotes: Int
 )
 
 fun List<NewActivity>.mapToMyProfileUiModel(): MyProfileUiModel = MyProfileUiModel(
@@ -29,7 +29,7 @@ fun List<NewActivity>.mapToMyProfileUiModel(): MyProfileUiModel = MyProfileUiMod
     imageUrl = null,
     pokemonCards = sortedByDescending { it.date }
         .mapNotNull { it.pokemonCard.mapToMyProfilePokemonCardUiModel() }
-        .toPersistentList(),
+        .toPersistentList()
 )
 
 private fun UserPokemonCard.mapToMyProfilePokemonCardUiModel(): MyProfilePokemonCardUiModel? {
@@ -38,6 +38,6 @@ private fun UserPokemonCard.mapToMyProfilePokemonCardUiModel(): MyProfilePokemon
         id = name + fileSource.fileUri,
         totalVotes = totalVotes,
         name = name,
-        imageUri = fileSource.fileUri,
+        imageUri = fileSource.fileUri
     )
 }

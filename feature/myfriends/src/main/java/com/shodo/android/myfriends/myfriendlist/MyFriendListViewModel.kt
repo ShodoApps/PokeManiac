@@ -12,7 +12,7 @@ import com.shodo.android.presentation.myfriends.MyFriendListScreenModel
  */
 class MyFriendListViewModel(
     private val screenModelFactory: MyFriendListScreenModelFactory,
-    private val searchFriendNavigator: SearchFriendNavigator,
+    private val searchFriendNavigator: SearchFriendNavigator
 ) : ViewModel() {
 
     private val screenModel: MyFriendListScreenModel by lazy {
