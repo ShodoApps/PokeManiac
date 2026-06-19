@@ -1,0 +1,98 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(jq -r '.tool_input.command // empty'); if echo \"$CMD\" | grep -qE '^\\s*git\\s+commit'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Manual commits only — you always commit yourself in this project.\"}}'; fi",
+            "statusMessage": "Checking manual-commit policy..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); [[ \"$FILE\" == *.kt ]] || exit 0; KTLINT=$(which ktlint 2>/dev/null); [[ -n \"$KTLINT\" ]] || exit 0; \"$KTLINT\" --format \"$FILE\" 2>/dev/null; VIOLATIONS=$(\"$KTLINT\" \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ ktlint violations remaining after auto-format:\\n\\($v)\"}'",
+            "statusMessage": "Running ktlint..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); [[ \"$FILE\" == *.swift ]] || exit 0; SWIFTLINT=$(which swiftlint 2>/dev/null); [[ -n \"$SWIFTLINT\" ]] || exit 0; \"$SWIFTLINT\" --fix --quiet \"$FILE\" 2>/dev/null; VIOLATIONS=$(\"$SWIFTLINT\" lint --quiet \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ SwiftLint violations remaining after auto-fix:\\n\\($v)\"}'",
+            "statusMessage": "Running SwiftLint..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); ([[ \"$FILE\" == *\"/feature/\"* ]] || [[ \"$FILE\" == *\"/coreui/\"* ]]) && [[ \"$FILE\" == *.kt ]] || exit 0; VIOLATIONS=$(grep -nE 'import [PACKAGE_NAME]\\.(data|api|database)\\.' \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg f \"$FILE\" --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ ARCHITECTURE VIOLATION in \\($f):\\n\\($v)\\n\\nfeature:* and coreui must NOT import from :shared:data, :shared:api, or :shared:database.\"}'",
+            "statusMessage": "Checking architecture boundaries..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); [[ \"$FILE\" == */commonMain/*.kt ]] || exit 0; VIOLATIONS=$(grep -nE 'import (android|androidx)\\.' \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg f \"$FILE\" --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ commonMain PURITY VIOLATION in \\($f):\\n\\($v)\\n\\ncommonMain must not import Android-only APIs. Use expect/actual or move to androidMain.\"}'",
+            "statusMessage": "Checking commonMain purity..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); [[ \"$FILE\" == *ViewModel.kt ]] || exit 0; VIOLATIONS=$(grep -nE '\\b(Context|Activity|Fragment)\\b' \"$FILE\" 2>/dev/null | grep -v '//'); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg f \"$FILE\" --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ MEMORY LEAK RISK in \\($f):\\n\\($v)\\n\\nViewModels must not hold Context or Activity references.\"}'",
+            "statusMessage": "Checking ViewModel for memory leaks..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); [[ \"$FILE\" == *.kt ]] && [[ \"$FILE\" != */test/* ]] && [[ \"$FILE\" != */androidTest/* ]] || exit 0; VIOLATIONS=$(grep -nE '\\bLog\\.(d|e|i|w|v|wtf)\\b|\\bprintln\\b' \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ DEBUG LOGGING detected — remove before shipping:\\n\\($v)\"}'",
+            "statusMessage": "Checking for debug logs..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); ([[ \"$FILE\" == *\"/feature/\"* ]] || [[ \"$FILE\" == *\"/coreui/\"* ]]) && [[ \"$FILE\" == *.kt ]] || exit 0; VIOLATIONS=$(grep -nE '\\bText\\(\"[A-Za-z]' \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ POSSIBLE HARDCODED UI STRING:\\n\\($v)\\n\\nUse stringResource(R.string.key) instead of string literals in composables.\"}'",
+            "statusMessage": "Checking for hardcoded strings..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); ([[ \"$FILE\" == *Base.kt ]] || [[ \"$FILE\" == *Dao.kt ]]) || exit 0; jq -n '{\"systemMessage\": \"⚠️ Room entity or DAO modified. Check:\\n1. Did you bump @Database(version = N) in [PROJECT_NAME]Database.kt?\\n2. Did you add a migration in DatabaseModule.kt?\\n(New tables are handled automatically — only schema changes to existing tables need migrations.)\"}'",
+            "statusMessage": "Checking Room migration..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); [[ \"$FILE\" == *build.gradle.kts ]] || exit 0; jq -n '{\"systemMessage\": \"build.gradle.kts modified. Remember to:\\n• Run ./gradlew testDebugUnitTest\\n• Run ./gradlew lint\\n• Run ./gradlew assembleRelease\\n• Check if new libraries need ProGuard/R8 rules in proguard-rules.pro\"}'",
+            "statusMessage": "Noting Gradle change..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); [[ \"$FILE\" == *.swift ]] || exit 0; VIOLATIONS=$(grep -nE '(PHPhotoLibrary|AVCaptureDevice|CLLocationManager|CNContactStore|CMMotionManager)' \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n '{\"systemMessage\": \"⚠️ iOS permission API detected. Verify Info.plist has the corresponding NS*UsageDescription key — missing key causes a crash on the first permission request on device.\"}'",
+            "statusMessage": "Checking iOS permission declaration..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); [[ \"$FILE\" == *.kt ]] || exit 0; KTLINT=$(which ktlint 2>/dev/null); [[ -n \"$KTLINT\" ]] || exit 0; \"$KTLINT\" --format \"$FILE\" 2>/dev/null; VIOLATIONS=$(\"$KTLINT\" \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ ktlint violations remaining after auto-format:\\n\\($v)\"}'",
+            "statusMessage": "Running ktlint..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); [[ \"$FILE\" == *.swift ]] || exit 0; SWIFTLINT=$(which swiftlint 2>/dev/null); [[ -n \"$SWIFTLINT\" ]] || exit 0; \"$SWIFTLINT\" --fix --quiet \"$FILE\" 2>/dev/null; VIOLATIONS=$(\"$SWIFTLINT\" lint --quiet \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ SwiftLint violations remaining after auto-fix:\\n\\($v)\"}'",
+            "statusMessage": "Running SwiftLint..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); ([[ \"$FILE\" == *\"/feature/\"* ]] || [[ \"$FILE\" == *\"/coreui/\"* ]]) && [[ \"$FILE\" == *.kt ]] || exit 0; VIOLATIONS=$(grep -nE 'import [PACKAGE_NAME]\\.(data|api|database)\\.' \"$FILE\" 2>/dev/null); [[ -z \"$VIOLATIONS\" ]] && exit 0; jq -n --arg f \"$FILE\" --arg v \"$VIOLATIONS\" '{\"systemMessage\": \"⚠️ ARCHITECTURE VIOLATION in \\($f):\\n\\($v)\\n\\nfeature:* and coreui must NOT import from :shared:data, :shared:api, or :shared:database.\"}'",
+            "statusMessage": "Checking architecture boundaries..."
+          },
+          {
+            "type": "command",
+            "command": "FILE=$(jq -r '.tool_input.file_path // empty'); ([[ \"$FILE\" == *ViewModel.kt ]] || [[ \"$FILE\" == *ScreenModel.kt ]]) || exit 0; BASENAME=$(basename \"$FILE\" .kt); FOUND=$(find \"$(dirname \"$FILE\")\" -name \"${BASENAME}Test.kt\" 2>/dev/null | head -1); [[ -n \"$FOUND\" ]] && exit 0; jq -n --arg f \"$BASENAME\" '{\"systemMessage\": \"⚠️ New \\($f).kt created with no matching test file. Create \\($f)Test.kt in src/test/ — see docs/harness/checklists/unit-tests.md\"}'",
+            "statusMessage": "Checking for missing test file..."
+          }
+        ]
+      }
+    ]
+  }
+}
